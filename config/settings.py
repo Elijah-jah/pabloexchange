@@ -15,11 +15,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-(h4^rt%2c4lo8_r(2!!-c
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 # ← CHANGED: your domain
-ALLOWED_HOSTS = config(
-    'ALLOWED_HOSTS',
-    default='pabloexchange.com,www.pabloexchange.com,localhost,127.0.0.1',
-    cast=Csv(),
-)
+ALLOWED_HOSTS = ["pabloexchange.onrender.com", "localhost", "127.0.0.1"]
 
 # ← NEW: required by Django 4+ when requests come via https:// domain (fixes CSRF "origin not trusted" errors)
 CSRF_TRUSTED_ORIGINS = config(
