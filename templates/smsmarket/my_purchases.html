@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Purchases{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <!-- ===== Header ===== -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h1 class="dash-greeting">My Purchases</h1>
+            <p class="dash-sub mb-0">Every number you've bought and its status.</p>
+        </div>
+        <a href="{% url 'buynumber' %}" class="btn px-btn-solid">
+            <i class="bi bi-plus-lg"></i> Buy Number
+        </a>
+    </div>
+
+    <!-- ===== Filter bar ===== -->
+    <div class="tx-toolbar">
+
+        <div class="tx-filters" role="tablist">
+            <button class="tx-filter active" data-filter="all">All</button>
+            <button class="tx-filter" data-filter="active">Active</button>
+            <button class="tx-filter" data-filter="completed">Completed</button>
+            <button class="tx-filter" data-filter="expired">Expired</button>
+            <button class="tx-filter" data-filter="cancelled">Cancelled</button>
+        </div>
+
+        <div class="mk-search-wrap tx-search">
+            <i class="bi bi-search"></i>
+            <input type="text" id="poSearch" class="mk-search" placeholder="Search service or number…">
+        </div>
+
+    </div>
+
+    <!-- ===== List ===== -->
+    <div class="px-card" id="poList">
+
+        {% for o in orders %}
+        {% with otp=o.messages.last %}
+        <div class="list-row po-row" data-status="{{ o.status }}" data-search="{{ o.service.name|lower }} {{ o.phone_number }}">
+
+            <div class="list-icon {% if o.status == 'completed' %}emerald{% elif o.status == 'active' %}gold{% else %}muted{% endif %}">
+                {% if o.status == 'completed' %}<i class="bi bi-check-lg"></i>
+                {% elif o.status == 'active' %}<i class="bi bi-hourglass-split"></i>
+                {% else %}<i class="bi bi-x-lg"></i>{% endif %}
+            </div>
+
+            <div class="list-body">
+                <div class="list-title">{{ o.service.name }}</div>
+                <div class="list-sub mono">{{ o.phone_number|default:"Awaiting number" }} · {{ o.created_at|date:"M d, Y · H:i" }}</div>
+            </div>
+
+            <div class="list-side">
+                {% if o.status == 'completed' and otp %}
+                <button class="otp-chip mono" onclick="pxCopy('{{ otp.otp_code }}', this)" title="Click to copy">
+                    {{ otp.otp_code }} <i class="bi bi-clipboard"></i>
+                </button>
+                {% else %}
+                <span class="px-pill {{ o.status }}">{{ o.status }}</span>
+                {% endif %}
+                <div class="list-amount mono">₦{{ o.price }}</div>
+            </div>
+
+            <a href="{% url 'smsmarket:order_detail' o.pk %}" class="po-open" title="Open order">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+
+        </div>
+        {% endwith %}
+        {% empty %}
+        <div class="px-empty">
+            <i class="bi bi-bag"></i>
+            No purchases yet — your numbers will show up here.
+            <div class="mt-2"><a href="{% url 'buynumber' %}" class="btn px-btn-ghost btn-sm">Buy Number</a></div>
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <!-- Filtered-empty state -->
+    <div class="px-empty" id="poNoResults" style="display:none;">
+        <i class="bi bi-funnel"></i>
+        No orders match this filter.
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/purchases.js' %}"></script>
+{% endblock %}

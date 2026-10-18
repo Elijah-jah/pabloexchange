@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Fund Wallet{% endblock %}
+{% block page_title %}Fund Wallet{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/fund.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEAD -->
+<div class="fund-head">
+    <h2 class="page-heading">Fund your wallet</h2>
+    <p class="page-sub">Transfer to your personal account number — your wallet is credited automatically.</p>
+</div>
+
+<!-- ASSIGNED ACCOUNT CARD -->
+<div class="acct-card">
+    <div class="acct-card-top">
+        <span class="acct-tag"><i class="bi bi-shield-lock-fill me-1"></i> Your permanent account</span>
+    </div>
+
+    <p class="acct-label">Account number</p>
+    <div class="acct-number-row">
+        <div class="acct-number-block">
+            <span class="acct-number mono">{{ account_number|default:"—" }}</span>
+            <span class="acct-bank-name">
+                <span class="bank-label">Bank name:</span> {{ bank_name|default:"—" }}
+            </span>
+        </div>
+        <button class="acct-copy" data-copy="{{ account_number|default:'' }}" title="Copy account number">
+            <i class="bi bi-clipboard"></i> Copy
+        </button>
+    </div>
+
+    <div class="acct-meta">
+        <div>
+            <p class="acct-meta-label">Account name</p>
+            <p class="acct-meta-value">{{ account_name|default:"—" }}</p>
+        </div>
+        <div>
+            <p class="acct-meta-label">Charges</p>
+            <p class="acct-meta-value">₦0 &middot; always</p>
+        </div>
+    </div>
+</div>
+
+<!-- STEPS -->
+<div class="px-card mb-4">
+    <div class="fund-card-head">
+        <h5><i class="bi bi-list-check me-2"></i>How it works</h5>
+    </div>
+    <div class="steps-wrap">
+        <div class="fund-step">
+            <span class="step-num">1</span>
+            <div>
+                <p class="step-title">Transfer any amount</p>
+                <p class="step-text">From your bank app or USSD, transfer to the account number above. It's yours permanently.</p>
+            </div>
+        </div>
+        <div class="fund-step">
+            <span class="step-num">2</span>
+            <div>
+                <p class="step-title">Credited automatically</p>
+                <p class="step-text">No need to notify us — your wallet is funded as soon as the transfer lands.</p>
+            </div>
+        </div>
+        <div class="fund-step">
+            <span class="step-num">3</span>
+            <div>
+                <p class="step-title">Buy instantly</p>
+                <p class="step-text">Your balance is ready for numbers right away, 24/7.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RECENT FUNDINGS -->
+<div class="px-card">
+    <div class="fund-card-head">
+        <h5><i class="bi bi-clock-history me-2"></i>Recent fundings</h5>
+        <a href="{% url 'wallet:transactions' %}" class="dash-viewall">View all</a>
+    </div>
+
+    {% for tx in recent_fundings %}
+    <div class="fund-row">
+        <span class="fund-icon tx-credit"><i class="bi bi-arrow-down"></i></span>
+        <div class="fund-info">
+            <p class="fund-desc">{{ tx.description|default:"Wallet funding" }}</p>
+            <p class="fund-date">{{ tx.created_at|date:"M j, Y · H:i" }}</p>
+        </div>
+        <div class="text-end">
+            <p class="mono fw-semibold fund-amount">+₦{{ tx.amount }}</p>
+            <span class="px-pill {{ tx.status }}">{{ tx.status|title }}</span>
+        </div>
+    </div>
+    {% empty %}
+    <div class="fund-empty">
+        <i class="bi bi-wallet2"></i>
+        <p>No fundings yet — make your first transfer.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- SUPPORT NOTE -->
+<div class="support-note">
+    <i class="bi bi-headset me-2"></i>
+    Transfer landed but wallet not credited? <a href="mailto:support@pabloexchange.com">Contact support</a> — we resolve fast.
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.acct-copy').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const value = (btn.dataset.copy || '').trim();
+        if (!value) return;
+
+        const done = () => {
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check2"></i> Copied';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.innerHTML = original; btn.classList.remove('copied'); }, 1500);
+        };
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(value).then(done).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = value; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select();
+                try { document.execCommand('copy'); } catch (e) {}
+                ta.remove(); done();
+            });
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = value; ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); } catch (e) {}
+            ta.remove(); done();
+        }
+    });
+});
+</script>
+{% endblock %}

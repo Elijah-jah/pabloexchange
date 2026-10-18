@@ -1,0 +1,96 @@
+/* PabloExchange theme — deep emerald + gold */
+
+:root {
+  --emerald-950: #022c22;
+  --emerald-900: #064e3b;
+  --emerald-800: #065f46;
+  --emerald-700: #047857;
+  --emerald-600: #059669;
+  --emerald-100: #d1fae5;
+  --gold-500: #d4af37;
+  --gold-400: #e3c565;
+  --gold-300: #f0d98c;
+  --ink: #0f1f1a;
+  --paper: #f7f9f8;
+  --white: #ffffff;
+  --muted: #5b6f68;
+  --danger: #dc2626;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(2, 44, 34, .10);
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a { color: var(--emerald-700); text-decoration: none; }
+a:hover { color: var(--emerald-600); }
+
+/* ---------- Navbar ---------- */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  background: var(--emerald-950);
+  color: var(--white);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.brand { font-size: 1.3rem; font-weight: 800; color: var(--white); letter-spacing: .3px; }
+.brand span { color: var(--gold-500); }
+.nav-links { display: flex; gap: 20px; align-items: center; }
+.nav-links a { color: var(--emerald-100); font-size: .95rem; }
+.nav-links a:hover { color: var(--gold-300); }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-block;
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  border: none;
+  font-size: .95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold-400), var(--gold-500));
+  color: var(--emerald-950) !important;
+}
+.btn-gold:hover { filter: brightness(1.08); }
+.btn-emerald { background: var(--emerald-700); color: var(--white) !important; }
+.btn-emerald:hover { background: var(--emerald-600); }
+
+/* ---------- Layout ---------- */
+.container { max-width: 1080px; margin: 32px auto; padding: 0 20px; flex: 1; width: 100%; }
+
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+/* ---------- Messages ---------- */
+.messages { max-width: 1080px; margin: 16px auto 0; padding: 0 20px; width: 100%; }
+.message { padding: 10px 16px; border-radius: var(--radius); margin-bottom: 8px; background: var(--emerald-100); color: var(--emerald-900); }
+.message.error { background: #fee2e2; color: var(--danger); }
+
+/* ---------- Footer ---------- */
+.footer {
+  text-align: center;
+  padding: 20px;
+  color: var(--muted);
+  font-size: .85rem;
+  border-top: 1px solid #e5ebe8;
+}

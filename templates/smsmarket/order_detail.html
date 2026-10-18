@@ -1,0 +1,11 @@
+<h2>{{ order.service.name }} — order #{{ order.pk }}</h2>
+<p>Number: <strong>{{ order.phone_number }}</strong></p>
+<p>Status: {{ order.status }} | Price: ₦{{ order.price }}</p>
+
+{% for m in received %}
+  <div><strong>OTP: {{ m.otp_code }}</strong><p>{{ m.text }}</p></div>
+{% empty %}
+  <p>Waiting for SMS… refresh to poll.</p>
+{% endfor %}
+
+<p><a href="{% url 'smsmarket:my_purchases' %}">My purchases</a></p>

@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Settings{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <div class="set-page-head">
+        <h1>Settings</h1>
+        <p>Manage your profile, security and notification preferences.</p>
+    </div>
+
+    <div class="set-layout">
+
+        <!-- ===== Sidebar tabs ===== -->
+        <aside class="set-sidebar">
+            <button class="set-tab active" data-tab="profile">
+                <span class="set-tab-icon"><i class="bi bi-person-fill"></i></span>
+                <span class="set-tab-text">
+                    <strong>Profile</strong>
+                    <small>Username, phone, email</small>
+                </span>
+            </button>
+            <button class="set-tab" data-tab="security">
+                <span class="set-tab-icon"><i class="bi bi-shield-lock-fill"></i></span>
+                <span class="set-tab-text">
+                    <strong>Security</strong>
+                    <small>Change password</small>
+                </span>
+            </button>
+            <button class="set-tab" data-tab="notifications">
+                <span class="set-tab-icon"><i class="bi bi-bell-fill"></i></span>
+                <span class="set-tab-text">
+                    <strong>Notifications</strong>
+                    <small>Email preferences</small>
+                </span>
+            </button>
+        </aside>
+
+        <!-- ===== Panels ===== -->
+        <div class="set-panels">
+
+            <div class="set-toast" id="setToast"></div>
+
+            <!-- ---------- PROFILE ---------- -->
+            <section class="set-panel" id="panel-profile">
+                <h2 class="set-panel-title">Profile</h2>
+
+                <div class="set-profile-top">
+                    <div class="set-avatar">{{ user.username|first|upper }}</div>
+                    <div>
+                        <div class="set-avatar-name">{{ user.username }}</div>
+                        <div class="set-avatar-sub">Member since {{ user.date_joined|date:"M Y" }}</div>
+                    </div>
+                </div>
+
+                <form class="set-form" data-action="profile" novalidate>
+                    {% csrf_token %}
+
+                    <div class="set-field">
+                        <label>Email address</label>
+                        <div class="set-input-wrap">
+                            <i class="bi bi-envelope-fill"></i>
+                            <input type="email" value="{{ user.email }}" disabled>
+                            <span class="set-lock"><i class="bi bi-lock-fill"></i></span>
+                        </div>
+                        <small>Email can't be changed — it's your login identity.</small>
+                    </div>
+
+                    <div class="set-field">
+                        <label for="setUsername">Username</label>
+                        <div class="set-input-wrap">
+                            <i class="bi bi-person-fill"></i>
+                            <input type="text" id="setUsername" name="username"
+                                   value="{{ user.username }}" minlength="3" required>
+                        </div>
+                    </div>
+
+                    <div class="set-field">
+                        <label for="setPhone">Phone number <em>(optional)</em></label>
+                        <div class="set-input-wrap">
+                            <i class="bi bi-telephone-fill"></i>
+                            <input type="tel" id="setPhone" name="phone"
+                                   value="{{ user.phone|default:'' }}" placeholder="+234 800 000 0000">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="set-btn set-btn-primary">
+                        <span class="submit-text">Save Changes</span>
+                        <span class="submit-spinner" style="display:none;">
+                            <span class="spinner-border spinner-border-sm"></span> Saving…
+                        </span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- ---------- SECURITY ---------- -->
+            <section class="set-panel" id="panel-security" hidden>
+                <h2 class="set-panel-title">Change Password</h2>
+                <p class="set-panel-sub">Use a strong password you don't reuse anywhere else.</p>
+
+                <form class="set-form" data-action="password" novalidate>
+                    {% csrf_token %}
+
+                    <div class="set-field">
+                        <label for="curPw">Current password</label>
+                        <div class="set-input-wrap">
+                            <i class="bi bi-lock-fill"></i>
+                            <input type="password" id="curPw" name="current_password"
+                                   placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <div class="set-field">
+                        <label for="newPw">New password</label>
+                        <div class="set-input-wrap">
+                            <i class="bi bi-lock-fill"></i>
+                            <input type="password" id="newPw" name="new_password1"
+                                   placeholder="Create a strong password" required>
+                        </div>
+                        <div class="set-meter"><div class="set-meter-bar" id="meterBar"></div></div>
+                        <div class="set-meter-label" id="meterLabel"></div>
+                    </div>
+
+                    <div class="set-field">
+                        <label for="confPw">Confirm new password</label>
+                        <div class="set-input-wrap">
+                            <i class="bi bi-lock-fill"></i>
+                            <input type="password" id="confPw" name="new_password2"
+                                   placeholder="Repeat new password" required>
+                        </div>
+                        <div class="set-err" id="confErr"></div>
+                    </div>
+
+                    <button type="submit" class="set-btn set-btn-primary">
+                        <span class="submit-text">Update Password</span>
+                        <span class="submit-spinner" style="display:none;">
+                            <span class="spinner-border spinner-border-sm"></span> Updating…
+                        </span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- ---------- NOTIFICATIONS ---------- -->
+            <section class="set-panel" id="panel-notifications" hidden>
+                <h2 class="set-panel-title">Notifications</h2>
+                <p class="set-panel-sub">Toggles save automatically when flipped.</p>
+
+                <form class="set-form set-toggle-form" data-action="preferences">
+                    {% csrf_token %}
+
+                    <div class="set-row">
+                        <div class="set-row-text">
+                            <strong>Order updates</strong>
+                            <small>Get notified when your OTP arrives or an order expires.</small>
+                        </div>
+                        <label class="set-switch">
+                            <input type="checkbox" name="notify_order_updates"
+                                   {% if prefs.notify_order_updates %}checked{% endif %}>
+                            <span class="set-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="set-row">
+                        <div class="set-row-text">
+                            <strong>Promotions &amp; tips</strong>
+                            <small>Occasional deals and new service announcements.</small>
+                        </div>
+                        <label class="set-switch">
+                            <input type="checkbox" name="notify_promos"
+                                   {% if prefs.notify_promos %}checked{% endif %}>
+                            <span class="set-slider"></span>
+                        </label>
+                    </div>
+                </form>
+            </section>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/settings.js' %}"></script>
+{% endblock %}

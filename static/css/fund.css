@@ -1,0 +1,260 @@
+/* ============================================================
+   PabloExchange — Fund Wallet v3 (assigned account)
+   Theme-matched to dashboard
+   ============================================================ */
+
+:root {
+    --fw-green-950: #022c22;
+    --fw-green-900: #043d2b;
+    --fw-green-800: #065f46;
+    --fw-green-600: #059669;
+    --fw-green-100: #d1fae5;
+    --fw-green-50:  #ecfdf5;
+    --fw-gold:      #f0b429;
+    --fw-gold-dark: #d99e06;
+    --fw-ink:       #12211c;
+    --fw-muted:     #5b6f68;
+    --fw-white:     #ffffff;
+    --fw-border:    #e3ece8;
+    --fw-radius:    14px;
+    --fw-shadow:    0 4px 18px rgba(2, 44, 34, .08);
+
+    --grad-brand: linear-gradient(160deg, #022c22 0%, #043d2b 45%, #065f46 100%);
+    --grad-gold:  linear-gradient(135deg, #f0b429, #d99e06);
+}
+
+/* No underlines */
+.fund-head h2, .dash-viewall, .support-note a { text-decoration: none !important; }
+.dash-viewall:hover, .support-note a:hover { text-decoration: none !important; }
+
+/* ---------------- Page head ---------------- */
+.fund-head { margin-bottom: 18px; }
+.page-heading { font-weight: 800; font-size: 1.45rem; margin-bottom: 3px; }
+.page-sub { color: var(--fw-muted); font-size: .9rem; margin: 0; }
+
+/* ---------------- Account card ---------------- */
+.acct-card {
+    background: var(--grad-brand);
+    border-radius: var(--fw-radius);
+    box-shadow: 0 12px 30px rgba(2, 44, 34, .32);
+    padding: 24px;
+    color: var(--fw-white);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+.acct-card::after {
+    content: '';
+    position: absolute;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(240,180,41,.20) 0%, transparent 70%);
+    top: -70px; right: -50px;
+    pointer-events: none;
+}
+
+.acct-card-top { margin-bottom: 16px; position: relative; z-index: 1; }
+.acct-tag {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(240, 180, 41, .16);
+    border: 1px solid rgba(240, 180, 41, .4);
+    color: var(--fw-gold);
+    font-size: .76rem;
+    font-weight: 700;
+    border-radius: 100px;
+    padding: 5px 14px;
+}
+
+.acct-label {
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(209, 250, 229, .65);
+    margin-bottom: 6px;
+    position: relative;
+    z-index: 1;
+}
+
+.acct-number-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+}
+
+.acct-number-block { min-width: 0; }
+.acct-number {
+    display: block;
+    font-size: clamp(1.7rem, 6vw, 2.3rem);
+    font-weight: 700;
+    letter-spacing: 3px;
+    background: var(--grad-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+}
+.acct-bank-name {
+    display: block;
+    font-size: .85rem;
+    color: rgba(209, 250, 229, .8);
+    margin-top: 4px;
+}
+.bank-label { font-weight: 600; color: rgba(209, 250, 229, .55); }
+
+.acct-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--grad-gold);
+    color: var(--fw-green-950);
+    font-weight: 700;
+    font-size: .88rem;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 20px;
+    box-shadow: 0 4px 12px rgba(240, 180, 41, .35);
+    transition: filter .2s, transform .15s;
+    flex-shrink: 0;
+}
+.acct-copy:hover { color: var(--fw-green-950); filter: brightness(1.1); transform: translateY(-1px); }
+.acct-copy.copied { background: var(--fw-white); }
+
+.acct-meta {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, .12);
+    position: relative;
+    z-index: 1;
+}
+.acct-meta-label {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(209, 250, 229, .55);
+    margin: 0 0 3px;
+}
+.acct-meta-value {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--fw-white);
+    margin: 0;
+}
+
+/* ---------------- Steps card (uses .px-card from app.css) ---------------- */
+.fund-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 800;
+    font-size: .95rem;
+    margin-bottom: 6px;
+}
+.fund-card-head h5 {
+    font-weight: 800;
+    font-size: .95rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+.fund-card-head i { color: var(--fw-green-600); }
+
+.dash-viewall { font-size: .8rem; font-weight: 700; color: var(--fw-green-600); transition: color .2s; }
+.dash-viewall:hover { color: var(--fw-gold-dark); }
+
+.steps-wrap { margin-top: 8px; }
+.fund-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    padding: 12px 4px;
+}
+.fund-step + .fund-step { border-top: 1px solid #eef4f1; }
+
+.step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--grad-gold);
+    color: var(--fw-green-950);
+    font-weight: 800;
+    font-size: .82rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 3px 8px rgba(240, 180, 41, .3);
+}
+.step-title { font-weight: 700; font-size: .92rem; margin: 0 0 2px; }
+.step-text { color: var(--fw-muted); font-size: .83rem; margin: 0; }
+
+/* ---------------- Recent fundings rows ---------------- */
+.fund-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 6px;
+    border-radius: 10px;
+}
+.fund-row + .fund-row { border-top: 1px solid #eef4f1; }
+
+.fund-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .95rem;
+    flex-shrink: 0;
+}
+.fund-icon.tx-credit { background: var(--fw-green-100); color: var(--fw-green-800); }
+
+.fund-info { flex: 1; min-width: 0; }
+.fund-desc {
+    font-weight: 700;
+    font-size: .9rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.fund-date { color: var(--fw-muted); font-size: .77rem; margin: 0; }
+
+.fund-amount { color: var(--fw-green-600); font-size: .9rem; margin: 0 0 3px; }
+
+/* Empty state */
+.fund-empty { text-align: center; color: var(--fw-muted); padding: 26px 10px; font-size: .88rem; }
+.fund-empty i { font-size: 1.7rem; display: block; margin-bottom: 8px; color: #b8c8c1; }
+.fund-empty p { margin: 0; }
+
+/* ---------------- Support note ---------------- */
+.support-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 20px;
+    color: var(--fw-muted);
+    font-size: .83rem;
+}
+.support-note i { color: var(--fw-green-600); }
+.support-note a { font-weight: 700; color: var(--fw-green-600); }
+.support-note a:hover { color: var(--fw-gold-dark); }
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 575px) {
+    .acct-card { padding: 20px 16px; }
+    .acct-number-row { flex-direction: column; align-items: flex-start; }
+    .acct-copy { width: 100%; justify-content: center; }
+    .acct-meta { gap: 22px; }
+    .page-heading { font-size: 1.25rem; }
+}
