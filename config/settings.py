@@ -20,7 +20,7 @@ ALLOWED_HOSTS = ["pabloexchange.onrender.com", "localhost", "127.0.0.1"]
 # ← NEW: required by Django 4+ when requests come via https:// domain (fixes CSRF "origin not trusted" errors)
 CSRF_TRUSTED_ORIGINS = config(
     'CSRF_TRUSTED_ORIGINS',
-    default='https://pabloexchange.com,https://www.pabloexchange.com',
+    default='https://pabloexchange.onrender.com,https://pabloexchange.com,https://www.pabloexchange.com',
     cast=Csv(),
 )
 
