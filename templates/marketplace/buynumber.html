@@ -5,7 +5,7 @@
 {% block page_title %}Buy Number{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/buynumber.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/buynumber.css' %}?v=5">
 {% endblock %}
 
 {% block content %}
@@ -51,7 +51,7 @@
                 </select>
             </div>
 
-            <!-- SERVICE (populated by JS when a country is picked) -->
+            <!-- SERVICE (populated by JS with available services only) -->
             <div class="bn-group">
                 <label for="serviceSelect">Service</label>
                 <select class="bn-select" id="serviceSelect" name="service" required disabled>
@@ -158,5 +158,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/buynumber.js' %}?v=4"></script>
+<script src="{% static 'js/buynumber.js' %}?v=5"></script>
 {% endblock %}

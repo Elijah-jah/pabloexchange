@@ -38,27 +38,30 @@ def for_country(request, code):
 
 
 @login_required
-@require_POST
 def buy(request):
-    """POST: reserve a number for service + country.
-    Wallet is charged later, on OTP delivery."""
-    service_code = request.POST.get('service', '')
-    country_code = request.POST.get('country', '')
-    try:
-        order = reserve_number(request.user, service_code, country_code)
-    except Service.DoesNotExist:
-        messages.error(request, 'Unknown service.')
-        return redirect('marketplace')
-    except Country.DoesNotExist:
-        messages.error(request, 'Please select a valid country.')
-        return redirect('marketplace')
-    except PricingNotAvailable as e:
-        messages.error(request, str(e))
-        return redirect('marketplace')
-    except InsufficientFunds as e:
-        messages.error(request, str(e))
-        return redirect('wallet:fund')
-    return redirect('smsmarket:order_detail', pk=order.pk)
+    if request.method == 'POST':
+        service_code = request.POST.get('service')
+        country_code = request.POST.get('country')
+        server = request.POST.get('server', 'instantnums')
+        if server not in ('daisysms', 'instantnums'):
+            server = 'instantnums'
+        try:
+            order = reserve_number(request.user, service_code=service_code,
+                                   country_code=country_code, provider_name=server)
+        except PricingNotAvailable as e:
+            messages.error(request, str(e))
+            return redirect('smsmarket:buy')
+        except InsufficientFunds as e:
+            messages.error(request, str(e))
+            return redirect('wallet:deposit')   # or wherever your funding page is
+        return redirect('smsmarket:buy')        # the active orders section shows it
+    # GET: render the buy page
+    countries = Country.objects.filter(is_active=True)
+    active_orders = NumberOrder.objects.filter(user=request.user, status='active')
+    return render(request, 'smsmarket/buy_number.html', {
+        'countries': countries,
+        'active_orders': active_orders,
+    })
 
 
 @login_required

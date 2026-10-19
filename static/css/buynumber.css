@@ -1,5 +1,5 @@
 /* ============================================================
-   PabloExchange — Buy Number (InstantNums flow)
+   PabloExchange — Buy Number (InstantNums + DaisySMS flow)
    ============================================================ */
 
 :root {
@@ -89,7 +89,43 @@
     box-shadow: 0 0 0 4px rgba(5, 150, 105, .12);
     outline: none;
 }
-.bn-select:disabled { background-color: var(--bn-green-50); color: var(--bn-muted); cursor: not-allowed; }
+.bn-select:disabled {
+    background-color: var(--bn-green-50);
+    color: var(--bn-muted);
+    cursor: not-allowed;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3ab' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L2 5h12z'/%3E%3C/svg%3E");
+}
+
+/* ---------------- Server selector ---------------- */
+.bn-server-select {
+    font-weight: 700;
+    border-width: 2px;
+    border-color: var(--bn-green-600);
+    background-color: var(--bn-green-50);
+}
+.bn-server-hint {
+    margin: 6px 0 0;
+    font-size: .8rem;
+    color: var(--bn-muted);
+}
+.bn-server-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 20px;
+    padding: 0 7px;
+    border-radius: 100px;
+    background: var(--grad-brand);
+    color: var(--bn-gold);
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .5px;
+}
+.bn-server-tag--2 {
+    background: var(--grad-gold);
+    color: var(--bn-green-950);
+}
 
 /* Price box */
 .bn-price-box {
@@ -274,40 +310,4 @@
     .bn-session { padding: 15px 14px; }
     .bn-session-item { flex-wrap: wrap; }
     .bn-overlay-box { padding: 26px 22px; }
-}
-/* ---------------- Server selector ---------------- */
-.bn-server-select {
-    font-weight: 700;
-    border-width: 2px;
-    border-color: var(--bn-green-600);
-    background-color: var(--bn-green-50);
-}
-.bn-server-hint {
-    margin: 6px 0 0;
-    font-size: .8rem;
-    color: var(--bn-muted);
-}
-.bn-server-tag {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 26px;
-    height: 20px;
-    padding: 0 7px;
-    border-radius: 100px;
-    background: var(--grad-brand);
-    color: var(--bn-gold);
-    font-size: .68rem;
-    font-weight: 800;
-    letter-spacing: .5px;
-}
-.bn-server-tag--2 {
-    background: var(--grad-gold);
-    color: var(--bn-green-950);
-}
-.bn-select:disabled {
-    background-color: var(--bn-green-50);
-    color: var(--bn-muted);
-    cursor: not-allowed;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3ab' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L2 5h12z'/%3E%3C/svg%3E");
 }
