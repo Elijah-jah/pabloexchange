@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', function () {
         serverHint.textContent = server ? (SERVER_HINTS[server] || '') : '';
 
         if (!server) {
-            // No server picked: lock everything again
             countrySelect.value = '';
             countrySelect.disabled = true;
             resetServices('Select Server First');
@@ -69,7 +68,11 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch('/pricing/for-country/' + encodeURIComponent(code) + '/?server=' + encodeURIComponent(server))
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                var available = (data.services || []).filter(function (s) { return s.available; });
+                // Available = flag not explicitly false AND has a price.
+                // (Some API responses omit the 'available' key entirely.)
+                var available = (data.services || []).filter(function (s) {
+                    return s.available !== false && s.price;
+                });
 
                 if (!available.length) {
                     resetServices('No services available for this country yet');
@@ -89,11 +92,13 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
+    // ---------- Service selected → show price ----------
     serviceSelect.addEventListener('change', function () {
         var opt = this.options[this.selectedIndex];
         priceDisplay.textContent = naira(opt ? opt.dataset.price : 0);
     });
 
+    // ---------- Submit → show overlay ----------
     requestForm.addEventListener('submit', function (e) {
         var opt = serviceSelect.options[serviceSelect.selectedIndex];
         if (!serverSelect.value || !countrySelect.value || !opt || !opt.value) {
@@ -104,6 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
         requestBtn.disabled = true;
     });
 
+    // ---------- Copy buttons ----------
     document.querySelectorAll('.bn-copy-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var value = (btn.dataset.copy || '').trim();
@@ -126,6 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
         ta.remove(); done();
     }
 
+    // ---------- Countdown timers ----------
     document.querySelectorAll('.bn-timer').forEach(function (el) {
         var expires = new Date(el.dataset.expires).getTime();
         if (isNaN(expires)) return;
@@ -140,6 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var iv = setInterval(tick, 1000);
     });
 
+    // ---------- Cancel ----------
     document.querySelectorAll('.bn-cancel-form').forEach(function (form) {
         form.addEventListener('submit', function (e) {
             if (!confirm('Cancel this order? You will not be charged.')) {
@@ -151,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // ---------- Auto-refresh while waiting for SMS ----------
     if (document.querySelector('.bn-waiting')) {
         setTimeout(function () { location.reload(); }, 8000);
     }
