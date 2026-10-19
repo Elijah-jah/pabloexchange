@@ -1,0 +1,452 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Marketplace{% endblock %}
+{% block page_title %}Marketplace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/services.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEAD -->
+<div class="logs-head">
+    <h2 class="page-heading">Account Logs Shop</h2>
+    <p class="page-sub">Verified account logs delivered instantly after payment.</p>
+</div>
+
+<!-- CATEGORY PILLS -->
+<div class="cat-bar" id="catBar">
+    <button class="cat-pill active" data-cat="all">All</button>
+    {% for cat in categories %}
+    <button class="cat-pill" data-cat="{{ cat.id }}">{{ cat.name }}</button>
+    {% endfor %}
+</div>
+
+<!-- SEARCH -->
+<div class="logs-tools">
+    <div class="logs-search-wrap">
+        <i class="bi bi-search"></i>
+        <input type="text" id="logSearch" placeholder="Search products..." value="{{ query|default:'' }}" autocomplete="off">
+    </div>
+</div>
+
+<!-- PRODUCT SECTIONS (grouped by subcategory) -->
+<div id="sectionsWrap">
+    {% for section in sections %}
+    <div class="prod-section" data-section="{{ section.key }}">
+
+        <div class="sec-head">
+            <span class="sec-title">{{ section.name }}</span>
+            {% if section.products|length > 4 %}
+            <button class="see-more-btn" data-see-more>
+                <span class="sm-label">See More</span>
+                <i class="bi bi-chevron-right sm-icon"></i>
+            </button>
+            {% endif %}
+        </div>
+
+        <div class="prod-grid">
+            {% for product in section.products %}
+            <div class="prod-card" data-cat="{{ product.category_id|default:'' }}"
+                 data-name="{{ product.title|lower }}"
+                 data-id="{{ product.id }}" data-price="{{ product.price }}" data-stock="{{ product.stock }}"
+                 data-desc="{{ product.description|default:''|lower }}"
+                 data-fulldesc="{{ product.description|default:'' }}"
+                 data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
+                 data-format="{{ product.format_labels|default:'UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL' }}">
+
+                <div class="prod-top">
+                    <span class="prod-cat">{{ section.name }}</span>
+                    <span class="prod-stock {% if product.stock == 0 %}out{% endif %}">
+                        {% if product.stock == 0 %}Sold out{% else %}{{ product.stock }} in stock{% endif %}
+                    </span>
+                </div>
+
+                {% if product.image %}
+                <div class="prod-img-wrap">
+                    <img class="prod-img" src="{{ product.image.url }}" alt="{{ product.title }}" loading="lazy">
+                </div>
+                {% endif %}
+
+                <h6 class="prod-name">{{ product.title }}</h6>
+                <p class="prod-desc">{{ product.description|default:''|truncatechars:80 }}</p>
+                <div class="prod-foot">
+                    <span class="prod-price mono">&#8358;{{ product.price|floatformat:2 }}</span>
+                    <button class="prod-buy" {% if product.stock == 0 %}disabled{% endif %}>
+                        {% if product.stock == 0 %}Sold out{% else %}<i class="bi bi-bag-plus"></i>Buy{% endif %}
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+    {% empty %}
+    <p class="flow-empty">No products available yet. Check back soon.</p>
+    {% endfor %}
+</div>
+
+<p class="flow-empty" id="prodEmpty" hidden>No products match your search.</p>
+
+<!-- ================= CARD 1: CONFIRM PURCHASE ================= -->
+<div class="mp-overlay" id="buyModal" hidden>
+    <div class="log-modal" role="dialog" aria-modal="true">
+
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+        <div class="lm-icon" id="modalIcon"><i class="bi bi-question-lg"></i></div>
+
+        <h5 class="lm-title">Confirm Purchase</h5>
+        <p class="lm-sub">Are you sure you want to buy this item?</p>
+
+        <h6 class="lm-product" id="modalProductName"></h6>
+
+        <div class="lm-desc-wrap">
+            <p class="lm-desc" id="modalProductDesc"></p>
+        </div>
+
+        <div class="lm-price mono" id="modalPrice">&#8358;0.00</div>
+
+        <div class="lm-format">
+            <span class="lm-format-label">Format</span>
+            <span class="lm-format-val mono" id="modalFormatLabel">UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL</span>
+        </div>
+
+        <div class="lm-actions">
+            <button type="button" class="lm-btn lm-btn-primary" id="modalYesBtn">Yes, Continue</button>
+            <button type="button" class="lm-btn lm-btn-ghost" id="modalNoBtn">No, Cancel</button>
+        </div>
+
+        <p class="log-modal-error" id="modalError" hidden></p>
+
+    </div>
+</div>
+
+<!-- ================= CARD 2: LOG DETAILS ================= -->
+<div class="mp-overlay" id="logModal" hidden>
+    <div class="log-modal" role="dialog" aria-modal="true">
+
+        <div class="lm-icon lm-icon-check"><i class="bi bi-check-lg"></i></div>
+
+        <h5 class="lm-title">Purchase Successful!</h5>
+
+        <span class="lm-order mono" id="logOrderId" hidden></span>
+
+        <p class="lm-save">Save these credentials immediately. They are also saved in My&nbsp;Orders.</p>
+
+        <div class="lm-format">
+            <span class="lm-format-label">Format</span>
+            <span class="lm-format-val mono" id="logFormatLabel">UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL</span>
+        </div>
+
+        <p class="creds-label">Your login details</p>
+
+        <div class="lm-cred-box" id="logCredBox">
+            <span class="lm-cred-text mono" id="logCredsText"></span>
+            <button type="button" class="lm-copy-btn" id="logCopyBtn">
+                <i class="bi bi-clipboard"></i><span>Copy</span>
+            </button>
+        </div>
+
+        <button type="button" class="lm-done" id="logDoneBtn">
+            <i class="bi bi-check2"></i> Got it, Thanks
+        </button>
+
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="lm-toast" id="lmToast" hidden>Copied!</div>
+
+<script>
+(function () {
+    "use strict";
+
+
+    var purchaseBaseUrl = "{% url 'purchase_log' 0 %}".replace(/0\/$/, "");
+    var walletBalance = parseFloat("{{ user_wallet.balance|default:0 }}");
+
+    /* ---------- ELEMENTS ---------- */
+    var pills = document.querySelectorAll(".cat-pill");
+    var searchInput = document.getElementById("logSearch");
+    var prodEmpty = document.getElementById("prodEmpty");
+    var sections = document.querySelectorAll(".prod-section");
+    var allCards = Array.prototype.slice.call(document.querySelectorAll(".prod-card"));
+
+    var buyModal = document.getElementById("buyModal");
+    var logModal = document.getElementById("logModal");
+    var modalIcon = document.getElementById("modalIcon");
+    var modalProductName = document.getElementById("modalProductName");
+    var modalProductDesc = document.getElementById("modalProductDesc");
+    var modalPrice = document.getElementById("modalPrice");
+    var modalFormatLabel = document.getElementById("modalFormatLabel");
+    var modalYesBtn = document.getElementById("modalYesBtn");
+    var modalNoBtn = document.getElementById("modalNoBtn");
+    var modalError = document.getElementById("modalError");
+
+    var logOrderId = document.getElementById("logOrderId");
+    var logFormatLabel = document.getElementById("logFormatLabel");
+    var logCredsText = document.getElementById("logCredsText");
+    var logCopyBtn = document.getElementById("logCopyBtn");
+    var logDoneBtn = document.getElementById("logDoneBtn");
+    var logCredBox = document.getElementById("logCredBox");
+
+    var toast = document.getElementById("lmToast");
+    var toastTimer = null;
+
+    var currentCard = null;
+
+    /* ---------- TOAST ---------- */
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toast.hidden = true; }, 1800);
+    }
+
+    /* ---------- MODALS ---------- */
+    function open(el) { el.hidden = false; document.body.style.overflow = "hidden"; }
+    function close(el) { el.hidden = true; document.body.style.overflow = ""; }
+
+    [buyModal, logModal].forEach(function (m) {
+        m.addEventListener("click", function (e) { if (e.target === m) close(m); });
+    });
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") { if (!buyModal.hidden) close(buyModal); if (!logModal.hidden) close(logModal); }
+    });
+
+    function naira(v) {
+        return "\u20A6" + parseFloat(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function escapeAttr(s) {
+        return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+    }
+
+    /* ---------- FILTER + SEE MORE ---------- */
+    var SEE_MORE_COUNT = 4;
+
+    function applySeeMore(sec) {
+        var expanded = sec.classList.contains("expanded");
+        var visibleIndex = 0;
+        sec.querySelectorAll(".prod-card").forEach(function (card) {
+            if (card.classList.contains("filtered-out")) return;
+            visibleIndex++;
+            card.classList.toggle("sm-hidden", !expanded && visibleIndex > SEE_MORE_COUNT);
+        });
+        var btn = sec.querySelector("[data-see-more]");
+        if (btn) {
+            var label = btn.querySelector(".sm-label");
+            var icon = btn.querySelector(".sm-icon");
+            if (label) label.textContent = expanded ? "See Less" : "See More";
+            if (icon) icon.className = "bi " + (expanded ? "bi-chevron-up" : "bi-chevron-right") + " sm-icon";
+        }
+    }
+
+    function applyFilter() {
+        var term = searchInput.value.toLowerCase().trim();
+        var activeCat = document.querySelector(".cat-pill.active");
+        var cat = activeCat ? activeCat.getAttribute("data-cat") : "all";
+
+        allCards.forEach(function (card) {
+            var matchCat = (cat === "all" || card.getAttribute("data-cat") === cat);
+            var matchTerm = !term ||
+                (card.getAttribute("data-name") || "").indexOf(term) !== -1 ||
+                (card.getAttribute("data-desc") || "").indexOf(term) !== -1;
+            card.classList.toggle("filtered-out", !(matchCat && matchTerm));
+        });
+
+        var totalVisible = 0;
+        sections.forEach(function (sec) {
+            var vis = 0;
+            sec.querySelectorAll(".prod-card").forEach(function (card) {
+                if (!card.classList.contains("filtered-out")) vis++;
+            });
+            sec.classList.toggle("section-hidden", vis === 0);
+            if (term && vis > 0) sec.classList.add("expanded");
+            applySeeMore(sec);
+            totalVisible += vis;
+        });
+
+        prodEmpty.hidden = totalVisible !== 0;
+    }
+
+    pills.forEach(function (pill) {
+        pill.addEventListener("click", function () {
+            pills.forEach(function (p) { p.classList.remove("active"); });
+            pill.classList.add("active");
+            applyFilter();
+        });
+    });
+
+    searchInput.addEventListener("input", applyFilter);
+
+    sections.forEach(function (sec) {
+        var btn = sec.querySelector("[data-see-more]");
+        if (btn) {
+            btn.addEventListener("click", function () {
+                sec.classList.toggle("expanded");
+                applySeeMore(sec);
+            });
+        }
+    });
+
+    /* ---------- CARD CLICK -> CONFIRM ---------- */
+    allCards.forEach(function (card) {
+        card.addEventListener("click", function () {
+            currentCard = card;
+
+            modalProductName.textContent = card.querySelector(".prod-name").textContent;
+            modalProductDesc.textContent = card.getAttribute("data-fulldesc") || "No description for this product.";
+            modalPrice.textContent = naira(card.getAttribute("data-price"));
+            modalFormatLabel.textContent = card.getAttribute("data-format") || "UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL";
+            modalError.hidden = true;
+
+            var img = card.getAttribute("data-image");
+            if (img) {
+                modalIcon.classList.remove("lm-icon-check");
+                modalIcon.innerHTML = '<img src="' + escapeAttr(img) + '" alt="" class="lm-icon-img">';
+            } else {
+                modalIcon.innerHTML = '<i class="bi bi-question-lg"></i>';
+            }
+
+            var stock = parseInt(card.getAttribute("data-stock") || "0", 10);
+            modalYesBtn.disabled = stock <= 0;
+            modalYesBtn.textContent = stock > 0 ? "Yes, Continue" : "Sold Out";
+
+            open(buyModal);
+        });
+    });
+
+    modalNoBtn.addEventListener("click", function () { close(buyModal); });
+
+    modalYesBtn.addEventListener("click", function () {
+        if (!currentCard || modalYesBtn.disabled) { return; }
+
+        var price = parseFloat(currentCard.getAttribute("data-price") || "0");
+
+        if (walletBalance > 0 && price > walletBalance) {
+            modalError.textContent = "Insufficient wallet balance. Please fund your wallet and try again.";
+            modalError.hidden = false;
+            return;
+        }
+
+        var csrf = document.querySelector("input[name=csrfmiddlewaretoken]").value;
+        var productId = currentCard.getAttribute("data-id");
+
+        modalError.hidden = true;
+        modalYesBtn.disabled = true;
+        modalYesBtn.classList.add("paying");
+        modalYesBtn.textContent = "Processing...";
+
+        fetch(purchaseBaseUrl + productId + "/", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrf,
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.success) {
+                close(buyModal);
+
+                if (data.order_id) { logOrderId.textContent = data.order_id; logOrderId.hidden = false; }
+                else { logOrderId.hidden = true; }
+
+                if (data.format_label) logFormatLabel.textContent = data.format_label;
+
+                var creds = data.creds
+                    || (data.uid ? data.uid + ":" + (data.password || "") : "")
+                    || (data.username ? data.username + ":" + (data.password || "") : "");
+                logCredsText.textContent = creds || "\u2014";
+
+                if (data.new_balance) {
+                    walletBalance = parseFloat(data.new_balance);
+                    var txt = naira(walletBalance);
+                    document.querySelectorAll(".wallet-amount, .wallet-chip .mono")
+                        .forEach(function (el) { el.textContent = txt; });
+                }
+
+                /* update stock on the card */
+                var stockEl = currentCard.querySelector(".prod-stock");
+                var stock = parseInt(currentCard.getAttribute("data-stock") || "0", 10);
+                if (stockEl && stock > 0) {
+                    if (stock > 1) {
+                        stockEl.textContent = (stock - 1) + " in stock";
+                        currentCard.setAttribute("data-stock", String(stock - 1));
+                    } else {
+                        stockEl.textContent = "Sold out";
+                        stockEl.classList.add("out");
+                        currentCard.setAttribute("data-stock", "0");
+                        var b = currentCard.querySelector(".prod-buy");
+                        if (b) { b.disabled = true; b.textContent = "Sold out"; }
+                    }
+                }
+
+                open(logModal);
+            } else {
+                modalError.textContent = data.error || "Purchase failed. Please try again.";
+                modalError.hidden = false;
+                modalYesBtn.disabled = false;
+            }
+        })
+        .catch(function () {
+            modalError.textContent = "Network error. Please try again.";
+            modalError.hidden = false;
+            modalYesBtn.disabled = false;
+        })
+        .finally(function () {
+            modalYesBtn.classList.remove("paying");
+            if (!modalYesBtn.disabled) modalYesBtn.textContent = "Yes, Continue";
+            else if (modalYesBtn.textContent === "Processing...") modalYesBtn.textContent = "Yes, Continue";
+        });
+    });
+
+    /* ---------- COPY + DONE ---------- */
+    logCopyBtn.addEventListener("click", function () {
+        var text = logCredsText.textContent;
+        if (!text || text === "\u2014") return;
+
+        function done() {
+            showToast("Copied to clipboard");
+            logCopyBtn.classList.add("copied");
+            logCredBox.classList.add("flash");
+            var icon = logCopyBtn.querySelector("i");
+            var label = logCopyBtn.querySelector("span");
+            if (icon) icon.className = "bi bi-check2";
+            if (label) label.textContent = "Copied";
+            setTimeout(function () {
+                logCopyBtn.classList.remove("copied");
+                logCredBox.classList.remove("flash");
+                if (icon) icon.className = "bi bi-clipboard";
+                if (label) label.textContent = "Copy";
+            }, 1500);
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+        } else { fallback(); }
+
+        function fallback() {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand("copy"); done(); } catch (e) { showToast("Copy failed"); }
+            document.body.removeChild(ta);
+        }
+    });
+
+    logDoneBtn.addEventListener("click", function () { close(logModal); });
+
+    /* ---------- INIT ---------- */
+    applyFilter();
+})();
+</script>
+
+{% endblock %}
