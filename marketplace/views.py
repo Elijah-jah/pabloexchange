@@ -31,7 +31,7 @@ def marketplace_logs(request):
     for sub in subs:
         groups = (LogGroup.objects
                   .filter(subcategory=sub, is_active=True)
-                  .annotate(actual_stock=Count('items', filter=Q(items__is_sold=False)))
+                  .annotate(_actual_stock=Count('items', filter=Q(items__is_sold=False)))
                   .order_by('name'))
         products = [{
             'id': g.id,
@@ -39,7 +39,7 @@ def marketplace_logs(request):
             'price': g.price,
             # Authoritative stock = unsold credential lines; fall back to
             # the stored counter only if it is somehow lower.
-            'stock': max(g.actual_stock, g.stock),
+            'stock': max(g._actual_stock, g.stock),
             'description': g.description,
             'image': g.image,
             'format_labels': g.format_labels,
