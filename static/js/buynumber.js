@@ -64,19 +64,18 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch('/pricing/for-country/' + encodeURIComponent(code) + '/?server=' + encodeURIComponent(server))
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                if (!data.services.length) {
-                    resetServices('No services for this country yet');
+                // Only show AVAILABLE services — unavailable ones are hidden entirely
+                var available = (data.services || []).filter(function (s) { return s.available; });
+
+                if (!available.length) {
+                    resetServices('No services available for this country yet');
                     return;
                 }
+
                 var opts = ['<option value="">Select Service</option>'];
-                data.services.forEach(function (s) {
-                    if (s.available) {
-                        opts.push('<option value="' + s.code + '" data-price="' + s.price + '">'
-                                  + s.name + '</option>');
-                    } else {
-                        opts.push('<option value="' + s.code + '" data-available="0" disabled>'
-                                  + s.name + ' — Unavailable</option>');
-                    }
+                available.forEach(function (s) {
+                    opts.push('<option value="' + s.code + '" data-price="' + s.price + '">'
+                              + s.name + '</option>');
                 });
                 serviceSelect.innerHTML = opts.join('');
                 serviceSelect.disabled = false;
@@ -92,10 +91,10 @@ document.addEventListener('DOMContentLoaded', function () {
         priceDisplay.textContent = naira(opt ? opt.dataset.price : 0);
     });
 
-    // ---------- Submit → block unavailable, then show overlay ----------
+    // ---------- Submit → show overlay ----------
     requestForm.addEventListener('submit', function (e) {
         var opt = serviceSelect.options[serviceSelect.selectedIndex];
-        if (!opt || !opt.value || opt.dataset.available === '0') {
+        if (!opt || !opt.value) {
             e.preventDefault();
             return;
         }
