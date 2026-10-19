@@ -8,10 +8,10 @@ from smsmarket.models import Service
 from smsmarket.providers import get_provider
 
 NO_STOCK_MSG = "No numbers are currently available"
+PROVIDER = 'instantnums'
 
 
 def _normalize_catalog(raw):
-    """InstantNums wraps lists: {'success': 1, 'countries': [...]} etc."""
     if isinstance(raw, list):
         return [x for x in raw if isinstance(x, dict)]
     if isinstance(raw, dict):
@@ -39,7 +39,6 @@ def _iso_for(c):
 
 
 def _extract_price(data):
-    """Confirmed shape: {'success': 1, 'price_usd': 1.6, 'available': 43178}"""
     if not isinstance(data, dict):
         return None, None
     price = data.get("price_usd", data.get("price", data.get("cost")))
@@ -56,23 +55,21 @@ def _extract_price(data):
 
 
 class Command(BaseCommand):
-    help = ("Sync InstantNums catalog + prices. One API call per service/country "
-            "(price response includes stock). Default: USA only. "
-            "Rate limit is 1000 calls/hour -- use --countries and --limit to chunk.")
+    help = ("Sync InstantNums (Server 2) catalog + prices. "
+            "Rate limit is 1000 calls/hour — chunk with --countries and --delay.")
 
     def add_arguments(self, parser):
         parser.add_argument("--countries", default="US",
                             help="Comma-separated ISO codes, e.g. US,GB,DE. 'ALL' = every active country.")
         parser.add_argument("--limit", type=int, default=0,
-                            help="Max services to process per country this run (0 = all). "
-                                 "Re-runs are safe: rows update in place.")
+                            help="Max services per country this run (0 = all). Re-runs update in place.")
         parser.add_argument("--delay", type=float, default=1.0,
-                            help="Seconds between API calls (default 1.0). Use ~3.6 to stay under 1000/hour.")
+                            help="Seconds between API calls. Use ~3.6 to stay under 1000/hour.")
         parser.add_argument("--catalog-only", action="store_true",
                             help="Only sync countries/services lists, skip pricing.")
 
     def handle(self, *args, **options):
-        p = get_provider()
+        p = get_provider(PROVIDER)
 
         # ---------------- Countries + services catalog ----------------
         countries = _normalize_catalog(p.get_countries())
@@ -94,9 +91,11 @@ class Command(BaseCommand):
             if not slug:
                 continue
             _, created = Service.objects.get_or_create(
-                code=slug, defaults={"name": s.get("name", slug), "is_active": True})
+                provider=PROVIDER, code=slug,
+                defaults={"name": s.get("name", slug), "is_active": True})
             s_created += created
-        self.stdout.write(f"Services: {s_created} new ({Service.objects.count()} total in DB)")
+        self.stdout.write(f"Services: {s_created} new "
+                          f"({Service.objects.filter(provider=PROVIDER).count()} total for Server 2)")
 
         if options["catalog_only"]:
             self.stdout.write(self.style.SUCCESS("Catalog sync complete."))
@@ -124,7 +123,7 @@ class Command(BaseCommand):
 
     def _sync_country(self, p, config, country, limit, delay):
         created = updated = no_stock = failed = 0
-        services = Service.objects.filter(is_active=True).order_by("code")
+        services = Service.objects.filter(provider=PROVIDER, is_active=True).order_by("code")
         if limit:
             services = services[:limit]
 
@@ -133,9 +132,9 @@ class Command(BaseCommand):
                 data = p.get_price(svc.code, country.code)
             except Exception as e:
                 if NO_STOCK_MSG in str(e):
-                    # Provider has no numbers right now -> mark unavailable if row exists
                     no_stock += 1
-                    Pricing.objects.filter(service=svc, country=country).update(is_available=False)
+                    Pricing.objects.filter(provider=PROVIDER, service=svc, country=country) \
+                                   .update(is_available=False)
                 else:
                     failed += 1
                     self.stdout.write(self.style.WARNING(f"  ! {svc.name}/{country.code}: {e}"))
@@ -151,7 +150,7 @@ class Command(BaseCommand):
                 continue
 
             pricing, was_created = Pricing.objects.get_or_create(
-                service=svc, country=country,
+                provider=PROVIDER, service=svc, country=country,
                 defaults={"cost_usd": cost,
                           "sell_price": config.price_for(cost),
                           "is_available": bool(stock)},
