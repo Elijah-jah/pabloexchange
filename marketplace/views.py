@@ -88,8 +88,11 @@ def purchase_log(request, pk):
                .filter(user=request.user, status='waiting')
                .aggregate(total=Sum('price'))['total'] or 0)
     if not can_afford(request.user, pending + group.price):
+        balance = getattr(getattr(request.user, 'wallet', None), 'balance', 0) or 0
         return JsonResponse({'success': False,
-                             'error': 'Insufficient wallet balance. Please fund your wallet.'},
+                             'error': ('Insufficient funds. You need \u20A6'
+                                       f'{pending + group.price:,.2f} (including reserved orders) '
+                                       f'but your balance is \u20A6{balance:,.2f}.')},
                             status=400)
 
     # Duplicate-buy guard: same group reserved in the last 10 seconds
@@ -105,13 +108,15 @@ def purchase_log(request, pk):
         user=request.user,
         group=group,
         group_name=group.name,
+        description=group.description or '',
         price=group.price,
         credentials='',
         status='waiting',
     )
     logger.info('Log order %s reserved (user %s, group %s)',
-                order.id, request.user.id, group.id)
-    return JsonResponse({'success': True, 'order_id': order.id})
+                order.order_id, request.user.id, group.id)
+    return JsonResponse({'success': True, 'order_id': order.id,
+                         'order_ref': order.order_id})
 
 
 @login_required
@@ -128,6 +133,7 @@ def deliver_log(request, pk):
 
     if order.status == 'completed' and order.credentials:
         return JsonResponse({'success': True, 'status': 'completed',
+                             'order_ref': order.order_id,
                              'creds': order.credentials,
                              'format_label': order.group.format_labels if order.group else ''})
 
@@ -158,10 +164,12 @@ def deliver_log(request, pk):
 
     # Debit only now - creds are guaranteed in hand
     if not can_afford(request.user, order.price):
+        balance = getattr(getattr(request.user, 'wallet', None), 'balance', 0) or 0
         order.status = 'cancelled'
         order.save(update_fields=['status'])
         return JsonResponse({'success': False, 'status': 'insufficient_funds',
-                             'error': 'Insufficient wallet balance. Please fund your wallet.'},
+                             'error': (f'Insufficient funds. This order costs \u20A6{order.price:,.2f} '
+                                       f'but your balance is \u20A6{balance:,.2f}.')},
                             status=400)
 
     debit(request.user, order.price,
@@ -177,13 +185,15 @@ def deliver_log(request, pk):
         group.is_active = False
     group.save(update_fields=['stock', 'is_active'])
 
+    order.item = item                    # DB-enforced: one item, one sale
     order.credentials = item.content
     order.status = 'completed'
-    order.save(update_fields=['credentials', 'status'])
+    order.save(update_fields=['item', 'credentials', 'status'])
 
     logger.info('Log order %s delivered (user %s, group %s)',
-                order.id, request.user.id, group.id)
+                order.order_id, request.user.id, group.id)
     return JsonResponse({'success': True, 'status': 'completed',
+                         'order_ref': order.order_id,
                          'creds': order.credentials,
                          'format_label': group.format_labels})
 

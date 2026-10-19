@@ -295,10 +295,10 @@
     });
 
     /* ---------- RESERVE -> DELIVER FLOW ---------- */
-    function showCredsModal(orderId, creds, formatLabel) {
+    function showCredsModal(orderRef, creds, formatLabel) {
         close(buyModal);
 
-        logOrderId.textContent = orderId;
+        logOrderId.textContent = orderRef;
         logOrderId.hidden = false;
         if (formatLabel) logFormatLabel.textContent = formatLabel;
         logCredsText.textContent = creds || "\u2014";
@@ -322,18 +322,18 @@
         open(logModal);
     }
 
-    function pollDeliver(orderId, attempts) {
+    function pollDeliver(orderId, orderRef, attempts) {
         fetch(deliverBaseUrl + orderId + "/", {
             headers: { "X-Requested-With": "XMLHttpRequest" }
         })
         .then(function (r) { return r.json(); })
         .then(function (d) {
             if (d.status === "completed" && d.creds) {
-                showCredsModal(orderId, d.creds, d.format_label);
+                showCredsModal(d.order_ref || orderRef, d.creds, d.format_label);
                 return;
             }
             if (d.status === "waiting" && attempts < 30) {
-                setTimeout(function () { pollDeliver(orderId, attempts + 1); }, 1500);
+                setTimeout(function () { pollDeliver(orderId, orderRef, attempts + 1); }, 1500);
                 return;
             }
             modalError.textContent = (d && d.error) || "Delivery failed. If you were charged, contact support.";
@@ -343,7 +343,7 @@
         })
         .catch(function () {
             if (attempts < 30) {
-                setTimeout(function () { pollDeliver(orderId, attempts + 1); }, 3000);
+                setTimeout(function () { pollDeliver(orderId, orderRef, attempts + 1); }, 3000);
             } else {
                 modalError.textContent = "Network error while delivering. Contact support.";
                 modalError.hidden = false;
@@ -413,7 +413,7 @@
             if (data.success && data.order_id) {
                 /* Reserved - now poll the deliver endpoint until creds arrive */
                 modalYesBtn.textContent = "Processing...";
-                pollDeliver(data.order_id, 0);
+                pollDeliver(data.order_id, data.order_ref || data.order_id, 0);
                 return;
             }
             modalError.textContent = (data && data.error) || "Purchase failed. Please try again.";
@@ -477,3 +477,4 @@
 </script>
 
 {% endblock %}
+PS C:\Users\user\OneDrive\Desktop\Pabloexchange> 

@@ -1,25 +1,20 @@
 from django.conf import settings
-from django.db import models
-from django.utils import timezone
+from django.db import models, transaction
 
 
 class LogCategory(models.Model):
-    """Top level, e.g. 'Social', 'Gaming', 'Email'."""
     name = models.CharField(max_length=100, unique=True)
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['order', 'name']
-        verbose_name_plural = 'Log categories'
 
     def __str__(self):
         return self.name
 
 
 class LogSubCategory(models.Model):
-    """e.g. under Social: 'Facebook', 'Instagram'.
-    Each subcategory becomes a section on the shop page."""
     category = models.ForeignKey(LogCategory, on_delete=models.CASCADE,
                                  related_name='subcategories')
     name = models.CharField(max_length=100)
@@ -28,34 +23,32 @@ class LogSubCategory(models.Model):
 
     class Meta:
         ordering = ['order', 'name']
-        unique_together = ('category', 'name')
 
     def __str__(self):
-        return f'{self.category.name} / {self.name}'
+        return f'{self.category.name} — {self.name}'
 
 
 class LogGroup(models.Model):
-    """THE PRODUCT CARD. Carries everything the shop shows:
-    title (name), price, stock, description, image, format hint."""
+    """The product card — 'United States Facebook', etc."""
     subcategory = models.ForeignKey(LogSubCategory, on_delete=models.CASCADE,
                                     related_name='groups')
-    name = models.CharField(max_length=150)              # e.g. 'Facebook Aged 2018 | Email included'
-    description = models.TextField(blank=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    stock = models.PositiveIntegerField(default=0)       # = unsold LogItem count
-    image = models.ImageField(upload_to='log_groups/', blank=True, null=True)
+    name = models.CharField(max_length=150)
+    description = models.TextField(blank=True, default='')
     format_labels = models.CharField(
-        max_length=200, blank=True,
-        default='UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL')
+        max_length=255,
+        default='UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL',
+        help_text='Pipe-separated format shown on the buy card')
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.PositiveIntegerField(default=0)
+    image = models.ImageField(upload_to='log_groups/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['name']
-        unique_together = ('subcategory', 'name')
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f'{self.name} (₦{self.price}, {self.stock} left)'
+        return self.name
 
     @property
     def actual_stock(self):
@@ -63,19 +56,32 @@ class LogGroup(models.Model):
 
 
 class LogItem(models.Model):
-    """ONE credential unit of a group — one row = one sale.
-    Add rows to restock. Sold rows keep the history."""
-    group = models.ForeignKey(LogGroup, on_delete=models.CASCADE,
-                              related_name='items')
-    content = models.TextField(help_text='One credential line, e.g. uid:pass:email:2fa:recovery')
+    """One credential line — restock by adding rows in the admin."""
+    group = models.ForeignKey(LogGroup, on_delete=models.CASCADE, related_name='items')
+    content = models.TextField(
+        help_text='One credential line, e.g. uid:pass:email:2fa:recovery')
     is_sold = models.BooleanField(default=False)
-    sold_at = models.DateTimeField(null=True, blank=True)
+    sold_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['id']
 
     def __str__(self):
-        return f'{self.group.name} — {"SOLD" if self.is_sold else "in stock"}'
+        return f'{self.group.name} — {self.content[:40]}'
+
+
+class LogOrderCounter(models.Model):
+    """Atomic counter for PLOG order IDs."""
+    last_number = models.PositiveIntegerField(default=1000)
+
+    @classmethod
+    def get_next(cls):
+        with transaction.atomic():
+            counter, _ = cls.objects.select_for_update().get_or_create(pk=1)
+            counter.last_number += 1
+            counter.save()
+            return counter.last_number
 
 
 class LogOrder(models.Model):
@@ -95,7 +101,13 @@ class LogOrder(models.Model):
                              related_name='log_orders')
     group = models.ForeignKey(LogGroup, on_delete=models.SET_NULL,
                               null=True, blank=True, related_name='orders')
+    item = models.OneToOneField(LogItem, on_delete=models.SET_NULL,
+                                null=True, blank=True, related_name='order',
+                                help_text='The exact cred line delivered — one item can only ever be sold once')
+    order_id = models.CharField(max_length=20, unique=True, editable=False,
+                                blank=True)
     group_name = models.CharField(max_length=150)
+    description = models.TextField(blank=True, default='')
     price = models.DecimalField(max_digits=10, decimal_places=2)
     credentials = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='waiting')
@@ -104,5 +116,10 @@ class LogOrder(models.Model):
     class Meta:
         ordering = ['-created_at']
 
+    def save(self, *args, **kwargs):
+        if not self.order_id:
+            self.order_id = f'PLOG{LogOrderCounter.get_next()}'
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f'{self.group_name} — {self.user} — ₦{self.price} [{self.status}]'
+        return f'{self.order_id} — {self.group_name} — ₦{self.price} [{self.status}]'
