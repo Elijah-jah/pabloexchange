@@ -52,12 +52,21 @@
             <i class="bi bi-phone"></i><span>Buy Number</span>
         </a>
 
+
+        <a href="{% url 'marketplace' %}"
+           class="side-link {% if request.resolver_match.url_name == 'marketplace' %}active{% endif %}">
+            <i class="bi bi-shop"></i><span>Marketplace</span>
+        </a>
+
         <p class="sidebar-label mt-3">History</p>
 
         <a href="{% url 'smsmarket:my_purchases' %}"
            class="side-link {% if request.resolver_match.url_name == 'my_purchases' %}active{% endif %}">
             <i class="bi bi-bag-check"></i><span>My Purchases</span>
         </a>
+
+        <!-- NEW: Marketplace (buy logs) -->
+        
 
         <a href="{% url 'wallet:transactions' %}"
            class="side-link {% if request.resolver_match.url_name == 'transactions' %}active{% endif %}">
@@ -120,11 +129,19 @@
                 <i class="bi bi-phone"></i><span>Buy Number</span>
             </a>
 
+            <!-- NEW: Marketplace (buy logs) -->
+            <a href="{% url 'marketplace' %}" class="side-link" data-bs-dismiss="offcanvas">
+                <i class="bi bi-shop"></i><span>Marketplace</span>
+            </a>
+
             <p class="sidebar-label mt-3">History</p>
 
             <a href="{% url 'smsmarket:my_purchases' %}" class="side-link" data-bs-dismiss="offcanvas">
                 <i class="bi bi-bag-check"></i><span>My Purchases</span>
             </a>
+
+        
+
             <a href="{% url 'wallet:transactions' %}" class="side-link" data-bs-dismiss="offcanvas">
                 <i class="bi bi-receipt"></i><span>Transactions</span>
             </a>
