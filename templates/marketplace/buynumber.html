@@ -5,7 +5,7 @@
 {% block page_title %}Buy Number{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/buynumber.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'css/buynumber.css' %}?v=2">
 {% endblock %}
 
 {% block content %}
@@ -16,7 +16,7 @@
     <div class="bn-head">
         <div class="bn-head-text">
             <h2>Buy Virtual Number</h2>
-            <p class="bn-subtitle">Choose a country and service — get a temporary number instantly.</p>
+            <p class="bn-subtitle">Pick a server, choose country &amp; service — get a number instantly.</p>
         </div>
         <div class="bn-balance-pill">
             <i class="bi bi-wallet2"></i>
@@ -29,6 +29,16 @@
         {% csrf_token %}
 
         <div class="bn-card">
+
+            <!-- SERVER (picked FIRST) -->
+            <div class="bn-group">
+                <label for="serverSelect">Server</label>
+                <select class="bn-select bn-server-select" id="serverSelect" name="server" required>
+                    <option value="daisysms">🚀 Server 1 — USA Only · DaisySMS (fastest)</option>
+                    <option value="instantnums">🌍 Server 2 — All Countries · InstantNums</option>
+                </select>
+                <p class="bn-server-hint" id="serverHint">USA numbers only. Cheapest &amp; fastest delivery.</p>
+            </div>
 
             <!-- COUNTRY -->
             <div class="bn-group">
@@ -77,6 +87,11 @@
             <div class="bn-session-header">
                 <span class="bn-country">{{ order.country.code|default:"🌐" }}</span>
                 <span class="bn-service">{{ order.service.name }}</span>
+                {% if order.provider == 'daisysms' %}
+                <span class="bn-server-tag">S1</span>
+                {% else %}
+                <span class="bn-server-tag bn-server-tag--2">S2</span>
+                {% endif %}
                 <strong class="bn-timer mono" data-expires="{{ order.expires_at|date:'c' }}">--:--</strong>
             </div>
 
@@ -143,5 +158,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/buynumber.js' %}?v=3"></script>
+<script src="{% static 'js/buynumber.js' %}?v=4"></script>
 {% endblock %}

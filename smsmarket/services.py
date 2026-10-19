@@ -23,16 +23,17 @@ class PricingNotAvailable(Exception):
 
 
 @transaction.atomic
-def reserve_number(user, service_code, country_code=None):
+def reserve_number(user, service_code, country_code=None, provider_name='instantnums'):
     """Purchase a number using the pre-synced Pricing row only.
     Wallet is NOT charged — charge happens on OTP delivery."""
-    service = Service.objects.get(code=service_code, is_active=True)
+    provider = get_provider(provider_name)
+    service = Service.objects.get(code=service_code, provider=provider_name,
+                                  is_active=True)
     country = Country.objects.get(code=country_code, is_active=True)
-    provider = get_provider()
 
-    # Price comes ONLY from the Pricing table — no live provider calls
     pricing = (Pricing.objects
-               .filter(service=service, country=country, is_available=True)
+               .filter(provider=provider_name, service=service, country=country,
+                       is_available=True)
                .first())
     if not pricing or pricing.sell_price <= 0:
         raise PricingNotAvailable(
@@ -51,6 +52,7 @@ def reserve_number(user, service_code, country_code=None):
         user=user,
         service=service,
         country=country,
+        provider=provider_name,
         price=pricing.sell_price,
         status='active',
         phone_number=phone,
@@ -67,7 +69,7 @@ def maybe_deliver(order):
     if order.status != 'active':
         return None
 
-    result = get_provider().check_sms(order.provider_order_id)
+    result = get_provider(order.provider).check_sms(order.provider_order_id)
     if result.get('status') == 'waiting':
         return None
 
@@ -99,10 +101,8 @@ def cancel_user_order(order):
 
     if order.provider_order_id:
         try:
-            get_provider().cancel(order.provider_order_id)
+            get_provider(order.provider).cancel(order.provider_order_id)
         except Exception:
-            # Logged by the provider; local release is still safe —
-            # charge-on-delivery means nothing was taken.
             pass
 
     order.status = 'cancelled'

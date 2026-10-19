@@ -8,15 +8,20 @@ from .models import Pricing
 
 @login_required
 def services_for_country(request, code):
-    """All active services for a country, each with an 'available' flag.
-    Unavailable ones are rendered disabled in the Buy Number UI."""
+    """Services for a country on a given server, each with 'available' flag.
+    ?server=daisysms (Server 1, USA) or ?server=instantnums (Server 2, all countries)."""
+    provider = request.GET.get('server', 'instantnums')
+    if provider not in ('daisysms', 'instantnums'):
+        provider = 'instantnums'
+
     priced = {
         p.service_id: p
-        for p in Pricing.objects.filter(country__code=code.upper()).select_related('service')
+        for p in Pricing.objects.filter(provider=provider,
+                                        country__code=code.upper()).select_related('service')
     }
 
     services = []
-    for svc in Service.objects.filter(is_active=True):
+    for svc in Service.objects.filter(provider=provider, is_active=True):
         p = priced.get(svc.id)
         available = bool(p and p.is_available and p.sell_price > 0)
         services.append({

@@ -148,5 +148,6 @@ POCKETFI_CALLBACK_URL = config('POCKETFI_CALLBACK_URL', default='https://pabloex
 
 SMS_PROVIDER = config('SMS_PROVIDER', default='dummy')
 
+DAISYSMS_API_KEY = config('DAISYSMS_API_KEY', default='')
 INSTANTNUMS_API_KEY = config('INSTANTNUMS_API_KEY', default='')
 INSTANTNUMS_BASE_URL = config('INSTANTNUMS_BASE_URL', default='https://instantnums.com')

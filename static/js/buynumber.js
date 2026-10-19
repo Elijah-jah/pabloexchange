@@ -1,13 +1,20 @@
-/* PabloExchange — Buy Number: country→services fetch, price, timers, copy, cancel, overlay */
+/* PabloExchange — Buy Number: server → country → services → price, timers, copy, cancel */
 
 document.addEventListener('DOMContentLoaded', function () {
 
+    var serverSelect = document.getElementById('serverSelect');
     var countrySelect = document.getElementById('countrySelect');
     var serviceSelect = document.getElementById('serviceSelect');
     var priceDisplay = document.getElementById('priceDisplay');
+    var serverHint = document.getElementById('serverHint');
     var requestForm = document.getElementById('requestNumberForm');
     var requestBtn = document.getElementById('requestBtn');
     var overlay = document.getElementById('bnOverlay');
+
+    var SERVER_HINTS = {
+        daisysms: 'USA numbers only. Cheapest & fastest delivery.',
+        instantnums: 'All countries supported. Pick any country below.'
+    };
 
     function naira(n) {
         return '₦' + parseFloat(n || 0).toLocaleString('en-NG', {
@@ -15,23 +22,50 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ---------- Country selected → fetch ALL services with availability flags ----------
+    function resetServices(msg) {
+        serviceSelect.innerHTML = '<option value="">' + msg + '</option>';
+        serviceSelect.disabled = true;
+        priceDisplay.textContent = naira(0);
+    }
+
+    // ---------- Server changed → set up country, then load services ----------
+    serverSelect.addEventListener('change', function () {
+        var server = this.value;
+        serverHint.textContent = SERVER_HINTS[server] || '';
+
+        if (server === 'daisysms') {
+            // Server 1 = USA only: lock country to US
+            countrySelect.value = 'US';
+            countrySelect.disabled = true;
+            loadServices('US', server);
+        } else {
+            // Server 2: free country choice
+            countrySelect.disabled = false;
+            if (countrySelect.value) {
+                loadServices(countrySelect.value, server);
+            } else {
+                resetServices('Select Country');
+            }
+        }
+    });
+
+    // ---------- Country selected → fetch services for that server ----------
     countrySelect.addEventListener('change', function () {
         var code = this.value;
+        if (!code) { resetServices('Select Country First'); return; }
+        loadServices(code, serverSelect.value);
+    });
+
+    function loadServices(code, server) {
         serviceSelect.innerHTML = '<option value="">Loading…</option>';
         serviceSelect.disabled = true;
         priceDisplay.textContent = naira(0);
 
-        if (!code) {
-            serviceSelect.innerHTML = '<option value="">Select Country First</option>';
-            return;
-        }
-
-        fetch('/pricing/for-country/' + encodeURIComponent(code) + '/')
+        fetch('/pricing/for-country/' + encodeURIComponent(code) + '/?server=' + encodeURIComponent(server))
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (!data.services.length) {
-                    serviceSelect.innerHTML = '<option value="">No services for this country</option>';
+                    resetServices('No services for this country yet');
                     return;
                 }
                 var opts = ['<option value="">Select Service</option>'];
@@ -48,9 +82,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 serviceSelect.disabled = false;
             })
             .catch(function () {
-                serviceSelect.innerHTML = '<option value="">Failed to load — pick country again</option>';
+                resetServices('Failed to load — try again');
             });
-    });
+    }
 
     // ---------- Service selected → show price ----------
     serviceSelect.addEventListener('change', function () {
@@ -107,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var iv = setInterval(tick, 1000);
     });
 
-    // ---------- Cancel: confirm + overlay ----------
+    // ---------- Cancel ----------
     document.querySelectorAll('.bn-cancel-form').forEach(function (form) {
         form.addEventListener('submit', function (e) {
             if (!confirm('Cancel this order? You will not be charged.')) {
@@ -119,9 +153,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ---------- Auto-refresh while waiting for SMS (every 8s, only if any waiting) ----------
+    // ---------- Auto-refresh while waiting for SMS ----------
     if (document.querySelector('.bn-waiting')) {
         setTimeout(function () { location.reload(); }, 8000);
     }
+
+    // ---------- Init: apply default server rules on page load ----------
+    serverSelect.dispatchEvent(new Event('change'));
 
 });
