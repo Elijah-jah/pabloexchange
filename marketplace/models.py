@@ -79,7 +79,18 @@ class LogItem(models.Model):
 
 
 class LogOrder(models.Model):
-    """Record of a sale (snapshot survives group edits/deletes)."""
+    """Record of a sale (snapshot survives group edits/deletes).
+
+    Flow: waiting (reserved, nothing paid) -> completed (creds delivered,
+    wallet debited) | cancelled (free) | expired (never delivered)."""
+
+    STATUS_CHOICES = (
+        ('waiting', 'Waiting'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+        ('expired', 'Expired'),
+    )
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                              related_name='log_orders')
     group = models.ForeignKey(LogGroup, on_delete=models.SET_NULL,
@@ -87,10 +98,11 @@ class LogOrder(models.Model):
     group_name = models.CharField(max_length=150)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     credentials = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='waiting')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
 
     def __str__(self):
-        return f'{self.group_name} — {self.user} — ₦{self.price}'
+        return f'{self.group_name} — {self.user} — ₦{self.price} [{self.status}]'
