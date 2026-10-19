@@ -5,14 +5,13 @@
 {% block page_title %}Buy Number{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/buynumber.css' %}?v=5">
+<link rel="stylesheet" href="{% static 'css/buynumber.css' %}?v=6">
 {% endblock %}
 
 {% block content %}
 
 <div class="bn-container" data-cancel-url="{% url 'smsmarket:cancel_order' %}" data-csrf="{{ csrf_token }}">
 
-    <!-- ===== Header ===== -->
     <div class="bn-head">
         <div class="bn-head-text">
             <h2>Buy Virtual Number</h2>
@@ -24,42 +23,41 @@
         </div>
     </div>
 
-    <!-- ===== Request form ===== -->
     <form method="post" action="{% url 'smsmarket:buy' %}" id="requestNumberForm">
         {% csrf_token %}
 
         <div class="bn-card">
 
-            <!-- SERVER (picked FIRST) -->
+            <!-- SERVER — starts EMPTY, nothing pre-selected -->
             <div class="bn-group">
                 <label for="serverSelect">Server</label>
                 <select class="bn-select bn-server-select" id="serverSelect" name="server" required>
+                    <option value="" selected>Select Server</option>
                     <option value="daisysms">🚀 Server 1 — USA Only · DaisySMS (fastest)</option>
                     <option value="instantnums">🌍 Server 2 — All Countries · InstantNums</option>
                 </select>
-                <p class="bn-server-hint" id="serverHint">USA numbers only. Cheapest &amp; fastest delivery.</p>
+                <p class="bn-server-hint" id="serverHint"></p>
             </div>
 
-            <!-- COUNTRY -->
+            <!-- COUNTRY — disabled until a server is picked -->
             <div class="bn-group">
                 <label for="countrySelect">Country</label>
-                <select class="bn-select" id="countrySelect" name="country" required>
-                    <option value="">Select Country</option>
+                <select class="bn-select" id="countrySelect" name="country" required disabled>
+                    <option value="">Select Server First</option>
                     {% for c in countries %}
                     <option value="{{ c.code }}">{{ c.name }}</option>
                     {% endfor %}
                 </select>
             </div>
 
-            <!-- SERVICE (populated by JS with available services only) -->
+            <!-- SERVICE — disabled until a country is picked -->
             <div class="bn-group">
                 <label for="serviceSelect">Service</label>
                 <select class="bn-select" id="serviceSelect" name="service" required disabled>
-                    <option value="">Select Country First</option>
+                    <option value="">Select Server First</option>
                 </select>
             </div>
 
-            <!-- PRICE -->
             <div class="bn-price-box">
                 <span class="bn-price-label">Price</span>
                 <h2 class="mono" id="priceDisplay">₦0.00</h2>
@@ -72,18 +70,14 @@
         </div>
     </form>
 
-    <!-- ===== Active numbers ===== -->
     {% if active_orders %}
     <div class="bn-sessions-wrap">
-
         <h3 class="bn-sessions-title">
             <span class="bn-live-dot"></span> Active Numbers
         </h3>
-
         {% for order in active_orders %}
         {% with otp=order.messages.last %}
         <div class="bn-session" data-order-id="{{ order.pk }}">
-
             <div class="bn-session-header">
                 <span class="bn-country">{{ order.country.code|default:"🌐" }}</span>
                 <span class="bn-service">{{ order.service.name }}</span>
@@ -94,8 +88,6 @@
                 {% endif %}
                 <strong class="bn-timer mono" data-expires="{{ order.expires_at|date:'c' }}">--:--</strong>
             </div>
-
-            <!-- NUMBER -->
             <div class="bn-session-item">
                 <span>Number</span>
                 <div class="bn-copy-box">
@@ -105,8 +97,6 @@
                     </button>
                 </div>
             </div>
-
-            <!-- OTP -->
             <div class="bn-session-item">
                 <span>OTP</span>
                 <div class="bn-copy-box">
@@ -120,8 +110,6 @@
                     </button>
                 </div>
             </div>
-
-            <!-- STATUS -->
             <div class="bn-status">
                 {% if otp %}
                     <i class="bi bi-check-circle-fill"></i> SMS Received
@@ -129,24 +117,19 @@
                     <span class="bn-waiting"><i class="bi bi-arrow-repeat bn-spin"></i> Waiting for SMS…</span>
                 {% endif %}
             </div>
-
-            <!-- CANCEL -->
             <form method="post" action="{% url 'smsmarket:cancel_order' %}" class="bn-cancel-form">
                 {% csrf_token %}
                 <input type="hidden" name="order_id" value="{{ order.pk }}">
                 <button type="submit" class="bn-cancel-btn">Cancel Order</button>
             </form>
-
         </div>
         {% endwith %}
         {% endfor %}
-
     </div>
     {% endif %}
 
 </div>
 
-<!-- ===== Processing overlay ===== -->
 <div class="bn-overlay" id="bnOverlay" hidden>
     <div class="bn-overlay-box">
         <div class="bn-overlay-spinner"></div>
@@ -158,5 +141,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/buynumber.js' %}?v=5"></script>
+<script src="{% static 'js/buynumber.js' %}?v=6"></script>
 {% endblock %}

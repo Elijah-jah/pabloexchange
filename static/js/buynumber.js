@@ -1,4 +1,4 @@
-/* PabloExchange — Buy Number: server → country → services → price, timers, copy, cancel */
+/* PabloExchange — Buy Number: server → country → services → price */
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -31,7 +31,18 @@ document.addEventListener('DOMContentLoaded', function () {
     // ---------- Server changed → set up country, then load services ----------
     serverSelect.addEventListener('change', function () {
         var server = this.value;
-        serverHint.textContent = SERVER_HINTS[server] || '';
+        serverHint.textContent = server ? (SERVER_HINTS[server] || '') : '';
+
+        if (!server) {
+            // No server picked: lock everything again
+            countrySelect.value = '';
+            countrySelect.disabled = true;
+            resetServices('Select Server First');
+            return;
+        }
+
+        countrySelect.disabled = false;
+        countrySelect.value = '';
 
         if (server === 'daisysms') {
             // Server 1 = USA only: lock country to US
@@ -39,13 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
             countrySelect.disabled = true;
             loadServices('US', server);
         } else {
-            // Server 2: free country choice
-            countrySelect.disabled = false;
-            if (countrySelect.value) {
-                loadServices(countrySelect.value, server);
-            } else {
-                resetServices('Select Country');
-            }
+            resetServices('Select Country');
         }
     });
 
@@ -64,7 +69,6 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch('/pricing/for-country/' + encodeURIComponent(code) + '/?server=' + encodeURIComponent(server))
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                // Only show AVAILABLE services — unavailable ones are hidden entirely
                 var available = (data.services || []).filter(function (s) { return s.available; });
 
                 if (!available.length) {
@@ -85,16 +89,14 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    // ---------- Service selected → show price ----------
     serviceSelect.addEventListener('change', function () {
         var opt = this.options[this.selectedIndex];
         priceDisplay.textContent = naira(opt ? opt.dataset.price : 0);
     });
 
-    // ---------- Submit → show overlay ----------
     requestForm.addEventListener('submit', function (e) {
         var opt = serviceSelect.options[serviceSelect.selectedIndex];
-        if (!opt || !opt.value) {
+        if (!serverSelect.value || !countrySelect.value || !opt || !opt.value) {
             e.preventDefault();
             return;
         }
@@ -102,7 +104,6 @@ document.addEventListener('DOMContentLoaded', function () {
         requestBtn.disabled = true;
     });
 
-    // ---------- Copy buttons ----------
     document.querySelectorAll('.bn-copy-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var value = (btn.dataset.copy || '').trim();
@@ -125,7 +126,6 @@ document.addEventListener('DOMContentLoaded', function () {
         ta.remove(); done();
     }
 
-    // ---------- Countdown timers ----------
     document.querySelectorAll('.bn-timer').forEach(function (el) {
         var expires = new Date(el.dataset.expires).getTime();
         if (isNaN(expires)) return;
@@ -140,7 +140,6 @@ document.addEventListener('DOMContentLoaded', function () {
         var iv = setInterval(tick, 1000);
     });
 
-    // ---------- Cancel ----------
     document.querySelectorAll('.bn-cancel-form').forEach(function (form) {
         form.addEventListener('submit', function (e) {
             if (!confirm('Cancel this order? You will not be charged.')) {
@@ -152,12 +151,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ---------- Auto-refresh while waiting for SMS ----------
     if (document.querySelector('.bn-waiting')) {
         setTimeout(function () { location.reload(); }, 8000);
     }
-
-    // ---------- Init: apply default server rules on page load ----------
-    serverSelect.dispatchEvent(new Event('change'));
 
 });
