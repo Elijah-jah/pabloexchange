@@ -1,5 +1,5 @@
 /* ============================================================
-   PabloExchange — App shell v4
+   PabloExchange — App shell v5
    Clean scrollbars, zero gaps, overflow-protected
    ============================================================ */
 
@@ -284,17 +284,22 @@ body.app-body {
 
 /* ---------------- Mobile drawer — exactly half ---------------- */
 .app-offcanvas {
-    width: 50% !important;
-    min-width: 250px;
-    max-width: 340px;
+    width: min(78vw, 300px) !important;
     background: var(--grad-brand);
     color: var(--sb-green-100);
     border-right: none;
 }
 .app-offcanvas .offcanvas-header {
     border-bottom: 1px solid rgba(255,255,255,.08);
-    padding: 16px 18px;
+    padding: 12px 14px;
 }
+.app-offcanvas .logo-badge {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    font-size: .85rem;
+    margin-right: 8px;
+}
+.app-offcanvas .logo-text { font-size: 1rem; }
 
 /* ---------------- Main ---------------- */
 .app-body .app-main {
@@ -466,3 +471,20 @@ body.app-body {
 @media (max-width: 420px) {
     .app-offcanvas { min-width: 0; }
 }
+
+/* ---------------- Small phones ---------------- */
+@media (max-width: 575.98px) {
+    .topbar-title { font-size: .98rem; }
+    .wallet-chip { font-size: .8rem; padding: 6px 6px 6px 12px; }
+    .wallet-chip-plus { width: 22px; height: 22px; }
+    .avatar-btn { padding: 3px; }
+    .avatar-btn .bi-chevron-down { display: none; }
+}
+
+@media (max-width: 380px) {
+    .topbar-title { max-width: 32vw; }
+    .wallet-chip { font-size: .74rem; }
+}
+
+/* Extra safety: never let anything inside main bleed sideways */
+.app-main, .app-content { overflow-x: clip; }
