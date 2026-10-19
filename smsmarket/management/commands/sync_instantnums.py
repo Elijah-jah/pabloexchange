@@ -80,7 +80,7 @@ class Command(BaseCommand):
                 c_skipped += 1
                 continue
             _, created = Country.objects.get_or_create(
-                code=iso, defaults={"name": c["name"], "is_active": True})
+                code=iso, defaults={"name": str(c["name"])[:100], "is_active": True})
             c_created += created
         self.stdout.write(f"Countries: {c_created} new, {c_skipped} skipped (virtual/no ISO)")
 
@@ -92,7 +92,7 @@ class Command(BaseCommand):
                 continue
             _, created = Service.objects.get_or_create(
                 provider=PROVIDER, code=slug,
-                defaults={"name": s.get("name", slug), "is_active": True})
+                defaults={"name": str(s.get("name", slug))[:100], "is_active": True})
             s_created += created
         self.stdout.write(f"Services: {s_created} new "
                           f"({Service.objects.filter(provider=PROVIDER).count()} total for Server 2)")
