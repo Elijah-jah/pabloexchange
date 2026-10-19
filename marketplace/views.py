@@ -1,9 +1,13 @@
+import logging
+from datetime import timedelta
+
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
+from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
+from django_ratelimit.decorators import ratelimit
 
 from countries.models import Country
 from smsmarket.models import NumberOrder
@@ -12,14 +16,14 @@ from wallet.services import can_afford, debit
 
 from .models import LogCategory, LogGroup, LogItem, LogOrder, LogSubCategory
 
+logger = logging.getLogger(__name__)
+
 
 @login_required
 def marketplace_logs(request):
-    """Account Logs Shop — sections grouped by subcategory, cards = groups."""
+    """Account Logs Shop - sections grouped by subcategory, cards = groups."""
     categories = LogCategory.objects.filter(is_active=True)
 
-    # Prefetch groups with their real (unsold-item) stock in one query,
-    # so building the product list below triggers zero extra DB hits.
     subs = (LogSubCategory.objects
             .filter(is_active=True, category__is_active=True,
                     groups__is_active=True)
@@ -37,8 +41,6 @@ def marketplace_logs(request):
             'id': g.id,
             'title': g.name,
             'price': g.price,
-            # Authoritative stock = unsold credential lines; fall back to
-            # the stored counter only if it is somehow lower.
             'stock': max(g._actual_stock, g.stock),
             'description': g.description,
             'image': g.image,
@@ -60,18 +62,19 @@ def marketplace_logs(request):
 
 
 @login_required
+@ratelimit(key='user', rate='10/m', method='POST', block=True)
 @transaction.atomic
 def purchase_log(request, pk):
-    """Buy one unit of a group: debit wallet, pop oldest unsold LogItem,
-    decrement stock, snapshot the order."""
+    """RESERVE a unit: create a waiting order. No wallet movement yet.
+
+    Delivery happens via deliver_log (polled by the frontend) so a failure
+    can never charge the customer without handing over credentials.
+    """
     group = get_object_or_404(
-        LogGroup.objects
-        .select_for_update()
-        .select_related('subcategory'),
+        LogGroup.objects.select_for_update().select_related('subcategory'),
         pk=pk, is_active=True,
     )
 
-    # Stock of record: unsold items. Sync the stored counter if it drifted.
     real_stock = group.items.filter(is_sold=False).count()
     if group.stock != real_stock:
         group.stock = real_stock
@@ -80,25 +83,90 @@ def purchase_log(request, pk):
     if real_stock <= 0:
         return JsonResponse({'success': False, 'error': 'Item is sold out.'}, status=400)
 
-    if not can_afford(request.user, group.price):
+    # Balance must cover this price PLUS everything already reserved
+    pending = (LogOrder.objects
+               .filter(user=request.user, status='waiting')
+               .aggregate(total=Sum('price'))['total'] or 0)
+    if not can_afford(request.user, pending + group.price):
         return JsonResponse({'success': False,
                              'error': 'Insufficient wallet balance. Please fund your wallet.'},
                             status=400)
+
+    # Duplicate-buy guard: same group reserved in the last 10 seconds
+    recent = LogOrder.objects.filter(
+        user=request.user, group=group, status='waiting',
+        created_at__gte=timezone.now() - timedelta(seconds=10),
+    ).exists()
+    if recent:
+        return JsonResponse({'success': False,
+                             'error': 'Your previous request is still processing.'}, status=400)
+
+    order = LogOrder.objects.create(
+        user=request.user,
+        group=group,
+        group_name=group.name,
+        price=group.price,
+        credentials='',
+        status='waiting',
+    )
+    logger.info('Log order %s reserved (user %s, group %s)',
+                order.id, request.user.id, group.id)
+    return JsonResponse({'success': True, 'order_id': order.id})
+
+
+@login_required
+@transaction.atomic
+def deliver_log(request, pk):
+    """DELIVER a waiting order: pop creds, debit wallet, mark completed.
+
+    Atomic - any failure rolls back everything: no charge, creds stay in stock.
+    """
+    order = get_object_or_404(
+        LogOrder.objects.select_for_update().select_related('group'),
+        pk=pk, user=request.user,
+    )
+
+    if order.status == 'completed' and order.credentials:
+        return JsonResponse({'success': True, 'status': 'completed',
+                             'creds': order.credentials,
+                             'format_label': order.group.format_labels if order.group else ''})
+
+    if order.status != 'waiting':
+        return JsonResponse({'success': False, 'status': order.status,
+                             'error': 'This order is no longer active.'}, status=400)
+
+    group = order.group
+    if group is None:
+        order.status = 'cancelled'
+        order.save(update_fields=['status'])
+        return JsonResponse({'success': False, 'status': 'cancelled',
+                             'error': 'This product is no longer available.'}, status=400)
 
     item = (LogItem.objects
             .select_for_update()
             .filter(group=group, is_sold=False)
             .order_by('id')
             .first())
-    if item is None:  # lost a race — another buyer took the last item
+    if item is None:
+        order.status = 'cancelled'
+        order.save(update_fields=['status'])
         group.stock = 0
         group.is_active = False
         group.save(update_fields=['stock', 'is_active'])
-        return JsonResponse({'success': False, 'error': 'Item is sold out.'}, status=400)
+        return JsonResponse({'success': False, 'status': 'sold_out',
+                             'error': 'Item is sold out.'}, status=400)
 
-    debit(request.user, group.price,
+    # Debit only now - creds are guaranteed in hand
+    if not can_afford(request.user, order.price):
+        order.status = 'cancelled'
+        order.save(update_fields=['status'])
+        return JsonResponse({'success': False, 'status': 'insufficient_funds',
+                             'error': 'Insufficient wallet balance. Please fund your wallet.'},
+                            status=400)
+
+    debit(request.user, order.price,
           description=f'{group.name} (log)',
-          meta={'group_id': group.id})
+          meta={'group_id': group.id, 'order_id': order.id})
 
     item.is_sold = True
     item.sold_at = timezone.now()
@@ -106,24 +174,39 @@ def purchase_log(request, pk):
 
     group.stock = max(0, group.stock - 1)
     if group.stock == 0:
-        group.is_active = False          # hide sold-out card from the shop
+        group.is_active = False
     group.save(update_fields=['stock', 'is_active'])
 
-    order = LogOrder.objects.create(
-        user=request.user,
-        group=group,
-        group_name=group.name,
-        price=group.price,
-        credentials=item.content,
-    )
+    order.credentials = item.content
+    order.status = 'completed'
+    order.save(update_fields=['credentials', 'status'])
 
-    return JsonResponse({
-        'success': True,
-        'order_id': order.id,
-        'creds': item.content,
-        'format_label': group.format_labels,
-        'new_balance': str(getattr(request.user.wallet, 'balance', 0)),
-    })
+    logger.info('Log order %s delivered (user %s, group %s)',
+                order.id, request.user.id, group.id)
+    return JsonResponse({'success': True, 'status': 'completed',
+                         'creds': order.credentials,
+                         'format_label': group.format_labels})
+
+
+@login_required
+@ratelimit(key='user', rate='10/m', method='POST', block=True)
+@transaction.atomic
+def cancel_log_order(request, pk):
+    """Cancel a waiting order. Nothing was debited, so cancel is always free
+    and credentials were never removed from stock."""
+    order = get_object_or_404(LogOrder, pk=pk, user=request.user)
+
+    if order.status == 'cancelled':
+        return JsonResponse({'success': True, 'message': 'Already cancelled.'})
+
+    if order.status != 'waiting':
+        return JsonResponse({'success': False,
+                             'error': 'This order can no longer be cancelled.'}, status=400)
+
+    order.status = 'cancelled'
+    order.save(update_fields=['status'])
+    logger.info('Log order %s cancelled (user %s)', order.id, request.user.id)
+    return JsonResponse({'success': True, 'message': 'Order cancelled. No charge was made.'})
 
 
 @login_required
@@ -138,7 +221,6 @@ def for_country(request, code):
         .order_by('service__name')
     )
 
-    # Matches your JS exactly: { services: [{code, name, price}] }
     return JsonResponse({
         'services': [
             {
@@ -155,10 +237,8 @@ def for_country(request, code):
 def marketplace(request):
     wallet = getattr(request.user, 'wallet', None)
     return render(request, 'marketplace/buynumber.html', {
-        # ALL active countries — your JS already handles "no services" gracefully
         'countries': Country.objects.filter(is_active=True).order_by('name'),
         'active_orders': NumberOrder.objects.filter(
             user=request.user, status='active'),
-        # balance pill in your header reads this — adapt to your wallet relation
         'balance': wallet.balance if wallet else 0,
     })

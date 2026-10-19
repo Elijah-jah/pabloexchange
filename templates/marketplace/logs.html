@@ -166,6 +166,7 @@
 
 
     var purchaseBaseUrl = "{% url 'purchase_log' 0 %}".replace(/0\/$/, "");
+    var deliverBaseUrl = "{% url 'deliver_log' 0 %}".replace(/0\/$/, "");
     var walletBalance = parseFloat("{{ user_wallet.balance|default:0 }}");
 
     /* ---------- ELEMENTS ---------- */
@@ -293,6 +294,65 @@
         }
     });
 
+    /* ---------- RESERVE -> DELIVER FLOW ---------- */
+    function showCredsModal(orderId, creds, formatLabel) {
+        close(buyModal);
+
+        logOrderId.textContent = orderId;
+        logOrderId.hidden = false;
+        if (formatLabel) logFormatLabel.textContent = formatLabel;
+        logCredsText.textContent = creds || "\u2014";
+
+        /* update stock on the card */
+        var stockEl = currentCard.querySelector(".prod-stock");
+        var stock = parseInt(currentCard.getAttribute("data-stock") || "0", 10);
+        if (stockEl && stock > 0) {
+            if (stock > 1) {
+                stockEl.textContent = (stock - 1) + " in stock";
+                currentCard.setAttribute("data-stock", String(stock - 1));
+            } else {
+                stockEl.textContent = "Sold out";
+                stockEl.classList.add("out");
+                currentCard.setAttribute("data-stock", "0");
+                var b = currentCard.querySelector(".prod-buy");
+                if (b) { b.disabled = true; b.textContent = "Sold out"; }
+            }
+        }
+
+        open(logModal);
+    }
+
+    function pollDeliver(orderId, attempts) {
+        fetch(deliverBaseUrl + orderId + "/", {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            if (d.status === "completed" && d.creds) {
+                showCredsModal(orderId, d.creds, d.format_label);
+                return;
+            }
+            if (d.status === "waiting" && attempts < 30) {
+                setTimeout(function () { pollDeliver(orderId, attempts + 1); }, 1500);
+                return;
+            }
+            modalError.textContent = (d && d.error) || "Delivery failed. If you were charged, contact support.";
+            modalError.hidden = false;
+            modalYesBtn.disabled = false;
+            modalYesBtn.textContent = "Yes, Continue";
+        })
+        .catch(function () {
+            if (attempts < 30) {
+                setTimeout(function () { pollDeliver(orderId, attempts + 1); }, 3000);
+            } else {
+                modalError.textContent = "Network error while delivering. Contact support.";
+                modalError.hidden = false;
+                modalYesBtn.disabled = false;
+                modalYesBtn.textContent = "Yes, Continue";
+            }
+        });
+    }
+
     /* ---------- CARD CLICK -> CONFIRM ---------- */
     allCards.forEach(function (card) {
         card.addEventListener("click", function () {
@@ -350,48 +410,15 @@
         })
         .then(function (r) { return r.json(); })
         .then(function (data) {
-            if (data.success) {
-                close(buyModal);
-
-                if (data.order_id) { logOrderId.textContent = data.order_id; logOrderId.hidden = false; }
-                else { logOrderId.hidden = true; }
-
-                if (data.format_label) logFormatLabel.textContent = data.format_label;
-
-                var creds = data.creds
-                    || (data.uid ? data.uid + ":" + (data.password || "") : "")
-                    || (data.username ? data.username + ":" + (data.password || "") : "");
-                logCredsText.textContent = creds || "\u2014";
-
-                if (data.new_balance) {
-                    walletBalance = parseFloat(data.new_balance);
-                    var txt = naira(walletBalance);
-                    document.querySelectorAll(".wallet-amount, .wallet-chip .mono")
-                        .forEach(function (el) { el.textContent = txt; });
-                }
-
-                /* update stock on the card */
-                var stockEl = currentCard.querySelector(".prod-stock");
-                var stock = parseInt(currentCard.getAttribute("data-stock") || "0", 10);
-                if (stockEl && stock > 0) {
-                    if (stock > 1) {
-                        stockEl.textContent = (stock - 1) + " in stock";
-                        currentCard.setAttribute("data-stock", String(stock - 1));
-                    } else {
-                        stockEl.textContent = "Sold out";
-                        stockEl.classList.add("out");
-                        currentCard.setAttribute("data-stock", "0");
-                        var b = currentCard.querySelector(".prod-buy");
-                        if (b) { b.disabled = true; b.textContent = "Sold out"; }
-                    }
-                }
-
-                open(logModal);
-            } else {
-                modalError.textContent = data.error || "Purchase failed. Please try again.";
-                modalError.hidden = false;
-                modalYesBtn.disabled = false;
+            if (data.success && data.order_id) {
+                /* Reserved - now poll the deliver endpoint until creds arrive */
+                modalYesBtn.textContent = "Processing...";
+                pollDeliver(data.order_id, 0);
+                return;
             }
+            modalError.textContent = (data && data.error) || "Purchase failed. Please try again.";
+            modalError.hidden = false;
+            modalYesBtn.disabled = false;
         })
         .catch(function () {
             modalError.textContent = "Network error. Please try again.";
