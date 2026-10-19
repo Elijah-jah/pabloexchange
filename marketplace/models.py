@@ -62,7 +62,6 @@ class LogItem(models.Model):
         help_text='One credential line, e.g. uid:pass:email:2fa:recovery')
     is_sold = models.BooleanField(default=False)
     sold_at = models.DateTimeField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['id']
