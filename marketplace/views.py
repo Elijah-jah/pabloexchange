@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
@@ -173,7 +173,7 @@ def purchase_log(request, pk):
         status='waiting',
     )
     logger.info('Log order %s reserved (user %s, group %s)',
-                order.order_id, request.user_id, group.id)
+                order.order_id, request.user.id, group.id)
 
     # Attempt immediate delivery - same transaction, so any failure
     # rolls back cleanly and the customer is never charged without creds.
@@ -238,7 +238,7 @@ def cancel_log_order(request, pk):
 
     order.status = 'cancelled'
     order.save(update_fields=['status'])
-    logger.info('Log order %s cancelled (user %s)', order.order_id, request.user_id)
+    logger.info('Log order %s cancelled (user %s)', order.order_id, request.user.id)
     return JsonResponse({'success': True, 'message': 'Order cancelled. No charge was made.'})
 
 
