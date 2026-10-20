@@ -294,6 +294,15 @@
         }
     });
 
+    /* ---------- WALLET ---------- */
+    function updateWallet(balance) {
+        if (isNaN(balance)) return;
+        walletBalance = balance;
+        var txt = naira(balance);
+        document.querySelectorAll(".wallet-amount, .wallet-chip .mono")
+            .forEach(function (el) { el.textContent = txt; });
+    }
+
     /* ---------- RESERVE -> DELIVER FLOW ---------- */
     function showCredsModal(orderRef, creds, formatLabel) {
         close(buyModal);
@@ -329,7 +338,8 @@
         .then(function (r) { return r.json(); })
         .then(function (d) {
             if (d.status === "completed" && d.creds) {
-                showCredsModal(d.order_ref || orderRef, d.creds, d.format_label);
+                showCredsModal(d.order_id || orderRef, d.creds, d.format_label);
+                if (d.new_balance) updateWallet(parseFloat(d.new_balance));
                 return;
             }
             if (d.status === "waiting" && attempts < 30) {
@@ -412,7 +422,8 @@
         .then(function (data) {
             if (data.success && data.creds) {
                 /* Instant delivery - render the log details card now */
-                showCredsModal(data.order_ref || "", data.creds, data.format_label);
+                showCredsModal(data.order_id || "", data.creds, data.format_label);
+                if (data.new_balance) updateWallet(parseFloat(data.new_balance));
                 modalYesBtn.disabled = false;
                 modalYesBtn.textContent = "Yes, Continue";
                 return;
@@ -482,4 +493,4 @@
 </script>
 
 {% endblock %}
-PS C:\Users\user\OneDrive\Desktop\Pabloexchange> 
+ 

@@ -7,11 +7,12 @@ from django.db.models import Count, Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from countries.models import Country
 from smsmarket.models import NumberOrder
 from pricing.models import Pricing
-from wallet.services import can_afford, debit
+from wallet.services import balance as get_balance, can_afford, debit
 
 from .models import LogCategory, LogGroup, LogItem, LogOrder, LogSubCategory
 
@@ -92,9 +93,11 @@ def _deliver_order(order):
         return False, (f'Insufficient funds. This order costs \u20A6{order.price:,.2f} '
                        f'but your balance is \u20A6{balance:,.2f}.')
 
-    # Debit only now - creds are guaranteed in hand
+    # Debit only now - creds are guaranteed in hand.
+    # wallet.services.debit() already writes the WalletTransaction ledger
+    # row atomically - no explicit audit needed (unlike abfverify's wallet).
     debit(order.user, order.price,
-          description=f'{group.name} (log)',
+          description=f'Purchase of {group.name} ({order.order_id})',
           meta={'group_id': group.id, 'order_id': order.id})
 
     item.is_sold = True
@@ -113,10 +116,11 @@ def _deliver_order(order):
 
     logger.info('Log order %s delivered (user %s, group %s)',
                 order.order_id, order.user_id, group.id)
-    return True, None
+    return True, get_balance(order.user)
 
 
 @login_required
+@require_POST
 @transaction.atomic
 def purchase_log(request, pk):
     """Reserve + deliver in one request.
@@ -173,16 +177,19 @@ def purchase_log(request, pk):
 
     # Attempt immediate delivery - same transaction, so any failure
     # rolls back cleanly and the customer is never charged without creds.
-    ok, err = _deliver_order(order)
+    ok, new_balance, err = _deliver_order(order)
     if ok:
         return JsonResponse({'success': True, 'status': 'completed',
-                             'order_ref': order.order_id,
+                             'order_id': order.order_id,
                              'creds': order.credentials,
-                             'format_label': group.format_labels})
+                             'format_label': group.format_labels,
+                             'price': str(order.price),
+                             'new_balance': str(new_balance)})
     return JsonResponse({'success': False, 'error': err}, status=400)
 
 
 @login_required
+@require_POST
 @transaction.atomic
 def deliver_log(request, pk):
     """Fallback delivery for a waiting order (network retries, page reloads).
@@ -203,16 +210,19 @@ def deliver_log(request, pk):
         return JsonResponse({'success': False, 'status': order.status,
                              'error': 'This order is no longer active.'}, status=400)
 
-    ok, err = _deliver_order(order)
+    ok, new_balance, err = _deliver_order(order)
     if ok:
         return JsonResponse({'success': True, 'status': 'completed',
-                             'order_ref': order.order_id,
+                             'order_id': order.order_id,
                              'creds': order.credentials,
-                             'format_label': order.group.format_labels if order.group else ''})
+                             'format_label': order.group.format_labels if order.group else '',
+                             'price': str(order.price),
+                             'new_balance': str(new_balance)})
     return JsonResponse({'success': False, 'status': order.status, 'error': err}, status=400)
 
 
 @login_required
+@require_POST
 @transaction.atomic
 def cancel_log_order(request, pk):
     """Cancel a waiting order. Nothing was debited, so cancel is always free
