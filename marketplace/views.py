@@ -7,7 +7,6 @@ from django.db.models import Count, Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
-from django_ratelimit.decorators import ratelimit
 
 from countries.models import Country
 from smsmarket.models import NumberOrder
@@ -62,7 +61,6 @@ def marketplace_logs(request):
 
 
 @login_required
-@ratelimit(key='user', rate='10/m', method='POST', block=True)
 @transaction.atomic
 def purchase_log(request, pk):
     """RESERVE a unit: create a waiting order. No wallet movement yet.
@@ -199,7 +197,6 @@ def deliver_log(request, pk):
 
 
 @login_required
-@ratelimit(key='user', rate='10/m', method='POST', block=True)
 @transaction.atomic
 def cancel_log_order(request, pk):
     """Cancel a waiting order. Nothing was debited, so cancel is always free
