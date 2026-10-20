@@ -71,7 +71,7 @@ def _deliver_order(order):
     if group is None:
         order.status = 'cancelled'
         order.save(update_fields=['status'])
-        return False, 'This product is no longer available.'
+        return False, None, 'This product is no longer available.'
 
     item = (LogItem.objects
             .select_for_update()
@@ -84,13 +84,13 @@ def _deliver_order(order):
         group.stock = 0
         group.is_active = False
         group.save(update_fields=['stock', 'is_active'])
-        return False, 'Item is sold out.'
+        return False, None, 'Item is sold out.'
 
     if not can_afford(order.user, order.price):
         balance = getattr(getattr(order.user, 'wallet', None), 'balance', 0) or 0
         order.status = 'cancelled'
         order.save(update_fields=['status'])
-        return False, (f'Insufficient funds. This order costs \u20A6{order.price:,.2f} '
+        return False, None, (f'Insufficient funds. This order costs \u20A6{order.price:,.2f} '
                        f'but your balance is \u20A6{balance:,.2f}.')
 
     # Debit only now - creds are guaranteed in hand.
