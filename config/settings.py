@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'pages',
     'countries',
     'pricing',
+    'django.contrib.humanize',
 ]
 
 MIDDLEWARE = [
