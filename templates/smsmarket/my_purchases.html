@@ -5,102 +5,163 @@
 {% block title %}My Purchases{% endblock %}
 {% block page_title %}My Purchases{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/purchases.css' %}?v=1">
+{% endblock %}
+
 {% block content %}
-<div class="container">
+<div class="mp-wrap">
 
     <!-- ===== Header ===== -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div class="mp-head-row">
         <div>
-            <h1 class="dash-greeting">My Purchases</h1>
-            <p class="dash-sub mb-0">Every log and number you've bought &mdash; full history.</p>
+            <h1>My Purchases</h1>
+            <p>Every log and number you've bought &mdash; tap any order for full details.</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{% url 'marketplace' %}" class="btn px-btn-solid"><i class="bi bi-shop"></i> Buy Logs</a>
-            <a href="{% url 'buynumber' %}" class="btn px-btn-ghost"><i class="bi bi-phone"></i> Buy Number</a>
+        <div class="mp-head-actions">
+            <a href="{% url 'marketplace' %}" class="mp-btn mp-btn-solid"><i class="bi bi-shop"></i> Buy Logs</a>
+            <a href="{% url 'buynumber' %}" class="mp-btn mp-btn-ghost"><i class="bi bi-phone"></i> Buy Number</a>
         </div>
     </div>
 
-    <!-- ===== Tabs: All / Logs / Numbers ===== -->
-    <div class="tx-filters" role="tablist" id="poTabs">
-        <button class="tx-filter active" data-type="all">All</button>
-        <button class="tx-filter" data-type="log">Logs</button>
-        <button class="tx-filter" data-type="number">Numbers</button>
+    <!-- ===== Tabs ===== -->
+    <div class="mp-tabs" id="mpTabs">
+        <button class="mp-tab active" data-type="all">All</button>
+        <button class="mp-tab" data-type="log">Logs</button>
+        <button class="mp-tab" data-type="number">Numbers</button>
     </div>
 
-    <!-- ===== List (newest first, both types merged) ===== -->
-    <div class="px-card" id="poList">
-
+    <!-- ===== Orders list (newest first, view-sorted) ===== -->
+    <div class="mp-card" id="mpList">
         {% for o in orders %}
-        <div class="list-row po-row" data-type="{{ o.type }}"
-             data-search="{{ o.name|lower }} {{ o.detail|lower }} {{ o.order_id|lower }}">
+        <div class="mp-row" data-type="{{ o.type }}"
+             data-name="{{ o.name }}"
+             data-ref="{{ o.order_id }}"
+             data-detail="{{ o.detail }}"
+             data-otp="{{ o.otp }}"
+             data-format="{{ o.format_labels }}"
+             data-price="{{ o.price }}"
+             data-date="{{ o.created_at|date:'M j, Y' }} &middot; {{ o.created_at|date:'H:i' }}"
+             data-status="{{ o.status }}">
 
-            <!-- type icon -->
-            <div class="list-icon {% if o.status == 'completed' %}emerald{% elif o.status == 'active' or o.status == 'waiting' %}gold{% else %}muted{% endif %}">
+            <div class="mp-icon {{ o.type }}">
                 {% if o.type == 'log' %}<i class="bi bi-file-lock2"></i>
                 {% else %}<i class="bi bi-phone"></i>{% endif %}
             </div>
 
-            <div class="list-body">
-                <div class="list-title">
+            <div class="mp-main">
+                <p class="mp-name">
                     {{ o.name }}
-                    {% if o.order_id %}<span class="mono opacity-75 small"> &middot; {{ o.order_id }}</span>{% endif %}
-                </div>
-
+                    {% if o.order_id %}<span class="mp-ref">{{ o.order_id }}</span>{% endif %}
+                </p>
                 {% if o.type == 'log' %}
-                <!-- LOG row: creds inline + copy -->
-                <div class="list-sub mono d-flex align-items-center gap-2 flex-wrap">
-                    <span style="word-break:break-all;">{{ o.detail|truncatechars:60|default:"&mdash;" }}</span>
+                <p class="mp-sub">
+                    <span class="mp-credline">{{ o.detail|truncatechars:55|default:"&mdash;" }}</span>
                     {% if o.detail %}
-                    <button class="otp-chip mono po-copy" data-copy="{{ o.detail|escape }}" title="Copy login">
+                    <button class="mp-copychip mp-rowcopy" data-copy="{{ o.detail|escape }}" title="Copy login" type="button">
                         <i class="bi bi-clipboard"></i>
                     </button>
                     {% endif %}
-                </div>
-                {% if o.format_labels %}
-                <div class="small opacity-75 mono">{{ o.format_labels }}</div>
-                {% endif %}
-
+                </p>
                 {% else %}
-                <!-- NUMBER row: phone + OTP inline -->
-                <div class="list-sub mono">{{ o.detail|default:"Awaiting number" }} &middot; {{ o.created_at|date:"M d, Y · H:i" }}</div>
+                <p class="mp-sub mono">{{ o.detail|default:"Awaiting number" }}</p>
                 {% if o.otp %}
-                <div class="mt-1">
-                    <button class="otp-chip mono po-copy" data-copy="{{ o.otp }}" title="Copy OTP">
-                        OTP: {{ o.otp }} <i class="bi bi-clipboard"></i>
+                <p class="mp-sub">
+                    <span class="mp-credline">OTP: {{ o.otp }}</span>
+                    <button class="mp-copychip mp-rowcopy" data-copy="{{ o.otp }}" title="Copy OTP" type="button">
+                        <i class="bi bi-clipboard"></i>
                     </button>
-                </div>
+                </p>
                 {% endif %}
                 {% endif %}
-
-                <div class="small opacity-75 mt-1">{{ o.created_at|date:"M d, Y · H:i" }}</div>
+                <p class="mp-date">{{ o.created_at|date:"M j, Y" }} &middot; {{ o.created_at|date:"H:i" }}</p>
             </div>
 
-            <div class="list-side">
-                <span class="px-pill {{ o.status }}">{{ o.status|title }}</span>
-                <div class="list-amount mono">&#8358;{{ o.price|floatformat:2|intcomma }}</div>
+            <div class="mp-side">
+                <span class="mp-price">&#8358;{{ o.price|floatformat:2|intcomma }}</span>
+                {% if o.status == 'completed' %}
+                <span class="mp-badge completed">Completed</span>
+                {% elif o.status == 'active' or o.status == 'waiting' %}
+                <span class="mp-badge {{ o.status }}">{{ o.status|title }}</span>
+                {% elif o.status == 'cancelled' or o.status == 'canceled' %}
+                <span class="mp-badge cancelled">Cancelled</span>
+                {% elif o.status == 'expired' %}
+                <span class="mp-badge expired">Expired</span>
+                {% else %}
+                <span class="mp-badge failed">{{ o.status|title }}</span>
+                {% endif %}
             </div>
 
+            <i class="bi bi-chevron-right mp-chev"></i>
         </div>
         {% empty %}
-        <div class="px-empty">
+        <div class="mp-empty">
             <i class="bi bi-bag"></i>
             Nothing here yet.
-            <div class="mt-2 d-flex gap-2 justify-content-center">
-                <a href="{% url 'marketplace' %}" class="btn px-btn-ghost btn-sm">Buy Logs</a>
-                <a href="{% url 'buynumber' %}" class="btn px-btn-ghost btn-sm">Buy Number</a>
+            <div>
+                <a href="{% url 'marketplace' %}" class="mp-btn mp-btn-ghost">Buy Logs</a>
+                <a href="{% url 'buynumber' %}" class="mp-btn mp-btn-solid">Buy Number</a>
             </div>
         </div>
         {% endfor %}
-
     </div>
 
-    <!-- tab-empty state -->
-    <div class="px-empty" id="poNoResults" style="display:none;">
+    <div class="mp-empty" id="mpNone" hidden>
         <i class="bi bi-funnel"></i>
         Nothing in this category yet.
     </div>
 
 </div>
+
+<!-- ================= ORDER DETAILS CARD ================= -->
+<div class="mp-overlay" id="mpModal" hidden>
+    <div class="mp-modal" role="dialog" aria-modal="true">
+
+        <div class="mpm-icon"><i class="bi bi-file-lock2" id="mpmIcon"></i></div>
+
+        <h5 class="mpm-title" id="mpmTitle"></h5>
+        <span class="mpm-ref mono" id="mpmRef" hidden></span>
+
+        <!-- format pill (logs only) -->
+        <div id="mpmFormatWrap" hidden>
+            <p class="mpm-label">Format</p>
+            <div class="mpm-format mono" id="mpmFormat"></div>
+        </div>
+
+        <!-- main details box -->
+        <p class="mpm-label" id="mpmBoxLabel">Details</p>
+        <div class="mpm-box">
+            <span class="mpm-box-text mono" id="mpmText"></span>
+            <button type="button" class="mpm-copy" id="mpmCopy">
+                <i class="bi bi-clipboard"></i><span>Copy</span>
+            </button>
+        </div>
+
+        <!-- OTP row (numbers only) -->
+        <div class="mpm-otp-row" id="mpmOtpRow" hidden>
+            <span class="lbl">OTP</span>
+            <strong class="mono" id="mpmOtp"></strong>
+            <button type="button" class="mpm-copy" id="mpmOtpCopy">
+                <i class="bi bi-clipboard"></i>
+            </button>
+        </div>
+
+        <!-- meta -->
+        <div class="mpm-meta">
+            <div><em>Price</em><span id="mpmPrice"></span></div>
+            <div><em>Date</em><span id="mpmDate"></span></div>
+            <span class="mp-badge completed" id="mpmBadge"></span>
+        </div>
+
+        <button type="button" class="mpm-done" id="mpmDone">
+            <i class="bi bi-check2"></i> Done
+        </button>
+
+    </div>
+</div>
+
+<div class="mp-toast" id="mpToast" hidden>Copied!</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -108,16 +169,15 @@
 (function () {
     "use strict";
 
-    /* ---------- TABS: All / Logs / Numbers ---------- */
-    var tabs = document.querySelectorAll("#poTabs .tx-filter");
-    var rows = document.querySelectorAll("#poList .po-row");
-    var noResults = document.getElementById("poNoResults");
+    /* ---------- TABS ---------- */
+    var tabs = document.querySelectorAll("#mpTabs .mp-tab");
+    var rows = document.querySelectorAll("#mpList .mp-row");
+    var mpNone = document.getElementById("mpNone");
 
     tabs.forEach(function (tab) {
         tab.addEventListener("click", function () {
             tabs.forEach(function (t) { t.classList.remove("active"); });
             tab.classList.add("active");
-
             var type = tab.getAttribute("data-type");
             var visible = 0;
             rows.forEach(function (row) {
@@ -125,38 +185,131 @@
                 row.style.display = show ? "" : "none";
                 if (show) visible++;
             });
-            noResults.style.display = visible === 0 ? "" : "none";
+            mpNone.hidden = visible !== 0;
         });
     });
 
-    /* ---------- INLINE COPY ---------- */
-    document.querySelectorAll(".po-copy").forEach(function (btn) {
-        btn.addEventListener("click", function (e) {
-            e.stopPropagation();
-            var text = btn.getAttribute("data-copy");
-            if (!text) return;
-            var done = function () {
+    /* ---------- COPY UTILITY ---------- */
+    var toast = document.getElementById("mpToast");
+    var toastTimer = null;
+
+    function showToast(msg) {
+        toast.textContent = msg || "Copied!";
+        toast.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toast.hidden = true; }, 1600);
+    }
+
+    function copyText(text, btn) {
+        if (!text) return;
+        function done() {
+            showToast("Copied to clipboard");
+            if (btn) {
                 var icon = btn.querySelector("i");
                 if (icon) {
                     var old = icon.className;
                     icon.className = "bi bi-check2";
-                    setTimeout(function () { icon.className = old; }, 1500);
+                    setTimeout(function () { icon.className = old; }, 1400);
                 }
-            };
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(done, function () { fallback(); });
-            } else { fallback(); }
-            function fallback() {
-                var ta = document.createElement("textarea");
-                ta.value = text;
-                ta.style.position = "fixed";
-                ta.style.opacity = "0";
-                document.body.appendChild(ta);
-                ta.select();
-                try { document.execCommand("copy"); done(); } catch (err) {}
-                document.body.removeChild(ta);
             }
+        }
+        function fallback() {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand("copy"); done(); } catch (e) { showToast("Copy failed"); }
+            document.body.removeChild(ta);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, fallback);
+        } else { fallback(); }
+    }
+
+    /* row-level copy chips (don't open modal) */
+    document.querySelectorAll(".mp-rowcopy").forEach(function (btn) {
+        btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            copyText(btn.getAttribute("data-copy"), btn);
         });
+    });
+
+    /* ---------- DETAILS MODAL ---------- */
+    var modal = document.getElementById("mpModal");
+
+    function openModal(row) {
+        var d = function (k) { return row.getAttribute("data-" + k) || ""; };
+        var type = d("type");
+
+        document.getElementById("mpmIcon").className =
+            type === "log" ? "bi bi-file-lock2" : "bi bi-phone";
+        document.getElementById("mpmTitle").textContent = d("name");
+
+        var ref = document.getElementById("mpmRef");
+        if (d("ref")) { ref.textContent = d("ref"); ref.hidden = false; }
+        else { ref.hidden = true; }
+
+        /* format block: logs only */
+        var formatWrap = document.getElementById("mpmFormatWrap");
+        if (type === "log" && d("format")) {
+            document.getElementById("mpmFormat").textContent = d("format");
+            formatWrap.hidden = false;
+        } else {
+            formatWrap.hidden = true;
+        }
+
+        document.getElementById("mpmBoxLabel").textContent =
+            type === "number" ? "Phone Number" : "Login Details";
+        document.getElementById("mpmText").textContent = d("detail") || "\u2014";
+
+        /* OTP: numbers only */
+        var otpRow = document.getElementById("mpmOtpRow");
+        if (type === "number" && d("otp")) {
+            document.getElementById("mpmOtp").textContent = d("otp");
+            otpRow.hidden = false;
+        } else {
+            otpRow.hidden = true;
+        }
+
+        document.getElementById("mpmPrice").textContent =
+            "\u20A6" + parseFloat(d("price") || "0").toLocaleString("en-US",
+                { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById("mpmDate").textContent = d("date");
+
+        var badge = document.getElementById("mpmBadge");
+        var st = d("status");
+        badge.textContent = st.charAt(0).toUpperCase() + st.slice(1);
+        badge.className = "mp-badge " + st;
+
+        modal.hidden = false;
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeModal() {
+        modal.hidden = true;
+        document.body.style.overflow = "";
+    }
+
+    rows.forEach(function (row) {
+        row.addEventListener("click", function (e) {
+            if (e.target.closest(".mp-rowcopy")) return;
+            openModal(row);
+        });
+    });
+
+    document.getElementById("mpmDone").addEventListener("click", closeModal);
+    modal.addEventListener("click", function (e) { if (e.target === modal) closeModal(); });
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !modal.hidden) closeModal();
+    });
+
+    document.getElementById("mpmCopy").addEventListener("click", function () {
+        copyText(document.getElementById("mpmText").textContent, this);
+    });
+    document.getElementById("mpmOtpCopy").addEventListener("click", function () {
+        copyText(document.getElementById("mpmOtp").textContent, this);
     });
 })();
 </script>
