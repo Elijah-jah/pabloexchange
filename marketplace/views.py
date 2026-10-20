@@ -82,8 +82,7 @@ def _deliver_order(order):
         order.status = 'cancelled'
         order.save(update_fields=['status'])
         group.stock = 0
-        group.is_active = False
-        group.save(update_fields=['stock', 'is_active'])
+        group.save(update_fields=['stock'])
         return False, None, 'Item is sold out.'
 
     if not can_afford(order.user, order.price):
@@ -105,9 +104,7 @@ def _deliver_order(order):
     item.save(update_fields=['is_sold', 'sold_at'])
 
     group.stock = max(0, group.stock - 1)
-    if group.stock == 0:
-        group.is_active = False
-    group.save(update_fields=['stock', 'is_active'])
+    group.save(update_fields=['stock'])
 
     order.item = item                    # DB-enforced: one item, one sale
     order.credentials = item.content
