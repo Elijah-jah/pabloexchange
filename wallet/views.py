@@ -147,5 +147,7 @@ def dev_confirm(request, reference):
 @login_required
 def transactions(request):
     return render(request, 'wallet/transactions.html', {
-        'transactions': WalletTransaction.objects.filter(user=request.user),
+        'transactions': (WalletTransaction.objects
+                       .filter(user=request.user)
+                       .order_by('-created_at')),
     })

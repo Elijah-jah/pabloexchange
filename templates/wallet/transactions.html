@@ -1,78 +1,85 @@
 {% extends 'base.html' %}
+{% load humanize %}
 {% load static %}
 
 {% block title %}Transactions{% endblock %}
+{% block page_title %}Transactions{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/purchases.css' %}?v=2">
+{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="mp-wrap">
 
     <!-- ===== Header ===== -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div class="mp-head-row">
         <div>
-            <h1 class="dash-greeting">Transactions</h1>
-            <p class="dash-sub mb-0">Every naira in and out of your wallet, logged.</p>
+            <h1>Transactions</h1>
+            <p>Every naira in and out of your wallet, logged.</p>
         </div>
-        <a href="{% url 'wallet:fund' %}" class="btn px-btn-solid">
-            <i class="bi bi-plus-lg"></i> Fund Wallet
-        </a>
+        <div class="mp-head-actions">
+            <a href="{% url 'wallet:fund' %}" class="mp-btn mp-btn-solid"><i class="bi bi-plus-lg"></i> Fund Wallet</a>
+        </div>
     </div>
 
-    <!-- ===== Filter bar ===== -->
-    <div class="tx-toolbar">
-
-        <div class="tx-filters" role="tablist">
-            <button class="tx-filter active" data-filter="all">All</button>
-            <button class="tx-filter" data-filter="credit">Credits</button>
-            <button class="tx-filter" data-filter="debit">Debits</button>
-        </div>
-
-        <div class="mk-search-wrap tx-search">
-            <i class="bi bi-search"></i>
-            <input type="text" id="txSearch" class="mk-search" placeholder="Search description or reference…">
-        </div>
-
+    <!-- ===== Search ===== -->
+    <div class="mp-search">
+        <i class="bi bi-search"></i>
+        <input type="text" id="txSearch" placeholder="Search description, reference or method..." autocomplete="off">
     </div>
 
-    <!-- ===== List ===== -->
-    <div class="px-card" id="txList">
+    <!-- ===== Tabs ===== -->
+    <div class="mp-tabs" id="txTabs">
+        <button class="mp-tab active" data-type="all">All</button>
+        <button class="mp-tab" data-type="credit">Credits</button>
+        <button class="mp-tab" data-type="debit">Debits</button>
+    </div>
 
+    <!-- ===== Ledger list (newest first, view-sorted) ===== -->
+    <div class="mp-card" id="txList">
         {% for t in transactions %}
-        <div class="list-row tx-row" data-type="{{ t.type }}" data-search="{{ t.description|lower }} {{ t.reference|lower }} {{ t.method|lower }}">
+        <div class="mp-row tx-row" data-type="{{ t.type }}"
+             data-search="{{ t.description|lower }} {{ t.reference|lower }} {{ t.method|lower }}">
 
-            <div class="list-icon {% if t.type == 'credit' %}emerald{% else %}gold{% endif %}">
+            <div class="mp-icon {% if t.type == 'credit' %}log{% else %}number{% endif %}">
                 {% if t.type == 'credit' %}<i class="bi bi-arrow-down-left"></i>
                 {% else %}<i class="bi bi-arrow-up-right"></i>{% endif %}
             </div>
 
-            <div class="list-body">
-                <div class="list-title">{{ t.description|default:t.get_type_display }}</div>
-                <div class="list-sub">
-                    {{ t.created_at|date:"M d, Y · H:i" }}
-                    {% if t.method %} · {{ t.method }}{% endif %}
-                    {% if t.reference %} · <span class="mono">{{ t.reference|slice:":8" }}…</span>{% endif %}
-                </div>
+            <div class="mp-main">
+                <p class="mp-name">{{ t.description|default:t.get_type_display }}</p>
+                <p class="mp-sub">
+                    <span>{{ t.created_at|date:"M j, Y" }} &middot; {{ t.created_at|date:"H:i" }}</span>
+                    {% if t.method %}<span>&middot; {{ t.method }}</span>{% endif %}
+                    {% if t.reference %}<span class="mono">&middot; {{ t.reference|slice:":8" }}&hellip;</span>{% endif %}
+                </p>
             </div>
 
-            <div class="list-side">
-                <span class="px-pill {{ t.status }}">{{ t.status }}</span>
-                <div class="list-amount mono {% if t.type == 'credit' %}amount-in{% else %}amount-out{% endif %}">
-                    {% if t.type == 'credit' %}+{% else %}-{% endif %}₦{{ t.amount }}
-                </div>
+            <div class="mp-side">
+                <span class="mp-amount {% if t.type == 'credit' %}in{% else %}out{% endif %}">
+                    {% if t.type == 'credit' %}+{% else %}-{% endif %}&#8358;{{ t.amount|floatformat:2|intcomma }}
+                </span>
+                {% if t.status == 'confirmed' %}
+                <span class="mp-badge confirmed">Confirmed</span>
+                {% elif t.status == 'pending' %}
+                <span class="mp-badge pending">Pending</span>
+                {% else %}
+                <span class="mp-badge failed">{{ t.status|title }}</span>
+                {% endif %}
             </div>
 
         </div>
         {% empty %}
-        <div class="px-empty">
+        <div class="mp-empty">
             <i class="bi bi-receipt"></i>
-            No transactions yet — fund your wallet to get started.
-            <div class="mt-2"><a href="{% url 'wallet:fund' %}" class="btn px-btn-ghost btn-sm">Fund wallet</a></div>
+            No transactions yet &mdash; fund your wallet to get started.
+            <div><a href="{% url 'wallet:fund' %}" class="mp-btn mp-btn-solid">Fund Wallet</a></div>
         </div>
         {% endfor %}
-
     </div>
 
-    <!-- Filtered-empty state -->
-    <div class="px-empty" id="txNoResults" style="display:none;">
+    <div class="mp-empty" id="txNone" hidden>
         <i class="bi bi-funnel"></i>
         Nothing matches this filter.
     </div>
@@ -81,5 +88,39 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/transactions.js' %}"></script>
+<script>
+(function () {
+    "use strict";
+
+    var tabs = document.querySelectorAll("#txTabs .mp-tab");
+    var rows = document.querySelectorAll("#txList .tx-row");
+    var searchInput = document.getElementById("txSearch");
+    var txNone = document.getElementById("txNone");
+    var currentType = "all";
+
+    function applyFilters() {
+        var term = searchInput.value.toLowerCase().trim();
+        var visible = 0;
+        rows.forEach(function (row) {
+            var matchType = (currentType === "all" || row.getAttribute("data-type") === currentType);
+            var matchTerm = !term || (row.getAttribute("data-search") || "").indexOf(term) !== -1;
+            var show = matchType && matchTerm;
+            row.style.display = show ? "" : "none";
+            if (show) visible++;
+        });
+        txNone.hidden = visible !== 0;
+    }
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+            tabs.forEach(function (t) { t.classList.remove("active"); });
+            tab.classList.add("active");
+            currentType = tab.getAttribute("data-type");
+            applyFilters();
+        });
+    });
+
+    searchInput.addEventListener("input", applyFilters);
+})();
+</script>
 {% endblock %}

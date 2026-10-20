@@ -397,3 +397,43 @@
     .mp-head-actions { width: 100%; }
     .mp-head-actions .mp-btn { flex: 1; justify-content: center; }
 }
+
+
+
+/* ============================================================
+   Transactions page additions (append to purchases.css)
+   ============================================================ */
+
+/* status pills for wallet ledger states */
+.mp-badge.confirmed { background: #d1fae5; color: #065f46; }
+.mp-badge.pending   { background: #fef3c7; color: #92400e; }
+.mp-badge.failed    { background: #fee2e2; color: #b91c1c; }
+
+/* credit/debit amount coloring */
+.mp-amount { font-weight: 800; font-size: .9rem; }
+.mp-amount.in  { color: #047857; }
+.mp-amount.out { color: #b45309; }
+
+/* search bar */
+.mp-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid #e3ece8;
+    border-radius: 100px;
+    padding: 9px 16px;
+    margin-bottom: 16px;
+    max-width: 420px;
+}
+.mp-search i { color: #8aa39a; font-size: .85rem; }
+.mp-search input {
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: .86rem;
+    color: #12211c;
+    background: transparent;
+    min-width: 0;
+}
+.mp-search:focus-within { border-color: #059669; box-shadow: 0 0 0 3px rgba(5, 150, 105, .12); }
