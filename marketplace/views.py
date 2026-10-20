@@ -116,7 +116,7 @@ def _deliver_order(order):
 
     logger.info('Log order %s delivered (user %s, group %s)',
                 order.order_id, order.user_id, group.id)
-    return True, get_balance(order.user)
+    return True, get_balance(order.user), None
 
 
 @login_required
