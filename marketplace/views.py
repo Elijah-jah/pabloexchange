@@ -60,14 +60,71 @@ def marketplace_logs(request):
     })
 
 
+def _deliver_order(order):
+    """Attempt to deliver a waiting order: pop creds, debit wallet, complete.
+
+    Returns (ok, error_message). On any failure the order is cancelled and
+    NOTHING was charged - credentials stay in stock. Must be called inside
+    an atomic block with the order row locked."""
+    group = order.group
+    if group is None:
+        order.status = 'cancelled'
+        order.save(update_fields=['status'])
+        return False, 'This product is no longer available.'
+
+    item = (LogItem.objects
+            .select_for_update()
+            .filter(group=group, is_sold=False)
+            .order_by('id')
+            .first())
+    if item is None:
+        order.status = 'cancelled'
+        order.save(update_fields=['status'])
+        group.stock = 0
+        group.is_active = False
+        group.save(update_fields=['stock', 'is_active'])
+        return False, 'Item is sold out.'
+
+    if not can_afford(order.user, order.price):
+        balance = getattr(getattr(order.user, 'wallet', None), 'balance', 0) or 0
+        order.status = 'cancelled'
+        order.save(update_fields=['status'])
+        return False, (f'Insufficient funds. This order costs \u20A6{order.price:,.2f} '
+                       f'but your balance is \u20A6{balance:,.2f}.')
+
+    # Debit only now - creds are guaranteed in hand
+    debit(order.user, order.price,
+          description=f'{group.name} (log)',
+          meta={'group_id': group.id, 'order_id': order.id})
+
+    item.is_sold = True
+    item.sold_at = timezone.now()
+    item.save(update_fields=['is_sold', 'sold_at'])
+
+    group.stock = max(0, group.stock - 1)
+    if group.stock == 0:
+        group.is_active = False
+    group.save(update_fields=['stock', 'is_active'])
+
+    order.item = item                    # DB-enforced: one item, one sale
+    order.credentials = item.content
+    order.status = 'completed'
+    order.save(update_fields=['item', 'credentials', 'status'])
+
+    logger.info('Log order %s delivered (user %s, group %s)',
+                order.order_id, order.user_id, group.id)
+    return True, None
+
+
 @login_required
 @transaction.atomic
 def purchase_log(request, pk):
-    """RESERVE a unit: create a waiting order. No wallet movement yet.
+    """Reserve + deliver in one request.
 
-    Delivery happens via deliver_log (polled by the frontend) so a failure
-    can never charge the customer without handing over credentials.
-    """
+    Creates a waiting order, then attempts immediate delivery inside the
+    same atomic transaction. Returns the credentials right away when delivery
+    succeeds; on failure the order is cancelled, nothing is charged, and
+    the customer sees the exact reason."""
     group = get_object_or_404(
         LogGroup.objects.select_for_update().select_related('subcategory'),
         pk=pk, is_active=True,
@@ -112,18 +169,25 @@ def purchase_log(request, pk):
         status='waiting',
     )
     logger.info('Log order %s reserved (user %s, group %s)',
-                order.order_id, request.user.id, group.id)
-    return JsonResponse({'success': True, 'order_id': order.id,
-                         'order_ref': order.order_id})
+                order.order_id, request.user_id, group.id)
+
+    # Attempt immediate delivery - same transaction, so any failure
+    # rolls back cleanly and the customer is never charged without creds.
+    ok, err = _deliver_order(order)
+    if ok:
+        return JsonResponse({'success': True, 'status': 'completed',
+                             'order_ref': order.order_id,
+                             'creds': order.credentials,
+                             'format_label': group.format_labels})
+    return JsonResponse({'success': False, 'error': err}, status=400)
 
 
 @login_required
 @transaction.atomic
 def deliver_log(request, pk):
-    """DELIVER a waiting order: pop creds, debit wallet, mark completed.
+    """Fallback delivery for a waiting order (network retries, page reloads).
 
-    Atomic - any failure rolls back everything: no charge, creds stay in stock.
-    """
+    Returns creds when completed; business failures cancel the order."""
     order = get_object_or_404(
         LogOrder.objects.select_for_update().select_related('group'),
         pk=pk, user=request.user,
@@ -139,61 +203,13 @@ def deliver_log(request, pk):
         return JsonResponse({'success': False, 'status': order.status,
                              'error': 'This order is no longer active.'}, status=400)
 
-    group = order.group
-    if group is None:
-        order.status = 'cancelled'
-        order.save(update_fields=['status'])
-        return JsonResponse({'success': False, 'status': 'cancelled',
-                             'error': 'This product is no longer available.'}, status=400)
-
-    item = (LogItem.objects
-            .select_for_update()
-            .filter(group=group, is_sold=False)
-            .order_by('id')
-            .first())
-    if item is None:
-        order.status = 'cancelled'
-        order.save(update_fields=['status'])
-        group.stock = 0
-        group.is_active = False
-        group.save(update_fields=['stock', 'is_active'])
-        return JsonResponse({'success': False, 'status': 'sold_out',
-                             'error': 'Item is sold out.'}, status=400)
-
-    # Debit only now - creds are guaranteed in hand
-    if not can_afford(request.user, order.price):
-        balance = getattr(getattr(request.user, 'wallet', None), 'balance', 0) or 0
-        order.status = 'cancelled'
-        order.save(update_fields=['status'])
-        return JsonResponse({'success': False, 'status': 'insufficient_funds',
-                             'error': (f'Insufficient funds. This order costs \u20A6{order.price:,.2f} '
-                                       f'but your balance is \u20A6{balance:,.2f}.')},
-                            status=400)
-
-    debit(request.user, order.price,
-          description=f'{group.name} (log)',
-          meta={'group_id': group.id, 'order_id': order.id})
-
-    item.is_sold = True
-    item.sold_at = timezone.now()
-    item.save(update_fields=['is_sold', 'sold_at'])
-
-    group.stock = max(0, group.stock - 1)
-    if group.stock == 0:
-        group.is_active = False
-    group.save(update_fields=['stock', 'is_active'])
-
-    order.item = item                    # DB-enforced: one item, one sale
-    order.credentials = item.content
-    order.status = 'completed'
-    order.save(update_fields=['item', 'credentials', 'status'])
-
-    logger.info('Log order %s delivered (user %s, group %s)',
-                order.order_id, request.user.id, group.id)
-    return JsonResponse({'success': True, 'status': 'completed',
-                         'order_ref': order.order_id,
-                         'creds': order.credentials,
-                         'format_label': group.format_labels})
+    ok, err = _deliver_order(order)
+    if ok:
+        return JsonResponse({'success': True, 'status': 'completed',
+                             'order_ref': order.order_id,
+                             'creds': order.credentials,
+                             'format_label': order.group.format_labels if order.group else ''})
+    return JsonResponse({'success': False, 'status': order.status, 'error': err}, status=400)
 
 
 @login_required
@@ -212,7 +228,7 @@ def cancel_log_order(request, pk):
 
     order.status = 'cancelled'
     order.save(update_fields=['status'])
-    logger.info('Log order %s cancelled (user %s)', order.id, request.user.id)
+    logger.info('Log order %s cancelled (user %s)', order.order_id, request.user_id)
     return JsonResponse({'success': True, 'message': 'Order cancelled. No charge was made.'})
 
 

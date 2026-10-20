@@ -410,8 +410,15 @@
         })
         .then(function (r) { return r.json(); })
         .then(function (data) {
+            if (data.success && data.creds) {
+                /* Instant delivery - render the log details card now */
+                showCredsModal(data.order_ref || "", data.creds, data.format_label);
+                modalYesBtn.disabled = false;
+                modalYesBtn.textContent = "Yes, Continue";
+                return;
+            }
             if (data.success && data.order_id) {
-                /* Reserved - now poll the deliver endpoint until creds arrive */
+                /* Reserved but not yet delivered - poll until creds arrive */
                 modalYesBtn.textContent = "Processing...";
                 pollDeliver(data.order_id, data.order_ref || data.order_id, 0);
                 return;
@@ -427,8 +434,6 @@
         })
         .finally(function () {
             modalYesBtn.classList.remove("paying");
-            if (!modalYesBtn.disabled) modalYesBtn.textContent = "Yes, Continue";
-            else if (modalYesBtn.textContent === "Processing...") modalYesBtn.textContent = "Yes, Continue";
         });
     });
 
