@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
-
+from marketplace.models import LogOrder
 from countries.models import Country
 from .models import NumberOrder, Service
 from .services import (InsufficientFunds, PricingNotAvailable,
@@ -89,6 +89,49 @@ def cancel_order(request):
 
 @login_required
 def my_purchases(request):
+    """All purchases — logs and numbers merged, newest first."""
+    numbers = (NumberOrder.objects
+               .filter(user=request.user)
+               .select_related('service'))
+    logs = (LogOrder.objects
+            .filter(user=request.user)
+            .select_related('group'))
+
+    orders = []
+
+    # ---- SMS number purchases ----
+    for o in numbers:
+        otp_msg = o.messages.last()
+        orders.append({
+            'type': 'number',
+            'name': o.service.name if o.service else 'Number',
+            'order_id': '',
+            'detail': o.phone_number or '',
+            'otp': otp_msg.otp_code if otp_msg else '',
+            'format_labels': '',
+            'price': o.price,
+            'status': o.status,
+            'created_at': o.created_at,
+        })
+
+    # ---- Log purchases ----
+    for o in logs:
+        orders.append({
+            'type': 'log',
+            'name': o.group_name,
+            'order_id': o.order_id,          # PLOG####
+            'detail': o.credentials or '',
+            'otp': '',
+            'format_labels': (o.group.format_labels if o.group
+                               else 'UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL'),
+            'price': o.price,
+            'status': o.status,
+            'created_at': o.created_at,
+        })
+
+    # newest purchase first across both types
+    orders.sort(key=lambda x: x['created_at'], reverse=True)
+
     return render(request, 'smsmarket/my_purchases.html', {
-        'orders': NumberOrder.objects.filter(user=request.user),
+        'orders': orders,
     })

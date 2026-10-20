@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
+{% load humanize %}
 {% load static %}
 
 {% block title %}My Purchases{% endblock %}
+{% block page_title %}My Purchases{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -10,85 +12,152 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
             <h1 class="dash-greeting">My Purchases</h1>
-            <p class="dash-sub mb-0">Every number you've bought and its status.</p>
+            <p class="dash-sub mb-0">Every log and number you've bought &mdash; full history.</p>
         </div>
-        <a href="{% url 'buynumber' %}" class="btn px-btn-solid">
-            <i class="bi bi-plus-lg"></i> Buy Number
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{% url 'marketplace' %}" class="btn px-btn-solid"><i class="bi bi-shop"></i> Buy Logs</a>
+            <a href="{% url 'buynumber' %}" class="btn px-btn-ghost"><i class="bi bi-phone"></i> Buy Number</a>
+        </div>
     </div>
 
-    <!-- ===== Filter bar ===== -->
-    <div class="tx-toolbar">
-
-        <div class="tx-filters" role="tablist">
-            <button class="tx-filter active" data-filter="all">All</button>
-            <button class="tx-filter" data-filter="active">Active</button>
-            <button class="tx-filter" data-filter="completed">Completed</button>
-            <button class="tx-filter" data-filter="expired">Expired</button>
-            <button class="tx-filter" data-filter="cancelled">Cancelled</button>
-        </div>
-
-        <div class="mk-search-wrap tx-search">
-            <i class="bi bi-search"></i>
-            <input type="text" id="poSearch" class="mk-search" placeholder="Search service or number…">
-        </div>
-
+    <!-- ===== Tabs: All / Logs / Numbers ===== -->
+    <div class="tx-filters" role="tablist" id="poTabs">
+        <button class="tx-filter active" data-type="all">All</button>
+        <button class="tx-filter" data-type="log">Logs</button>
+        <button class="tx-filter" data-type="number">Numbers</button>
     </div>
 
-    <!-- ===== List ===== -->
+    <!-- ===== List (newest first, both types merged) ===== -->
     <div class="px-card" id="poList">
 
         {% for o in orders %}
-        {% with otp=o.messages.last %}
-        <div class="list-row po-row" data-status="{{ o.status }}" data-search="{{ o.service.name|lower }} {{ o.phone_number }}">
+        <div class="list-row po-row" data-type="{{ o.type }}"
+             data-search="{{ o.name|lower }} {{ o.detail|lower }} {{ o.order_id|lower }}">
 
-            <div class="list-icon {% if o.status == 'completed' %}emerald{% elif o.status == 'active' %}gold{% else %}muted{% endif %}">
-                {% if o.status == 'completed' %}<i class="bi bi-check-lg"></i>
-                {% elif o.status == 'active' %}<i class="bi bi-hourglass-split"></i>
-                {% else %}<i class="bi bi-x-lg"></i>{% endif %}
+            <!-- type icon -->
+            <div class="list-icon {% if o.status == 'completed' %}emerald{% elif o.status == 'active' or o.status == 'waiting' %}gold{% else %}muted{% endif %}">
+                {% if o.type == 'log' %}<i class="bi bi-file-lock2"></i>
+                {% else %}<i class="bi bi-phone"></i>{% endif %}
             </div>
 
             <div class="list-body">
-                <div class="list-title">{{ o.service.name }}</div>
-                <div class="list-sub mono">{{ o.phone_number|default:"Awaiting number" }} · {{ o.created_at|date:"M d, Y · H:i" }}</div>
+                <div class="list-title">
+                    {{ o.name }}
+                    {% if o.order_id %}<span class="mono opacity-75 small"> &middot; {{ o.order_id }}</span>{% endif %}
+                </div>
+
+                {% if o.type == 'log' %}
+                <!-- LOG row: creds inline + copy -->
+                <div class="list-sub mono d-flex align-items-center gap-2 flex-wrap">
+                    <span style="word-break:break-all;">{{ o.detail|truncatechars:60|default:"&mdash;" }}</span>
+                    {% if o.detail %}
+                    <button class="otp-chip mono po-copy" data-copy="{{ o.detail|escape }}" title="Copy login">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                    {% endif %}
+                </div>
+                {% if o.format_labels %}
+                <div class="small opacity-75 mono">{{ o.format_labels }}</div>
+                {% endif %}
+
+                {% else %}
+                <!-- NUMBER row: phone + OTP inline -->
+                <div class="list-sub mono">{{ o.detail|default:"Awaiting number" }} &middot; {{ o.created_at|date:"M d, Y · H:i" }}</div>
+                {% if o.otp %}
+                <div class="mt-1">
+                    <button class="otp-chip mono po-copy" data-copy="{{ o.otp }}" title="Copy OTP">
+                        OTP: {{ o.otp }} <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+                {% endif %}
+                {% endif %}
+
+                <div class="small opacity-75 mt-1">{{ o.created_at|date:"M d, Y · H:i" }}</div>
             </div>
 
             <div class="list-side">
-                {% if o.status == 'completed' and otp %}
-                <button class="otp-chip mono" onclick="pxCopy('{{ otp.otp_code }}', this)" title="Click to copy">
-                    {{ otp.otp_code }} <i class="bi bi-clipboard"></i>
-                </button>
-                {% else %}
-                <span class="px-pill {{ o.status }}">{{ o.status }}</span>
-                {% endif %}
-                <div class="list-amount mono">₦{{ o.price }}</div>
+                <span class="px-pill {{ o.status }}">{{ o.status|title }}</span>
+                <div class="list-amount mono">&#8358;{{ o.price|floatformat:2|intcomma }}</div>
             </div>
 
-            <a href="{% url 'smsmarket:order_detail' o.pk %}" class="po-open" title="Open order">
-                <i class="bi bi-chevron-right"></i>
-            </a>
-
         </div>
-        {% endwith %}
         {% empty %}
         <div class="px-empty">
             <i class="bi bi-bag"></i>
-            No purchases yet — your numbers will show up here.
-            <div class="mt-2"><a href="{% url 'buynumber' %}" class="btn px-btn-ghost btn-sm">Buy Number</a></div>
+            Nothing here yet.
+            <div class="mt-2 d-flex gap-2 justify-content-center">
+                <a href="{% url 'marketplace' %}" class="btn px-btn-ghost btn-sm">Buy Logs</a>
+                <a href="{% url 'buynumber' %}" class="btn px-btn-ghost btn-sm">Buy Number</a>
+            </div>
         </div>
         {% endfor %}
 
     </div>
 
-    <!-- Filtered-empty state -->
+    <!-- tab-empty state -->
     <div class="px-empty" id="poNoResults" style="display:none;">
         <i class="bi bi-funnel"></i>
-        No orders match this filter.
+        Nothing in this category yet.
     </div>
 
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/purchases.js' %}"></script>
+<script>
+(function () {
+    "use strict";
+
+    /* ---------- TABS: All / Logs / Numbers ---------- */
+    var tabs = document.querySelectorAll("#poTabs .tx-filter");
+    var rows = document.querySelectorAll("#poList .po-row");
+    var noResults = document.getElementById("poNoResults");
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+            tabs.forEach(function (t) { t.classList.remove("active"); });
+            tab.classList.add("active");
+
+            var type = tab.getAttribute("data-type");
+            var visible = 0;
+            rows.forEach(function (row) {
+                var show = (type === "all" || row.getAttribute("data-type") === type);
+                row.style.display = show ? "" : "none";
+                if (show) visible++;
+            });
+            noResults.style.display = visible === 0 ? "" : "none";
+        });
+    });
+
+    /* ---------- INLINE COPY ---------- */
+    document.querySelectorAll(".po-copy").forEach(function (btn) {
+        btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            var text = btn.getAttribute("data-copy");
+            if (!text) return;
+            var done = function () {
+                var icon = btn.querySelector("i");
+                if (icon) {
+                    var old = icon.className;
+                    icon.className = "bi bi-check2";
+                    setTimeout(function () { icon.className = old; }, 1500);
+                }
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+            } else { fallback(); }
+            function fallback() {
+                var ta = document.createElement("textarea");
+                ta.value = text;
+                ta.style.position = "fixed";
+                ta.style.opacity = "0";
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand("copy"); done(); } catch (err) {}
+                document.body.removeChild(ta);
+            }
+        });
+    });
+})();
+</script>
 {% endblock %}
