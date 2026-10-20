@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}Marketplace{% endblock %}
 {% block page_title %}Marketplace{% endblock %}
@@ -73,7 +74,7 @@
                 <h6 class="prod-name">{{ product.title }}</h6>
                 <p class="prod-desc">{{ product.description|default:''|truncatechars:80 }}</p>
                 <div class="prod-foot">
-                    <span class="prod-price mono">&#8358;{{ product.price|floatformat:2 }}</span>
+                    <span class="prod-price mono">&#8358;{{ product.price|floatformat:2|intcomma }}</span>
                     <button class="prod-buy" {% if product.stock == 0 %}disabled{% endif %}>
                         {% if product.stock == 0 %}Sold out{% else %}<i class="bi bi-bag-plus"></i>Buy{% endif %}
                     </button>
@@ -166,7 +167,6 @@
 
 
     var purchaseBaseUrl = "{% url 'purchase_log' 0 %}".replace(/0\/$/, "");
-    var deliverBaseUrl = "{% url 'deliver_log' 0 %}".replace(/0\/$/, "");
     var walletBalance = parseFloat("{{ user_wallet.balance|default:0 }}");
 
     /* ---------- ELEMENTS ---------- */
@@ -304,65 +304,6 @@
     }
 
     /* ---------- RESERVE -> DELIVER FLOW ---------- */
-    function showCredsModal(orderRef, creds, formatLabel) {
-        close(buyModal);
-
-        logOrderId.textContent = orderRef;
-        logOrderId.hidden = false;
-        if (formatLabel) logFormatLabel.textContent = formatLabel;
-        logCredsText.textContent = creds || "\u2014";
-
-        /* update stock on the card */
-        var stockEl = currentCard.querySelector(".prod-stock");
-        var stock = parseInt(currentCard.getAttribute("data-stock") || "0", 10);
-        if (stockEl && stock > 0) {
-            if (stock > 1) {
-                stockEl.textContent = (stock - 1) + " in stock";
-                currentCard.setAttribute("data-stock", String(stock - 1));
-            } else {
-                stockEl.textContent = "Sold out";
-                stockEl.classList.add("out");
-                currentCard.setAttribute("data-stock", "0");
-                var b = currentCard.querySelector(".prod-buy");
-                if (b) { b.disabled = true; b.textContent = "Sold out"; }
-            }
-        }
-
-        open(logModal);
-    }
-
-    function pollDeliver(orderId, orderRef, attempts) {
-        fetch(deliverBaseUrl + orderId + "/", {
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (d) {
-            if (d.status === "completed" && d.creds) {
-                showCredsModal(d.order_id || orderRef, d.creds, d.format_label);
-                if (d.new_balance) updateWallet(parseFloat(d.new_balance));
-                return;
-            }
-            if (d.status === "waiting" && attempts < 30) {
-                setTimeout(function () { pollDeliver(orderId, orderRef, attempts + 1); }, 1500);
-                return;
-            }
-            modalError.textContent = (d && d.error) || "Delivery failed. If you were charged, contact support.";
-            modalError.hidden = false;
-            modalYesBtn.disabled = false;
-            modalYesBtn.textContent = "Yes, Continue";
-        })
-        .catch(function () {
-            if (attempts < 30) {
-                setTimeout(function () { pollDeliver(orderId, orderRef, attempts + 1); }, 3000);
-            } else {
-                modalError.textContent = "Network error while delivering. Contact support.";
-                modalError.hidden = false;
-                modalYesBtn.disabled = false;
-                modalYesBtn.textContent = "Yes, Continue";
-            }
-        });
-    }
-
     /* ---------- CARD CLICK -> CONFIRM ---------- */
     allCards.forEach(function (card) {
         card.addEventListener("click", function () {
@@ -421,17 +362,35 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
             if (data.success && data.creds) {
-                /* Instant delivery - render the log details card now */
-                showCredsModal(data.order_id || "", data.creds, data.format_label);
+                /* Delivered instantly - render the log details card now */
+                close(buyModal);
+
+                logOrderId.textContent = data.order_id || "";
+                logOrderId.hidden = !data.order_id;
+
+                if (data.format_label) logFormatLabel.textContent = data.format_label;
+                logCredsText.textContent = data.creds || "\u2014";
+
                 if (data.new_balance) updateWallet(parseFloat(data.new_balance));
+
+                /* update stock on the card */
+                var stockEl = currentCard.querySelector(".prod-stock");
+                var stock = parseInt(currentCard.getAttribute("data-stock") || "0", 10);
+                if (stockEl && stock > 0) {
+                    if (stock > 1) {
+                        stockEl.textContent = (stock - 1) + " in stock";
+                        currentCard.setAttribute("data-stock", String(stock - 1));
+                    } else {
+                        stockEl.textContent = "Sold out";
+                        stockEl.classList.add("out");
+                        currentCard.setAttribute("data-stock", "0");
+                        var b = currentCard.querySelector(".prod-buy");
+                        if (b) { b.disabled = true; b.textContent = "Sold out"; }
+                    }
+                }
+
+                open(logModal);
                 modalYesBtn.disabled = false;
-                modalYesBtn.textContent = "Yes, Continue";
-                return;
-            }
-            if (data.success && data.order_id) {
-                /* Reserved but not yet delivered - poll until creds arrive */
-                modalYesBtn.textContent = "Processing...";
-                pollDeliver(data.order_id, data.order_ref || data.order_id, 0);
                 return;
             }
             modalError.textContent = (data && data.error) || "Purchase failed. Please try again.";
@@ -445,6 +404,7 @@
         })
         .finally(function () {
             modalYesBtn.classList.remove("paying");
+            if (!modalYesBtn.disabled) modalYesBtn.textContent = "Yes, Continue";
         });
     });
 
@@ -493,4 +453,4 @@
 </script>
 
 {% endblock %}
- 
+PS C:\Users\user\OneDrive\Desktop\Pabloexchange> 
