@@ -1,7 +1,7 @@
 /* ============================================================
-   PabloExchange — App shell v6
+   PabloExchange — App shell v7
    Clean scrollbars, zero gaps, overflow-protected,
-   page-exit veil + small responsive/accessibility polish
+   page-exit veil, toast notifications, responsive polish
    ============================================================ */
 
 :root {
@@ -442,21 +442,6 @@ body.app-body {
     margin: 0 auto;
 }
 
-/* Alerts */
-.app-alert {
-    display: flex;
-    align-items: center;
-    border-radius: 11px;
-    font-size: .9rem;
-    font-weight: 500;
-    border: 1px solid transparent;
-    padding: 11px 16px;
-}
-.alert-success.app-alert { background: var(--sb-green-50); color: var(--sb-green-800); border-color: #b7e4cf; }
-.alert-error.app-alert   { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
-.alert-info.app-alert,
-.alert-warning.app-alert { background: var(--sb-green-50); color: var(--sb-green-800); border-color: #cfe8dc; }
-
 /* Footer */
 .app-body .app-footer {
     text-align: center;
@@ -514,6 +499,86 @@ body.app-body {
     -webkit-text-fill-color: transparent;
 }
 @keyframes pxSpin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   TOAST NOTIFICATIONS — top of screen, 4s auto-dismiss, cancelable
+   ============================================================ */
+#toast-container {
+    position: fixed;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10050;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: min(430px, calc(100vw - 24px));
+    pointer-events: none;   /* container lets clicks through; toasts re-enable */
+}
+
+.px-toast {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: var(--grad-brand);
+    color: var(--sb-green-50);
+    border-radius: 12px;
+    padding: 13px 40px 13px 14px;
+    box-shadow: 0 12px 32px rgba(2, 44, 34, .35);
+    overflow: hidden;
+    font-size: .9rem;
+    line-height: 1.4;
+    pointer-events: all;
+    transform: translateY(-140%);
+    opacity: 0;
+    transition: transform .28s ease, opacity .28s ease;
+}
+.px-toast--in  { transform: translateY(0); opacity: 1; }
+.px-toast--out { transform: translateY(-140%); opacity: 0; }
+
+.px-toast-icon { font-size: 1.05rem; flex-shrink: 0; }
+.px-toast--success .px-toast-icon { color: var(--sb-gold); }
+.px-toast--info .px-toast-icon,
+.px-toast--warning .px-toast-icon { color: var(--sb-gold); }
+.px-toast--error { background: linear-gradient(160deg, #450a0a, #7f1d1d); }
+.px-toast--error .px-toast-icon { color: #fca5a5; }
+
+.px-toast-text { flex: 1; min-width: 0; }
+
+/* Cancel button — always visible on the right */
+.px-toast-close {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, .1);
+    border: none;
+    border-radius: 7px;
+    color: rgba(255, 255, 255, .75);
+    font-size: 1.05rem;
+    line-height: 1;
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+}
+.px-toast-close:hover { background: rgba(255, 255, 255, .22); color: #ffffff; }
+
+/* Countdown progress bar along the bottom */
+.px-toast-bar {
+    position: absolute;
+    left: 0; bottom: 0;
+    height: 3px;
+    width: 100%;
+    background: var(--grad-gold);
+    animation: pxToastBar 4s linear forwards;
+}
+.px-toast--paused .px-toast-bar { animation-play-state: paused; }
+@keyframes pxToastBar { from { width: 100%; } to { width: 0%; } }
 
 /* ---------------- Responsive ---------------- */
 @media (max-width: 991.98px) {

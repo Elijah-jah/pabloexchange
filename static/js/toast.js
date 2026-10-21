@@ -14,7 +14,7 @@
     };
 
     var container = null;
-    var DURATION = 4500;   // ms before auto-dismiss
+    var DURATION = 4000;   // ms before auto-dismiss
 
     function ensureContainer() {
         if (container) { return container; }
@@ -53,7 +53,7 @@
         });
         toast.addEventListener('mouseleave', function () {
             toast.classList.remove('px-toast--paused');
-            hideTimer = setTimeout(dismiss, 1600);
+            hideTimer = setTimeout(dismiss, 1500);
         });
 
         box.appendChild(toast);
