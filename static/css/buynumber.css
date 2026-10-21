@@ -392,3 +392,15 @@
         max-height: min(300px, 45vh);
     }
 }
+
+/* Server picker — bold green "primary choice" variant of the widget */
+.ss-control--server {
+    border-width: 2px;
+    border-color: var(--bn-green-600);
+    background-color: var(--bn-green-50);
+    font-weight: 700;
+}
+.ss-wrapper.disabled .ss-control--server {
+    background-color: var(--bn-green-50);
+    color: var(--bn-muted);
+}

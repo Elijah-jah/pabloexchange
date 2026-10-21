@@ -43,7 +43,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ================= Built-in searchable dropdown =================
-    function buildSearchable(select, searchPlaceholder) {
+    // opts.search: false hides the search input (for tiny lists like server)
+    // opts.controlClass: extra class on the control (e.g. server styling)
+    function buildSearchable(select, searchPlaceholder, opts) {
+        opts = opts || {};
+        var showSearch = opts.search !== false;
+
         select.classList.add('ss-native');
 
         var wrapper = document.createElement('div');
@@ -52,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var control = document.createElement('button');
         control.type = 'button';
-        control.className = 'ss-control';
+        control.className = 'ss-control' + (opts.controlClass ? ' ' + opts.controlClass : '');
 
         var panel = document.createElement('div');
         panel.className = 'ss-panel';
@@ -63,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
         search.className = 'ss-search';
         search.placeholder = searchPlaceholder;
         search.setAttribute('autocomplete', 'off');
+        if (!showSearch) { search.style.display = 'none'; }
 
         var list = document.createElement('div');
         list.className = 'ss-list';
@@ -133,7 +139,9 @@ document.addEventListener('DOMContentLoaded', function () {
             panel.hidden = false;
             isOpen = true;
             wrapper.classList.add('open');
-            setTimeout(function () { search.focus(); }, 30);
+            if (showSearch) {
+                setTimeout(function () { search.focus(); }, 30);
+            }
         }
 
         function close() {
@@ -173,6 +181,11 @@ document.addEventListener('DOMContentLoaded', function () {
         return { syncLabel: syncLabel, syncDisabled: syncDisabled };
     }
 
+    // Server gets the same widget, no search box, and its bold green styling
+    var serverSS = buildSearchable(serverSelect, '', {
+        search: false,
+        controlClass: 'ss-control--server'
+    });
     var countrySS = buildSearchable(countrySelect, 'Search Country...');
     var serviceSS = buildSearchable(serviceSelect, 'Search Service...');
 
