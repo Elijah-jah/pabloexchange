@@ -19,6 +19,10 @@
     <a href="{% url 'buynumber' %}" class="btn db-btn-primary">
         <i class="bi bi-phone"></i> Buy Number
     </a>
+
+    <a href="{% url 'marketplace' %}" class="btn db-btn-primary">
+        <i class="bi bi-phone"></i> Buy Logs
+    </a>
 </div>
 
 <!-- ===== Balance + stats ===== -->
@@ -116,6 +120,7 @@
                 <i class="bi bi-inbox"></i>
                 <p>No orders yet — grab your first number.</p>
                 <a href="{% url 'buynumber' %}" class="btn db-btn-ghost btn-sm">Buy Number</a>
+                <a href="{% url 'marketplace' %}" class="btn db-btn-ghost btn-sm">Buy Logs</a>
             </div>
             {% endfor %}
         </div>
