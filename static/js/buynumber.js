@@ -162,9 +162,27 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ---------- Auto-refresh while waiting for SMS ----------
-    if (document.querySelector('.bn-waiting')) {
-        setTimeout(function () { location.reload(); }, 8000);
+    // ---------- Silent poll while waiting for SMS (no more 8s reloads) ----------
+    // The server-side APScheduler sweep delivers the SMS whether this page
+    // is open or not — this just refreshes the page ONCE when it lands.
+    var waitingEl = document.querySelector('.bn-waiting');
+    if (waitingEl) {
+        // order id is already on the page inside the cancel form's input
+        var orderInput = document.querySelector('.bn-cancel-form input[name="order_id"]');
+        var orderId = orderInput ? orderInput.value : null;
+        if (orderId) {
+            var poll = setInterval(function () {
+                fetch('/smsmarket/order/' + orderId + '/status/')
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (data.status !== 'active') {
+                            clearInterval(poll);
+                            location.reload();  // one refresh, only when code lands
+                        }
+                    })
+                    .catch(function () { /* network blip — try again in 10s */ });
+            }, 10000);
+        }
     }
 
 });
