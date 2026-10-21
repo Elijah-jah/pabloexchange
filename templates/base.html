@@ -217,16 +217,14 @@
     </header>
 
     <main class="app-content">
+
+        <!-- Django flash messages — picked up by toast.js and shown as toasts -->
         {% if messages %}
+        <div id="django-messages" hidden>
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} app-alert alert-dismissible fade show">
-                {% if message.tags == 'error' %}<i class="bi bi-exclamation-circle-fill me-2"></i>
-                {% elif message.tags == 'success' %}<i class="bi bi-check-circle-fill me-2"></i>
-                {% else %}<i class="bi bi-info-circle-fill me-2"></i>{% endif %}
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+            <div class="dj-msg" data-level="{{ message.tags }}">{{ message }}</div>
             {% endfor %}
+        </div>
         {% endif %}
 
         {% block content %}{% endblock %}
@@ -338,6 +336,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 })();
 </script>
+
+<!-- Toast notifications (reads #django-messages; exposes showToast()) -->
+<script src="{% static 'js/toast.js' %}"></script>
 
 {% block extra_js %}{% endblock %}
 
