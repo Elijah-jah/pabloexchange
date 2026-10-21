@@ -1,7 +1,8 @@
 from django.urls import path
 
-from . import views
+from smsmarket import views as smsmarket_views
 
 urlpatterns = [
-    path('for-country/<str:code>/', views.services_for_country, name='services_for_country'),
+    path('for-country/<str:code>/', smsmarket_views.for_country, name='for_country'),
+    path('check-price/', smsmarket_views.check_price, name='check_price'),
 ]

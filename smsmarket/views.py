@@ -21,9 +21,8 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def for_country(request, code):
-    """JSON: services + prices for one country. Feeds buynumber.js.
-    DB Pricing rows win; everything else the provider offers is filled in
-    live with margin — so the full catalog shows for every country."""
+    """JSON: services for one country. DB rows include their prices; live
+    catalog items return price=None and are priced on demand when selected."""
     country = get_object_or_404(Country, code=code, is_active=True)
     server = request.GET.get('server', 'instantnums')
     if server not in ('daisysms', 'instantnums'):
@@ -48,8 +47,6 @@ def for_country(request, code):
             'price': str(row.sell_price),
         })
 
-    # Fill in the rest of the provider's catalog for this country,
-    # skipping names already covered by DB rows (they win).
     from .services import live_catalog
     for item in live_catalog(server, country.code, exclude_codes=seen):
         if item['name'].lower() in seen_names:
@@ -58,6 +55,25 @@ def for_country(request, code):
 
     services.sort(key=lambda s: s['name'])
     return JsonResponse({'services': services})
+
+
+@login_required
+def check_price(request):
+    """JSON: live sell price for one service+country. Fetched by buynumber.js
+    when the customer selects a service that came from the live catalog."""
+    service = (request.GET.get('service') or '').strip()
+    country = (request.GET.get('country') or '').strip()
+    server = request.GET.get('server', 'instantnums')
+    if server not in ('daisysms', 'instantnums'):
+        server = 'instantnums'
+    if not service or not country:
+        return JsonResponse({'error': 'missing parameters'}, status=400)
+
+    from .services import live_sell_price
+    sell = live_sell_price(server, service, country)
+    if sell is None:
+        return JsonResponse({'available': False})
+    return JsonResponse({'available': True, 'price': str(sell)})
 
 
 @login_required
@@ -109,6 +125,8 @@ def buy(request):
             order = reserve_number(request.user, service_code=service_code,
                                    country_code=country_code, provider_name=server)
         except PricingNotAvailable as e:
+            logger.warning('Buy rejected: %s (user=%s, country=%s, service=%s, server=%s)',
+                           e, request.user.id, country_code, service_code, server)
             messages.error(request, str(e))
             return ajax_error_response('smsmarket:buy')
         except InsufficientFunds as e:
@@ -148,18 +166,6 @@ def buy(request):
         'balance': wallet.balance,
     })
 
-
-@login_required
-def order_status(request, pk):
-    """JSON: current status + OTP for an order. Powers silent page polling."""
-    order = get_object_or_404(NumberOrder, pk=pk, user=request.user)
-    maybe_deliver(order)
-    order.refresh_from_db()
-    msg = order.messages.last()
-    return JsonResponse({
-        'status': order.status,
-        'otp': msg.otp_code if msg else '',
-    })
 
 @login_required
 def order_detail(request, pk):

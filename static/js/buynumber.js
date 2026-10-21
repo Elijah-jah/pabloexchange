@@ -68,10 +68,10 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch('/pricing/for-country/' + encodeURIComponent(code) + '/?server=' + encodeURIComponent(server))
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                // Available = flag not explicitly false AND has a price.
-                // (Some API responses omit the 'available' key entirely.)
+                // Available = flag not explicitly false. Price may be absent
+                // for live-catalog items — it's fetched on selection.
                 var available = (data.services || []).filter(function (s) {
-                    return s.available !== false && s.price;
+                    return s.available !== false && s.price !== undefined;
                 });
 
                 if (!available.length) {
@@ -81,7 +81,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 var opts = ['<option value="">Select Service</option>'];
                 available.forEach(function (s) {
-                    opts.push('<option value="' + s.code + '" data-price="' + s.price + '">'
+                    var priceAttr = s.price ? ' data-price="' + s.price + '"' : '';
+                    opts.push('<option value="' + s.code + '"' + priceAttr + '>'
                               + s.name + '</option>');
                 });
                 serviceSelect.innerHTML = opts.join('');
@@ -92,10 +93,31 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    // ---------- Service selected → show price ----------
+    // ---------- Service selected → show price (fetch live if needed) ----------
     serviceSelect.addEventListener('change', function () {
         var opt = this.options[this.selectedIndex];
-        priceDisplay.textContent = naira(opt ? opt.dataset.price : 0);
+        if (!opt || !opt.value) { priceDisplay.textContent = naira(0); return; }
+
+        // DB-priced services carry their price in the option; live-catalog
+        // items fetch it on demand (one call, cached 10 min server-side).
+        if (opt.dataset.price) {
+            priceDisplay.textContent = naira(opt.dataset.price);
+            return;
+        }
+        priceDisplay.textContent = 'Checking…';
+        fetch('/pricing/check-price/?service=' + encodeURIComponent(opt.value)
+              + '&country=' + encodeURIComponent(countrySelect.value)
+              + '&server=' + encodeURIComponent(serverSelect.value))
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.available) {
+                    opt.dataset.price = data.price;
+                    priceDisplay.textContent = naira(data.price);
+                } else {
+                    priceDisplay.textContent = 'Unavailable for this country';
+                }
+            })
+            .catch(function () { priceDisplay.textContent = '—'; });
     });
 
     // ---------- Submit → show overlay ----------

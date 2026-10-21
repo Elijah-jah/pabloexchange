@@ -115,8 +115,10 @@ def resolve_sell_price(provider_name, service, country):
 
 
 def live_catalog(provider_name, country_code, exclude_codes=()):
-    """Everything else the provider offers for this country, priced live.
-    Codes in exclude_codes are already covered by DB Pricing and win."""
+    """Everything the provider offers for this country, WITHOUT pricing each
+    item (that would be hundreds of API calls). Price is fetched on demand
+    per selected service via live_sell_price(). Codes in exclude_codes are
+    already covered by DB Pricing and win."""
     provider = get_provider(provider_name)
     if not hasattr(provider, 'get_services'):
         return []
@@ -133,14 +135,9 @@ def live_catalog(provider_name, country_code, exclude_codes=()):
             return []
         cache.set(key, items, LIVE_CACHE_TTL)
 
-    out = []
-    for code, name in items:
-        if code in exclude_codes:
-            continue
-        sell = live_sell_price(provider_name, code, country_code)
-        if sell:
-            out.append({'code': code, 'name': name, 'price': str(sell)})
-    return out
+    return [{'code': code, 'name': name, 'price': None}
+            for code, name in items
+            if code not in exclude_codes]
 
 
 # ----------------------------------------------------------------------
