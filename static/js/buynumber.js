@@ -367,15 +367,49 @@ document.addEventListener('DOMContentLoaded', function () {
         var iv = setInterval(tick, 1000);
     });
 
-    // ---------- Cancel ----------
-    document.querySelectorAll('.bn-cancel-form').forEach(function (form) {
-        form.addEventListener('submit', function (e) {
-            if (!confirm('Cancel this order? You will not be charged.')) {
-                e.preventDefault();
-                return;
-            }
+        // ---------- Cancel (styled confirmation modal) ----------
+    var cancelModal = document.getElementById('cancelModal');
+    var cancelModalYes = document.getElementById('cancelModalYes');
+    var cancelModalNo = document.getElementById('cancelModalNo');
+    var pendingCancelForm = null;
+
+    function openCancelModal(form) {
+        pendingCancelForm = form;
+        cancelModal.hidden = false;
+    }
+
+    function closeCancelModal() {
+        pendingCancelForm = null;
+        cancelModal.hidden = true;
+    }
+
+    cancelModalYes.addEventListener('click', function () {
+        if (pendingCancelForm) {
             overlay.hidden = false;
             document.getElementById('bnOverlayText').textContent = 'Cancelling order…';
+            // native submit() bypasses this listener (no re-intercept loop)
+            pendingCancelForm.submit();
+        }
+        closeCancelModal();
+    });
+
+    cancelModalNo.addEventListener('click', closeCancelModal);
+
+    // click the dark backdrop to dismiss
+    cancelModal.addEventListener('click', function (e) {
+        if (e.target === cancelModal) { closeCancelModal(); }
+    });
+
+    // Escape closes the modal
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !cancelModal.hidden) { closeCancelModal(); }
+    });
+
+    // intercept every cancel form: ask first, never submit directly
+    document.querySelectorAll('.bn-cancel-form').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            openCancelModal(form);
         });
     });
 

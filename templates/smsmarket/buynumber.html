@@ -5,7 +5,7 @@
 {% block page_title %}Buy Number{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/buynumber.css' %}?v=10">
+<link rel="stylesheet" href="{% static 'css/buynumber.css' %}?v=11">
 {% endblock %}
 
 {% block content %}
@@ -115,7 +115,7 @@
             <form method="post" action="{% url 'smsmarket:cancel_order' %}" class="bn-cancel-form">
                 {% csrf_token %}
                 <input type="hidden" name="order_id" value="{{ order.pk }}">
-                <button type="submit" class="bn-cancel-btn">Cancel order — no charge</button>
+                <button type="submit" class="bn-cancel-btn"><i class="bi bi-x-circle"></i> Cancel order — no charge</button>
             </form>
             {% endif %}
 
@@ -125,6 +125,19 @@
     </div>
     {% endif %}
 
+</div>
+
+<!-- Cancel confirmation modal -->
+<div class="bn-modal" id="cancelModal" hidden>
+    <div class="bn-modal-card">
+        <div class="bn-modal-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <h3>Cancel this order?</h3>
+        <p>The number will be released on the provider and you will <strong>not be charged</strong>. This can't be undone.</p>
+        <div class="bn-modal-actions">
+            <button type="button" class="bn-modal-btn bn-modal-btn--ghost" id="cancelModalNo">Keep order</button>
+            <button type="button" class="bn-modal-btn bn-modal-btn--danger" id="cancelModalYes">Yes, cancel it</button>
+        </div>
+    </div>
 </div>
 
 <!-- Loading overlay -->
