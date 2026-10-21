@@ -5,7 +5,8 @@
 {% block page_title %}Buy Number{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/buynumber.css' %}?v=6">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css">
+<link rel="stylesheet" href="{% static 'css/buynumber.css' %}?v=7">
 {% endblock %}
 
 {% block content %}
@@ -33,8 +34,8 @@
                 <label for="serverSelect">Server</label>
                 <select class="bn-select bn-server-select" id="serverSelect" name="server" required>
                     <option value="" selected>Select Server</option>
-                    <option value="daisysms"> Server 1 — USA Only(fastest)</option>
-                    <option value="instantnums">🌍 Server 2 — All Countries</option>
+                    <option value="daisysms">🚀 Server 1 — USA Only (fastest)</option>
+                    <option value="instantnums">🌎 Server 2 — All Countries</option>
                 </select>
                 <p class="bn-server-hint" id="serverHint"></p>
             </div>
@@ -77,51 +78,48 @@
         </h3>
         {% for order in active_orders %}
         {% with otp=order.messages.last %}
-        <div class="bn-session" data-order-id="{{ order.pk }}">
+        <div class="bn-session {% if order.status == 'active' %}bn-waiting{% endif %}" data-order-id="{{ order.pk }}">
+
             <div class="bn-session-header">
                 <span class="bn-country">{{ order.country.code|default:"🌐" }}</span>
-                <span class="bn-service">{{ order.service.name }}</span>
-                {% if order.provider == 'daisysms' %}
-                <span class="bn-server-tag">S1</span>
-                {% else %}
-                <span class="bn-server-tag bn-server-tag--2">S2</span>
+                <span class="bn-service">{{ order.service.name|default:"Number" }}</span>
+                {% if order.status == 'active' %}
+                <span class="bn-timer mono" data-expires="{{ order.expires_at|date:'c' }}">--:--</span>
                 {% endif %}
-                <strong class="bn-timer mono" data-expires="{{ order.expires_at|date:'c' }}">--:--</strong>
             </div>
+
             <div class="bn-session-item">
                 <span>Number</span>
                 <div class="bn-copy-box">
-                    <strong class="bn-active-number mono">{{ order.phone_number }}</strong>
+                    <span class="bn-active-number mono">{{ order.phone_number }}</span>
                     <button type="button" class="bn-copy-btn" data-copy="{{ order.phone_number }}" title="Copy number">
                         <i class="bi bi-clipboard"></i>
                     </button>
                 </div>
             </div>
+
             <div class="bn-session-item">
-                <span>OTP</span>
+                <span>Code</span>
                 <div class="bn-copy-box">
-                    <div class="bn-otp-box mono {% if otp %}has-code{% endif %}">
-                        {% if otp %}{{ otp.otp_code }}{% else %}Waiting…{% endif %}
-                    </div>
-                    <button type="button" class="bn-copy-btn"
-                            {% if not otp %}disabled{% endif %}
-                            data-copy="{{ otp.otp_code|default:'' }}">
+                    <span class="bn-otp-box {% if otp %}has-code{% endif %}">
+                        {% if otp %}{{ otp.otp_code }}{% else %}WAITING{% endif %}
+                    </span>
+                    {% if otp %}
+                    <button type="button" class="bn-copy-btn" data-copy="{{ otp.otp_code }}" title="Copy code">
                         <i class="bi bi-clipboard"></i>
                     </button>
+                    {% endif %}
                 </div>
             </div>
-            <div class="bn-status">
-                {% if otp %}
-                    <i class="bi bi-check-circle-fill"></i> SMS Received
-                {% else %}
-                    <span class="bn-waiting"><i class="bi bi-arrow-repeat bn-spin"></i> Waiting for SMS…</span>
-                {% endif %}
-            </div>
+
+            {% if order.status == 'active' %}
             <form method="post" action="{% url 'smsmarket:cancel_order' %}" class="bn-cancel-form">
                 {% csrf_token %}
                 <input type="hidden" name="order_id" value="{{ order.pk }}">
-                <button type="submit" class="bn-cancel-btn">Cancel Order</button>
+                <button type="submit" class="bn-cancel-btn">Cancel order — no charge</button>
             </form>
+            {% endif %}
+
         </div>
         {% endwith %}
         {% endfor %}
@@ -130,16 +128,18 @@
 
 </div>
 
+<!-- Loading overlay -->
 <div class="bn-overlay" id="bnOverlay" hidden>
     <div class="bn-overlay-box">
         <div class="bn-overlay-spinner"></div>
-        <p id="bnOverlayText">Requesting your number…</p>
-        <span>Hold on, this takes a few seconds.</span>
+        <p>Please wait</p>
+        <span id="bnOverlayText">Reserving your number…</span>
     </div>
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/buynumber.js' %}?v=6"></script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+<script src="{% static 'js/buynumber.js' %}?v=7"></script>
 {% endblock %}

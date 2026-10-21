@@ -311,3 +311,78 @@
     .bn-session-item { flex-wrap: wrap; }
     .bn-overlay-box { padding: 26px 22px; }
 }
+
+/* ---------------- Searchable dropdowns (TomSelect) ---------------- */
+.ts-wrapper .ts-control {
+    border: 1.5px solid #dce7e2;
+    border-radius: 11px;
+    padding: 12px 14px;
+    font-size: .93rem;
+    min-height: auto;
+    box-shadow: none;
+}
+.ts-wrapper.focus .ts-control {
+    border-color: var(--bn-green-600);
+    box-shadow: 0 0 0 4px rgba(5, 150, 105, .12);
+}
+.ts-wrapper.disabled .ts-control {
+    background-color: var(--bn-green-50);
+    color: var(--bn-muted);
+    cursor: not-allowed;
+    opacity: 1;
+}
+.ts-wrapper .ts-control input {
+    font-size: .93rem;
+}
+
+/* Dropdown panel — matches the screenshot's card style */
+.ts-dropdown.bn-ts-dropdown {
+    border: 1px solid var(--bn-border);
+    border-radius: 12px;
+    margin-top: 6px;
+    box-shadow: 0 10px 30px rgba(2, 44, 34, .14);
+    overflow: hidden;
+    z-index: 1500;
+}
+.ts-dropdown.bn-ts-dropdown .ts-dropdown-content {
+    max-height: 320px;
+}
+.ts-dropdown.bn-ts-dropdown [data-selectable] {
+    padding: 9px 14px;
+    font-size: .93rem;
+    color: var(--bn-ink);
+}
+.ts-dropdown.bn-ts-dropdown .ts-dropdown-content .active {
+    background-color: var(--bn-green-50);
+    color: var(--bn-ink);
+}
+.ts-dropdown.bn-ts-dropdown .selected {
+    background-color: var(--bn-green-100);
+    color: var(--bn-green-900);
+}
+
+/* Search input inside the dropdown */
+.ts-dropdown.bn-ts-dropdown input[type="text"] {
+    border: 1.5px solid #dce7e2;
+    border-radius: 9px;
+    padding: 9px 12px;
+    font-size: .9rem;
+    margin: 10px;
+    width: calc(100% - 20px);
+}
+.ts-dropdown.bn-ts-dropdown input[type="text"]:focus {
+    border-color: var(--bn-green-600);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, .12);
+    outline: none;
+}
+.ts-dropdown.bn-ts-dropdown .ts-dropdown-single {
+    padding-bottom: 4px;
+}
+
+/* No-matches message */
+.ts-wrapper .ts-dropdown .no-results,
+.ts-dropdown.bn-ts-dropdown .no-results {
+    padding: 10px 14px;
+    color: var(--bn-muted);
+    font-size: .88rem;
+}

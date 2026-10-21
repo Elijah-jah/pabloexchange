@@ -1,4 +1,5 @@
-/* PabloExchange — Buy Number: server → country → services → price */
+/* PabloExchange — Buy Number: server → country → services → price
+   Country & Service dropdowns are TomSelect (searchable) instances. */
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -16,15 +17,39 @@ document.addEventListener('DOMContentLoaded', function () {
         instantnums: 'All countries supported. Pick any country below.'
     };
 
+    // service code -> price (DB-priced rows known up front; live ones filled
+    // in on selection and cached here for the session)
+    var priceMap = {};
+
     function naira(n) {
         return '₦' + parseFloat(n || 0).toLocaleString('en-NG', {
             minimumFractionDigits: 2, maximumFractionDigits: 2
         });
     }
 
+    // ---------- Searchable dropdowns ----------
+    var countryTS = new TomSelect(countrySelect, {
+        maxOptions: 300,
+        allowEmptyOption: true,
+        placeholder: 'Select Country',
+        dropdownClass: 'bn-ts-dropdown',
+        controlInput: '<input type="text" autocomplete="off" placeholder="Search Country...">'
+    });
+
+    var serviceTS = new TomSelect(serviceSelect, {
+        maxOptions: 2000,
+        allowEmptyOption: true,
+        placeholder: 'Select Service',
+        dropdownClass: 'bn-ts-dropdown',
+        controlInput: '<input type="text" autocomplete="off" placeholder="Search Service...">'
+    });
+
     function resetServices(msg) {
-        serviceSelect.innerHTML = '<option value="">' + msg + '</option>';
-        serviceSelect.disabled = true;
+        priceMap = {};
+        serviceTS.clearOptions();
+        serviceTS.addOption({ value: '', text: msg });
+        serviceTS.setValue('');
+        serviceTS.disable();
         priceDisplay.textContent = naira(0);
     }
 
@@ -34,20 +59,20 @@ document.addEventListener('DOMContentLoaded', function () {
         serverHint.textContent = server ? (SERVER_HINTS[server] || '') : '';
 
         if (!server) {
-            countrySelect.value = '';
-            countrySelect.disabled = true;
+            countryTS.clear();
+            countryTS.disable();
             resetServices('Select Server First');
             return;
         }
 
-        countrySelect.disabled = false;
-        countrySelect.value = '';
+        countryTS.enable();
+        countryTS.clear();  // fires change → resets the service list
 
         if (server === 'daisysms') {
-            // Server 1 = USA only: lock country to US
-            countrySelect.value = 'US';
-            countrySelect.disabled = true;
-            loadServices('US', server);
+            // Server 1 = USA only: lock country to US. setValue fires the
+            // country change handler, which loads the services.
+            countryTS.setValue('US');
+            countryTS.disable();
         } else {
             resetServices('Select Country');
         }
@@ -61,57 +86,68 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function loadServices(code, server) {
-        serviceSelect.innerHTML = '<option value="">Loading…</option>';
-        serviceSelect.disabled = true;
+        priceMap = {};
+        serviceTS.clearOptions();
+        serviceTS.addOption({ value: '', text: 'Loading…' });
+        serviceTS.setValue('');
+        serviceTS.disable();
         priceDisplay.textContent = naira(0);
 
         fetch('/pricing/for-country/' + encodeURIComponent(code) + '/?server=' + encodeURIComponent(server))
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 // Available = flag not explicitly false. Price may be absent
-                // for live-catalog items — it's fetched on selection.
+                // for live-catalog items — fetched on selection.
                 var available = (data.services || []).filter(function (s) {
                     return s.available !== false && s.price !== undefined;
                 });
 
+                serviceTS.clearOptions();
+
                 if (!available.length) {
-                    resetServices('No services available for this country yet');
+                    serviceTS.addOption({ value: '', text: 'No services available for this country yet' });
+                    serviceTS.setValue('');
+                    serviceTS.disable();
                     return;
                 }
 
-                var opts = ['<option value="">Select Service</option>'];
+                var opts = [{ value: '', text: 'Select Service' }];
                 available.forEach(function (s) {
-                    var priceAttr = s.price ? ' data-price="' + s.price + '"' : '';
-                    opts.push('<option value="' + s.code + '"' + priceAttr + '>'
-                              + s.name + '</option>');
+                    if (s.price) { priceMap[s.code] = s.price; }
+                    opts.push({ value: s.code, text: s.name });
                 });
-                serviceSelect.innerHTML = opts.join('');
-                serviceSelect.disabled = false;
+                serviceTS.addOption(opts);
+                serviceTS.refreshOptions(false);
+                serviceTS.setValue('');
+                serviceTS.enable();
             })
             .catch(function () {
-                resetServices('Failed to load — try again');
+                serviceTS.clearOptions();
+                serviceTS.addOption({ value: '', text: 'Failed to load — try again' });
+                serviceTS.setValue('');
+                serviceTS.disable();
             });
     }
 
     // ---------- Service selected → show price (fetch live if needed) ----------
     serviceSelect.addEventListener('change', function () {
-        var opt = this.options[this.selectedIndex];
-        if (!opt || !opt.value) { priceDisplay.textContent = naira(0); return; }
+        var code = this.value;
+        if (!code) { priceDisplay.textContent = naira(0); return; }
 
-        // DB-priced services carry their price in the option; live-catalog
-        // items fetch it on demand (one call, cached 10 min server-side).
-        if (opt.dataset.price) {
-            priceDisplay.textContent = naira(opt.dataset.price);
+        // DB-priced services are in priceMap already; live-catalog items
+        // fetch on demand (one call, cached 10 min server-side).
+        if (priceMap[code]) {
+            priceDisplay.textContent = naira(priceMap[code]);
             return;
         }
         priceDisplay.textContent = 'Checking…';
-        fetch('/pricing/check-price/?service=' + encodeURIComponent(opt.value)
+        fetch('/pricing/check-price/?service=' + encodeURIComponent(code)
               + '&country=' + encodeURIComponent(countrySelect.value)
               + '&server=' + encodeURIComponent(serverSelect.value))
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (data.available) {
-                    opt.dataset.price = data.price;
+                    priceMap[code] = data.price;
                     priceDisplay.textContent = naira(data.price);
                 } else {
                     priceDisplay.textContent = 'Unavailable for this country';
@@ -122,8 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ---------- Submit → show overlay ----------
     requestForm.addEventListener('submit', function (e) {
-        var opt = serviceSelect.options[serviceSelect.selectedIndex];
-        if (!serverSelect.value || !countrySelect.value || !opt || !opt.value) {
+        if (!serverSelect.value || !countrySelect.value || !serviceSelect.value) {
             e.preventDefault();
             return;
         }
@@ -185,11 +220,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ---------- Silent poll while waiting for SMS (no more 8s reloads) ----------
-    // The server-side APScheduler sweep delivers the SMS whether this page
-    // is open or not — this just refreshes the page ONCE when it lands.
     var waitingEl = document.querySelector('.bn-waiting');
     if (waitingEl) {
-        // order id is already on the page inside the cancel form's input
         var orderInput = document.querySelector('.bn-cancel-form input[name="order_id"]');
         var orderId = orderInput ? orderInput.value : null;
         if (orderId) {
