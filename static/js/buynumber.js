@@ -1,6 +1,5 @@
 /* PabloExchange — Buy Number: server → country → services → price
-   Country & Service dropdowns use TomSelect (searchable) when available,
-   and degrade to plain native selects if the CDN is unreachable. */
+   Built-in searchable dropdowns (no external library). */
 
 document.addEventListener('DOMContentLoaded', function () {
     'use strict';
@@ -23,6 +22,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // in on selection and remembered for the session)
     var priceMap = {};
 
+    var openPanels = [];
+
     function naira(n) {
         return '₦' + parseFloat(n || 0).toLocaleString('en-NG', {
             minimumFractionDigits: 2, maximumFractionDigits: 2
@@ -33,84 +34,183 @@ document.addEventListener('DOMContentLoaded', function () {
         el.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    // ---------- Searchable dropdowns (optional enhancement) ----------
-    var countryTS = null;
-    var serviceTS = null;
-
-    if (typeof TomSelect !== 'undefined') {
-        try {
-            countryTS = new TomSelect(countrySelect, {
-                maxOptions: 300,
-                allowEmptyOption: true,
-                placeholder: 'Select Country',
-                dropdownClass: 'bn-ts-dropdown',
-                controlInput: '<input type="text" autocomplete="off" placeholder="Search Country...">'
-            });
-            serviceTS = new TomSelect(serviceSelect, {
-                maxOptions: 2000,
-                allowEmptyOption: true,
-                placeholder: 'Select Service',
-                dropdownClass: 'bn-ts-dropdown',
-                controlInput: '<input type="text" autocomplete="off" placeholder="Search Service...">'
-            });
-        } catch (e) {
-            // TomSelect exists but failed on these elements — run native.
-            countryTS = null;
-            serviceTS = null;
-        }
+    function closeAllPanels() {
+        openPanels.forEach(function (p) { p.close(); });
     }
 
-    // ---------- Thin wrappers so both modes share one code path ----------
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.ss-wrapper')) { closeAllPanels(); }
+    });
+
+    // ================= Built-in searchable dropdown =================
+    function buildSearchable(select, searchPlaceholder) {
+        select.classList.add('ss-native');
+
+        var wrapper = document.createElement('div');
+        wrapper.className = 'ss-wrapper';
+        select.parentNode.insertBefore(wrapper, select.nextSibling);
+
+        var control = document.createElement('button');
+        control.type = 'button';
+        control.className = 'ss-control';
+
+        var panel = document.createElement('div');
+        panel.className = 'ss-panel';
+        panel.hidden = true;
+
+        var search = document.createElement('input');
+        search.type = 'text';
+        search.className = 'ss-search';
+        search.placeholder = searchPlaceholder;
+        search.setAttribute('autocomplete', 'off');
+
+        var list = document.createElement('div');
+        list.className = 'ss-list';
+
+        var emptyMsg = document.createElement('div');
+        emptyMsg.className = 'ss-empty';
+        emptyMsg.textContent = 'No matches found';
+        emptyMsg.hidden = true;
+
+        panel.appendChild(search);
+        panel.appendChild(list);
+        panel.appendChild(emptyMsg);
+        wrapper.appendChild(control);
+        wrapper.appendChild(panel);
+
+        var isOpen = false;
+
+        function syncLabel() {
+            var label = '';
+            if (select.value) {
+                for (var i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === select.value) {
+                        label = select.options[i].text;
+                        break;
+                    }
+                }
+            }
+            if (!label && select.options.length) {
+                label = select.options[0].text;
+            }
+            control.textContent = label;
+        }
+
+        function syncDisabled() {
+            wrapper.classList.toggle('disabled', select.disabled);
+        }
+
+        function render(filter) {
+            var q = (filter || '').toLowerCase();
+            list.innerHTML = '';
+            var any = false;
+            for (var i = 0; i < select.options.length; i++) {
+                var o = select.options[i];
+                if (q && o.text.toLowerCase().indexOf(q) === -1) { continue; }
+                any = true;
+                (function (opt) {
+                    var item = document.createElement('div');
+                    item.className = 'ss-item' +
+                        (opt.value === select.value ? ' selected' : '') +
+                        (opt.value === '' ? ' ss-item--clear' : '');
+                    item.textContent = opt.text;
+                    item.addEventListener('click', function () {
+                        select.value = opt.value;
+                        fireChange(select);
+                        close();
+                    });
+                    list.appendChild(item);
+                })(o);
+            }
+            emptyMsg.hidden = any;
+        }
+
+        function open() {
+            if (select.disabled) { return; }
+            closeAllPanels();
+            search.value = '';
+            render('');
+            panel.hidden = false;
+            isOpen = true;
+            wrapper.classList.add('open');
+            setTimeout(function () { search.focus(); }, 30);
+        }
+
+        function close() {
+            if (!isOpen) { return; }
+            panel.hidden = true;
+            isOpen = false;
+            wrapper.classList.remove('open');
+        }
+
+        control.addEventListener('click', function () {
+            if (isOpen) { close(); } else { open(); }
+        });
+
+        search.addEventListener('input', function () {
+            render(search.value);
+        });
+
+        search.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                var first = list.querySelector('.ss-item');
+                if (first) { first.click(); }
+            } else if (e.key === 'Escape') {
+                close();
+                control.focus();
+            }
+        });
+
+        // Keep the visible label in sync with any programmatic changes.
+        select.addEventListener('change', syncLabel);
+
+        syncLabel();
+        syncDisabled();
+
+        openPanels.push({ close: close });
+
+        return { syncLabel: syncLabel, syncDisabled: syncDisabled };
+    }
+
+    var countrySS = buildSearchable(countrySelect, 'Search Country...');
+    var serviceSS = buildSearchable(serviceSelect, 'Search Service...');
+
+    // ---------- Thin wrappers around the native selects ----------
 
     function setCountryEnabled(enabled) {
-        if (countryTS) {
-            if (enabled) { countryTS.enable(); } else { countryTS.disable(); }
-        } else {
-            countrySelect.disabled = !enabled;
-        }
+        countrySelect.disabled = !enabled;
+        countrySS.syncDisabled();
     }
 
     function selectCountryValue(value) {
-        if (countryTS) {
-            countryTS.setValue(value);            // fires change
-        } else {
-            countrySelect.value = value;
-            fireChange(countrySelect);
-        }
+        countrySelect.value = value;
+        countrySS.syncLabel();
+        fireChange(countrySelect);
     }
 
     function clearCountryValue() {
-        if (countryTS) {
-            countryTS.clear();                    // fires change if value changes
-        } else if (countrySelect.value) {
+        if (countrySelect.value) {
             countrySelect.value = '';
             fireChange(countrySelect);
         }
+        countrySS.syncLabel();
     }
 
     // opts: [{value, text, price?}] — price optional (live-catalog items)
     function setServiceOptions(opts, enabledAfter) {
         priceMap = {};
         var html = '';
-        var tsOpts = [];
         opts.forEach(function (o) {
             if (o.price) { priceMap[o.value] = o.price; }
             var p = o.price ? ' data-price="' + o.price + '"' : '';
             html += '<option value="' + o.value + '"' + p + '>' + o.text + '</option>';
-            tsOpts.push({ value: o.value, text: o.text });
         });
-
-        if (serviceTS) {
-            serviceTS.clearOptions();
-            serviceTS.addOption(tsOpts);
-            serviceTS.refreshOptions(false);
-            serviceTS.setValue('');
-            if (enabledAfter) { serviceTS.enable(); } else { serviceTS.disable(); }
-        } else {
-            serviceSelect.innerHTML = html;
-            serviceSelect.value = '';
-            serviceSelect.disabled = !enabledAfter;
-        }
+        serviceSelect.innerHTML = html;
+        serviceSelect.value = '';
+        serviceSelect.disabled = !enabledAfter;
+        serviceSS.syncDisabled();
+        serviceSS.syncLabel();
         priceDisplay.textContent = naira(0);
     }
 
@@ -134,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function () {
         clearCountryValue();  // fires change → resets the service list
 
         if (server === 'daisysms') {
-            // Server 1 = USA only: lock country to US. setValue fires the
+            // Server 1 = USA only: lock country to US. fireChange runs the
             // country change handler, which loads the services.
             selectCountryValue('US');
             setCountryEnabled(false);  // keep it visually locked

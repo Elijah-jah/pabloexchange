@@ -108,24 +108,6 @@
     font-size: .8rem;
     color: var(--bn-muted);
 }
-.bn-server-tag {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 26px;
-    height: 20px;
-    padding: 0 7px;
-    border-radius: 100px;
-    background: var(--grad-brand);
-    color: var(--bn-gold);
-    font-size: .68rem;
-    font-weight: 800;
-    letter-spacing: .5px;
-}
-.bn-server-tag--2 {
-    background: var(--grad-gold);
-    color: var(--bn-green-950);
-}
 
 /* Price box */
 .bn-price-box {
@@ -248,12 +230,6 @@
 .bn-copy-btn:disabled { opacity: .4; cursor: not-allowed; }
 .bn-copy-btn.copied { background: var(--bn-gold); border-color: var(--bn-gold); color: var(--bn-green-950); }
 
-/* Status */
-.bn-status { padding: 10px 0 4px; font-size: .85rem; font-weight: 600; color: var(--bn-green-600); }
-.bn-waiting { color: var(--bn-muted); font-weight: 500; }
-.bn-spin { display: inline-block; animation: bnSpin 1s linear infinite; }
-@keyframes bnSpin { to { transform: rotate(360deg); } }
-
 /* Cancel */
 .bn-cancel-form { margin-top: 10px; }
 .bn-cancel-btn {
@@ -301,100 +277,93 @@
 }
 .bn-overlay-box p { font-weight: 800; margin-bottom: 4px; }
 .bn-overlay-box span { color: var(--bn-muted); font-size: .83rem; }
+@keyframes bnSpin { to { transform: rotate(360deg); } }
 
 /* ============================================================
-   Searchable dropdowns (TomSelect) — themed + responsive
+   Searchable dropdowns (built-in — no external library)
    ============================================================ */
 
-/* Wrapper anchors the dropdown panel to the control's full width */
-.ts-wrapper {
-    position: relative;
-    width: 100%;
-}
+/* The native select stays in the DOM (form submission, required,
+   disabled-lock) but is visually replaced by the custom control. */
+.ss-native { display: none !important; }
 
-/* Control (the visible box) — same look as .bn-select */
-.ts-wrapper .ts-control {
+.ss-wrapper { position: relative; }
+
+.ss-control {
+    width: 100%;
+    display: block;
+    text-align: left;
     border: 1.5px solid #dce7e2;
     border-radius: 11px;
-    padding: 12px 14px;
+    padding: 12px 40px 12px 14px;
     font-size: .93rem;
     font-family: inherit;
-    min-height: auto;
-    box-shadow: none;
     color: var(--bn-ink);
+    background-color: var(--bn-white);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%235b6f68' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L2 5h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s;
 }
-.ts-wrapper.focus .ts-control {
+.ss-wrapper.open .ss-control {
     border-color: var(--bn-green-600);
     box-shadow: 0 0 0 4px rgba(5, 150, 105, .12);
 }
-.ts-wrapper.disabled .ts-control {
+.ss-wrapper.disabled .ss-control {
     background-color: var(--bn-green-50);
     color: var(--bn-muted);
     cursor: not-allowed;
-    opacity: 1;
-}
-.ts-wrapper .ts-control input {
-    font-size: .93rem;
-    font-family: inherit;
-}
-.ts-wrapper .ts-control .ts-placeholder {
-    color: var(--bn-muted);
 }
 
-/* Dropdown panel — full width card like the reference design */
-.ts-dropdown.bn-ts-dropdown {
-    left: 0 !important;
+/* Dropdown panel — full-width card, same look as the reference design */
+.ss-panel {
+    position: absolute;
+    left: 0;
     right: 0;
-    width: 100% !important;
-    box-sizing: border-box;
+    top: calc(100% + 4px);
+    background: var(--bn-white);
     border: 1px solid var(--bn-border);
     border-radius: 12px;
-    margin-top: 6px;
     box-shadow: 0 10px 30px rgba(2, 44, 34, .14);
     overflow: hidden;
     z-index: 1500;
 }
-.ts-dropdown.bn-ts-dropdown .ts-dropdown-content {
-    max-height: min(340px, 55vh);
-    overflow-x: hidden;
-}
-.ts-dropdown.bn-ts-dropdown [data-selectable] {
-    padding: 9px 14px;
-    font-size: .93rem;
-    color: var(--bn-ink);
-}
-.ts-dropdown.bn-ts-dropdown .ts-dropdown-content .active {
-    background-color: var(--bn-green-50);
-    color: var(--bn-ink);
-}
-.ts-dropdown.bn-ts-dropdown .selected {
-    background-color: var(--bn-green-100);
-    color: var(--bn-green-900);
-}
+.ss-panel[hidden] { display: none; }
 
-/* Search input inside the dropdown */
-.ts-dropdown.bn-ts-dropdown input[type="text"] {
+.ss-search {
+    display: block;
+    width: calc(100% - 20px);
+    margin: 10px;
     border: 1.5px solid #dce7e2;
     border-radius: 9px;
     padding: 9px 12px;
     font-size: .9rem;
-    margin: 10px;
-    width: calc(100% - 20px);
-    box-sizing: border-box;
+    font-family: inherit;
 }
-.ts-dropdown.bn-ts-dropdown input[type="text"]:focus {
+.ss-search:focus {
     border-color: var(--bn-green-600);
     box-shadow: 0 0 0 3px rgba(5, 150, 105, .12);
     outline: none;
 }
-.ts-dropdown.bn-ts-dropdown .ts-dropdown-single {
-    padding-bottom: 4px;
-}
 
-/* No-matches message */
-.ts-wrapper .ts-dropdown .no-results,
-.ts-dropdown.bn-ts-dropdown .no-results {
-    padding: 10px 14px;
+.ss-list {
+    max-height: min(340px, 55vh);
+    overflow-y: auto;
+    padding-bottom: 6px;
+}
+.ss-item {
+    padding: 9px 14px;
+    font-size: .93rem;
+    color: var(--bn-ink);
+    cursor: pointer;
+}
+.ss-item:hover { background-color: var(--bn-green-50); }
+.ss-item.selected { background-color: var(--bn-green-100); color: var(--bn-green-900); }
+.ss-item--clear { color: var(--bn-muted); }
+
+.ss-empty {
+    padding: 12px 14px;
     color: var(--bn-muted);
     font-size: .88rem;
 }
@@ -410,23 +379,16 @@
 
     /* Prevent iOS auto-zoom when the search field gains focus —
        any input under 16px triggers page zoom on iPhone */
-    .ts-wrapper .ts-control,
-    .ts-wrapper .ts-control input,
-    .ts-dropdown.bn-ts-dropdown input[type="text"],
-    .ts-dropdown.bn-ts-dropdown [data-selectable] {
+    .ss-control,
+    .ss-search,
+    .ss-item {
         font-size: 16px;
     }
-
-    /* Dropdown hugs the control edge-to-edge on small screens */
-    .ts-dropdown.bn-ts-dropdown {
-        margin-top: 4px;
-        border-radius: 12px;
-    }
-    .ts-dropdown.bn-ts-dropdown input[type="text"] {
+    .ss-search {
         margin: 8px;
         width: calc(100% - 16px);
     }
-    .ts-dropdown.bn-ts-dropdown .ts-dropdown-content {
+    .ss-list {
         max-height: min(300px, 45vh);
     }
 }
