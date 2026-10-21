@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'countries',
     'pricing',
     'django.contrib.humanize',
+    'django_apscheduler',
 ]
 
 MIDDLEWARE = [
