@@ -168,6 +168,19 @@ def buy(request):
 
 
 @login_required
+def order_status(request, pk):
+    """JSON: current status + OTP for an order. Powers silent page polling."""
+    order = get_object_or_404(NumberOrder, pk=pk, user=request.user)
+    maybe_deliver(order)
+    order.refresh_from_db()
+    msg = order.messages.last()
+    return JsonResponse({
+        'status': order.status,
+        'otp': msg.otp_code if msg else '',
+    })
+
+
+@login_required
 def order_detail(request, pk):
     order = get_object_or_404(NumberOrder, pk=pk, user=request.user)
     maybe_deliver(order)   # poll: delivers OTP if due, charges wallet once
