@@ -200,7 +200,7 @@ def cancel_order(request):
         messages.success(request, 'Order cancelled — you were not charged.')
     else:
         messages.info(request, 'Order could not be cancelled.')
-    return redirect('marketplace')
+    return redirect('smsmarket:buy')
 
 
 @login_required
