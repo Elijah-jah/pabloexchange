@@ -302,24 +302,26 @@
 .bn-overlay-box p { font-weight: 800; margin-bottom: 4px; }
 .bn-overlay-box span { color: var(--bn-muted); font-size: .83rem; }
 
-/* ---------------- Responsive ---------------- */
-@media (max-width: 575px) {
-    .bn-head-text h2 { font-size: 1.25rem; }
-    .bn-card { padding: 20px 16px; }
-    .bn-balance-pill { font-size: .82rem; padding: 8px 14px; }
-    .bn-session { padding: 15px 14px; }
-    .bn-session-item { flex-wrap: wrap; }
-    .bn-overlay-box { padding: 26px 22px; }
+/* ============================================================
+   Searchable dropdowns (TomSelect) — themed + responsive
+   ============================================================ */
+
+/* Wrapper anchors the dropdown panel to the control's full width */
+.ts-wrapper {
+    position: relative;
+    width: 100%;
 }
 
-/* ---------------- Searchable dropdowns (TomSelect) ---------------- */
+/* Control (the visible box) — same look as .bn-select */
 .ts-wrapper .ts-control {
     border: 1.5px solid #dce7e2;
     border-radius: 11px;
     padding: 12px 14px;
     font-size: .93rem;
+    font-family: inherit;
     min-height: auto;
     box-shadow: none;
+    color: var(--bn-ink);
 }
 .ts-wrapper.focus .ts-control {
     border-color: var(--bn-green-600);
@@ -333,10 +335,18 @@
 }
 .ts-wrapper .ts-control input {
     font-size: .93rem;
+    font-family: inherit;
+}
+.ts-wrapper .ts-control .ts-placeholder {
+    color: var(--bn-muted);
 }
 
-/* Dropdown panel — matches the screenshot's card style */
+/* Dropdown panel — full width card like the reference design */
 .ts-dropdown.bn-ts-dropdown {
+    left: 0 !important;
+    right: 0;
+    width: 100% !important;
+    box-sizing: border-box;
     border: 1px solid var(--bn-border);
     border-radius: 12px;
     margin-top: 6px;
@@ -345,7 +355,8 @@
     z-index: 1500;
 }
 .ts-dropdown.bn-ts-dropdown .ts-dropdown-content {
-    max-height: 320px;
+    max-height: min(340px, 55vh);
+    overflow-x: hidden;
 }
 .ts-dropdown.bn-ts-dropdown [data-selectable] {
     padding: 9px 14px;
@@ -369,6 +380,7 @@
     font-size: .9rem;
     margin: 10px;
     width: calc(100% - 20px);
+    box-sizing: border-box;
 }
 .ts-dropdown.bn-ts-dropdown input[type="text"]:focus {
     border-color: var(--bn-green-600);
@@ -385,4 +397,36 @@
     padding: 10px 14px;
     color: var(--bn-muted);
     font-size: .88rem;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 575px) {
+    .bn-head-text h2 { font-size: 1.25rem; }
+    .bn-card { padding: 20px 16px; }
+    .bn-balance-pill { font-size: .82rem; padding: 8px 14px; }
+    .bn-session { padding: 15px 14px; }
+    .bn-session-item { flex-wrap: wrap; }
+    .bn-overlay-box { padding: 26px 22px; }
+
+    /* Prevent iOS auto-zoom when the search field gains focus —
+       any input under 16px triggers page zoom on iPhone */
+    .ts-wrapper .ts-control,
+    .ts-wrapper .ts-control input,
+    .ts-dropdown.bn-ts-dropdown input[type="text"],
+    .ts-dropdown.bn-ts-dropdown [data-selectable] {
+        font-size: 16px;
+    }
+
+    /* Dropdown hugs the control edge-to-edge on small screens */
+    .ts-dropdown.bn-ts-dropdown {
+        margin-top: 4px;
+        border-radius: 12px;
+    }
+    .ts-dropdown.bn-ts-dropdown input[type="text"] {
+        margin: 8px;
+        width: calc(100% - 16px);
+    }
+    .ts-dropdown.bn-ts-dropdown .ts-dropdown-content {
+        max-height: min(300px, 45vh);
+    }
 }
