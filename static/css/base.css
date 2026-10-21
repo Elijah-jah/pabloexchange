@@ -1,6 +1,7 @@
 /* ============================================================
-   PabloExchange — App shell v5
-   Clean scrollbars, zero gaps, overflow-protected
+   PabloExchange — App shell v6
+   Clean scrollbars, zero gaps, overflow-protected,
+   page-exit veil + small responsive/accessibility polish
    ============================================================ */
 
 :root {
@@ -47,6 +48,13 @@ body.app-body {
 }
 
 .mono { font-family: 'JetBrains Mono', monospace; }
+
+/* Accessible focus ring (keyboard users only — no mouse click flash) */
+:focus-visible {
+    outline: 2px solid var(--sb-green-600);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
 
 /* ---------------- Slim scrollbars (global, neat) ---------------- */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -460,6 +468,53 @@ body.app-body {
     background: var(--sb-white);
 }
 
+/* ============================================================
+   PAGE-EXIT VEIL — branded overlay shown between page loads
+   ============================================================ */
+.px-exit {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: var(--grad-brand);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .18s ease;
+    pointer-events: none;
+}
+.px-exit.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+}
+.px-exit-spinner {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, .14);
+    border-top-color: var(--sb-gold);
+    animation: pxSpin .8s linear infinite;
+}
+.px-exit p {
+    color: var(--sb-green-50);
+    font-weight: 700;
+    font-size: .95rem;
+    margin: 0;
+}
+.px-exit-brand {
+    font-weight: 900;
+    font-size: 1.05rem;
+    letter-spacing: .4px;
+    background: var(--grad-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+@keyframes pxSpin { to { transform: rotate(360deg); } }
+
 /* ---------------- Responsive ---------------- */
 @media (max-width: 991.98px) {
     .app-body .app-main { margin-left: 0; }
@@ -488,3 +543,11 @@ body.app-body {
 
 /* Extra safety: never let anything inside main bleed sideways */
 .app-main, .app-content { overflow-x: clip; }
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}
