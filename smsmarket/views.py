@@ -7,8 +7,10 @@ from countries.models import Country
 from .models import NumberOrder, Service
 from .services import (InsufficientFunds, PricingNotAvailable,
                        cancel_user_order, maybe_deliver, reserve_number)
-
-
+from django.urls import reverse
+from wallet.services import get_wallet   # if not already imported
+import logging
+logger = logging.getLogger(__name__)
 from django.http import JsonResponse
 from pricing.models import Pricing   # confirm this import matches your project
 
@@ -39,22 +41,79 @@ def for_country(request, code):
 
 @login_required
 def buy(request):
+    wallet = get_wallet(request.user)
+
+    # --- AJAX support: works whether fetch() sends the header or a flag ---
+    ajax = (
+        request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        or request.POST.get("ajax") == "1"
+    )
+
+    def ajax_error_response(redirect_to="smsmarket:buy"):
+        if ajax:
+            msg_text, msg_level = "", "error"
+            for m in messages.get_messages(request):
+                msg_text = str(m)
+                msg_level = m.level_tag
+            return JsonResponse({
+                "success": False,
+                "message": msg_text,
+                "level": msg_level,
+                "redirect": reverse(redirect_to),
+            })
+        return redirect(redirect_to)
+
     if request.method == 'POST':
-        service_code = request.POST.get('service')
-        country_code = request.POST.get('country')
+        service_code = (request.POST.get('service') or '').strip()
+        country_code = (request.POST.get('country') or '').strip()
         server = request.POST.get('server', 'instantnums')
         if server not in ('daisysms', 'instantnums'):
             server = 'instantnums'
+
+        # Validate country BEFORE reserve_number — stale/unknown codes
+        # redirect with a message, never a 500.
+        try:
+            Country.objects.get(code__iexact=country_code, is_active=True)
+        except Country.DoesNotExist:
+            messages.error(request,
+                           'That country is no longer available. '
+                           'Please refresh and pick another.')
+            return ajax_error_response('smsmarket:buy')
+
         try:
             order = reserve_number(request.user, service_code=service_code,
                                    country_code=country_code, provider_name=server)
         except PricingNotAvailable as e:
             messages.error(request, str(e))
-            return redirect('smsmarket:buy')
+            return ajax_error_response('smsmarket:buy')
         except InsufficientFunds as e:
             messages.error(request, str(e))
-            return redirect('wallet:deposit')   # or wherever your funding page is
-        return redirect('smsmarket:buy')        # the active orders section shows it
+            return ajax_error_response('wallet:deposit')
+        except Exception as e:
+            logger.exception('reserve_number failed for user %s: %s',
+                             request.user.id, e)
+            messages.error(request,
+                           'Unable to complete your request. Please try again shortly.')
+            return ajax_error_response('smsmarket:buy')
+
+        # --- AJAX success: return the order as JSON, page stays put ---
+        if ajax:
+            return JsonResponse({
+                'success': True,
+                'message': 'Number reserved. You are only charged when the SMS arrives.',
+                'order': {
+                    'id': order.id,
+                    'phone_number': order.phone_number,
+                    'price': str(order.price),
+                    'status': order.status,
+                    'created_at': order.created_at.isoformat(),
+                },
+            })
+
+        messages.success(request,
+                         'Number reserved. You are only charged when the SMS arrives.')
+        return redirect('smsmarket:buy')
+
     # GET: render the buy page
     countries = Country.objects.filter(is_active=True)
     active_orders = NumberOrder.objects.filter(user=request.user, status='active')
