@@ -21,8 +21,13 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def for_country(request, code):
-    """JSON: services + prices for one country. Feeds buynumber.js."""
+    """JSON: services + prices for one country. Feeds buynumber.js.
+    DB Pricing rows win; everything else the provider offers is filled in
+    live with margin — so the full catalog shows for every country."""
     country = get_object_or_404(Country, code=code, is_active=True)
+    server = request.GET.get('server', 'instantnums')
+    if server not in ('daisysms', 'instantnums'):
+        server = 'instantnums'
 
     rows = (
         Pricing.objects
@@ -31,16 +36,23 @@ def for_country(request, code):
         .order_by('service__name')
     )
 
-    return JsonResponse({
-        'services': [
-            {
-                'code': row.service.code,
-                'name': row.service.name,
-                'price': str(row.sell_price),
-            }
-            for row in rows
-        ],
-    })
+    seen = set()
+    services = []
+    for row in rows:
+        seen.add(row.service.code)
+        services.append({
+            'code': row.service.code,
+            'name': row.service.name,
+            'price': str(row.sell_price),
+        })
+
+    # Fill in the rest of the provider's catalog for this country.
+    from .services import live_catalog
+    for item in live_catalog(server, country.code, exclude_codes=seen):
+        services.append(item)
+
+    services.sort(key=lambda s: s['name'])
+    return JsonResponse({'services': services})
 
 
 @login_required

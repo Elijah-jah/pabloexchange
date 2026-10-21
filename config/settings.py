@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'django_apscheduler',
 ]
 
+SMS_MARGIN_MULTIPLIER = 1.4   # 1.4 = 40% markup on live provider prices; adjust freely
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     # ← NEW: serves static files efficiently in production (pip install whitenoise)
