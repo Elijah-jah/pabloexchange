@@ -4,7 +4,8 @@ from datetime import timedelta
 from django.utils import timezone
 
 from .models import NumberOrder
-from .services import cancel_user_order, maybe_deliver
+from .providers import get_provider
+from .services import expire_order, maybe_deliver
 
 logger = logging.getLogger(__name__)
 
@@ -28,20 +29,30 @@ def deliver_pending_sms_job():
                 logger.info('Delivery sweep: SMS delivered for order %s', order.id)
         except Exception:
             logger.exception('Delivery sweep failed for order %s', order.id)
-    logger.info('>>> SMS DELIVERY SWEEP — %d active, %d delivered <<<',
-                qs.count(), delivered)
+    print('>>> SMS DELIVERY SWEEP — %d active, %d delivered <<<'
+          % (qs.count(), delivered))
 
 
 def expire_stale_orders_job():
-    """Cancel active orders whose rental window has passed (no charge)."""
+    """Every minute: orders whose rental window has passed become EXPIRED.
+
+    Best-effort release of the number on the provider (ignore failures —
+    the number is often already gone), then mark expired locally. Nothing
+    was ever charged for these, so no refund is needed.
+    """
     qs = NumberOrder.objects.filter(status='active',
                                     expires_at__lt=timezone.now())
     expired = 0
     for order in qs:
         try:
-            if cancel_user_order(order):
+            if order.provider_order_id:
+                try:
+                    get_provider(order.provider).cancel(order.provider_order_id)
+                except Exception:
+                    pass  # provider already released it — nothing to do
+            if expire_order(order):
                 expired += 1
         except Exception:
-            logger.exception('Expire failed for order %s', order.id)
-    if expired:
-        logger.info('Expired %d stale orders', expired)
+            logger.exception('Expire sweep failed for order %s', order.id)
+    print('>>> EXPIRE SWEEP — %d past window, %d expired <<<'
+          % (qs.count(), expired))
