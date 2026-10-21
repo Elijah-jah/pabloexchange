@@ -117,9 +117,10 @@ def buy(request):
     # GET: render the buy page
     countries = Country.objects.filter(is_active=True)
     active_orders = NumberOrder.objects.filter(user=request.user, status='active')
-    return render(request, 'smsmarket/buy_number.html', {
+    return render(request, 'smsmarket/buynumber.html', {
         'countries': countries,
         'active_orders': active_orders,
+        'balance': wallet.balance,
     })
 
 
