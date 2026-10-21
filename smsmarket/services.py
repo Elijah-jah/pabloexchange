@@ -16,7 +16,7 @@ from .providers import get_provider
 
 logger = logging.getLogger(__name__)
 
-ORDER_TIMEOUT = timedelta(minutes=15)
+ORDER_TIMEOUT = timedelta(minutes=20)
 LIVE_CACHE_TTL = 600  # 10 minutes
 
 

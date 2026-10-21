@@ -288,8 +288,10 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <script>
-/* Page-exit veil: a branded overlay appears the instant the user navigates
-   or submits a form, so nobody ever sees a blank white flash between pages. */
+/* Page-exit veil: a branded overlay appears when the user navigates or
+   submits a form — but ONLY if the submit actually proceeds. Modals in
+   page JS (like the cancel-confirmation) cancel their submit with
+   preventDefault, and the veil must not appear for those. */
 (function () {
     'use strict';
 
@@ -328,10 +330,12 @@ document.addEventListener('DOMContentLoaded', function () {
             show();
         });
 
-        // Form submits (stacks harmlessly under page overlays like the buy one)
+        // Form submits — wait until the event finishes dispatching; if any
+        // handler (e.g. the cancel modal) called preventDefault, stay hidden.
         document.addEventListener('submit', function (e) {
-            if (e.defaultPrevented) return;
-            show();
+            setTimeout(function () {
+                if (!e.defaultPrevented) { show(); }
+            }, 0);
         }, true);
     });
 })();

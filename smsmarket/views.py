@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
-
+from .providers import get_provider
 from countries.models import Country
 from marketplace.models import LogOrder
 from pricing.models import Pricing
@@ -196,10 +196,30 @@ def order_detail(request, pk):
 def cancel_order(request):
     order = get_object_or_404(NumberOrder, pk=request.POST.get('order_id'),
                               user=request.user)
-    if cancel_user_order(order):
-        messages.success(request, 'Order cancelled — you were not charged.')
-    else:
-        messages.info(request, 'Order could not be cancelled.')
+
+    if order.status != 'active':
+        messages.info(request, 'This order is no longer active.')
+        return redirect('smsmarket:buy')
+
+    # Cancel with the provider FIRST. If the provider says it can't be
+    # cancelled, say so — don't pretend it worked. Nothing was ever charged.
+    if order.provider_order_id:
+        try:
+            get_provider(order.provider).cancel(order.provider_order_id)
+        except Exception as e:
+            reason = str(e)[:120]
+            logger.warning('Provider cancel refused for order %s (%s): %s',
+                           order.id, order.provider, e)
+            messages.error(
+                request,
+                "This order can't be cancelled — the provider refused "
+                f'({reason}). It may have already expired. No charge was made.'
+            )
+            return redirect('smsmarket:buy')
+
+    order.status = 'cancelled'
+    order.save(update_fields=['status'])
+    messages.success(request, 'Order cancelled — you were not charged.')
     return redirect('smsmarket:buy')
 
 
