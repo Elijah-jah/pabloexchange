@@ -37,18 +37,23 @@ def for_country(request, code):
     )
 
     seen = set()
+    seen_names = set()
     services = []
     for row in rows:
         seen.add(row.service.code)
+        seen_names.add(row.service.name.lower())
         services.append({
             'code': row.service.code,
             'name': row.service.name,
             'price': str(row.sell_price),
         })
 
-    # Fill in the rest of the provider's catalog for this country.
+    # Fill in the rest of the provider's catalog for this country,
+    # skipping names already covered by DB rows (they win).
     from .services import live_catalog
     for item in live_catalog(server, country.code, exclude_codes=seen):
+        if item['name'].lower() in seen_names:
+            continue
         services.append(item)
 
     services.sort(key=lambda s: s['name'])

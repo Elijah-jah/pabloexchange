@@ -55,7 +55,8 @@ def _extract_cost(data):
 
 
 def _extract_catalog(payload):
-    """Provider catalogs come in several shapes — normalize to (code, name)."""
+    """Provider catalogs come in several shapes — normalize to (code, name).
+    InstantNums uses uppercase 'ID'; other providers use code/service/id."""
     if isinstance(payload, dict):
         for key in ('services', 'data', 'result'):
             if key in payload:
@@ -71,7 +72,8 @@ def _extract_catalog(payload):
     items = []
     for s in payload or []:
         if isinstance(s, dict):
-            code = s.get('code') or s.get('service') or s.get('id')
+            code = (s.get('code') or s.get('service') or s.get('id')
+                    or s.get('ID'))
             name = s.get('name') or s.get('title') or code
             if code:
                 items.append((str(code), str(name)))
