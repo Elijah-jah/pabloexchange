@@ -105,6 +105,9 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
             return;
         }
+        // Disabled fields are NOT submitted by the browser — re-enable so
+        // the locked "US" value for DaisySMS actually reaches the server.
+        countrySelect.disabled = false;
         overlay.hidden = false;
         requestBtn.disabled = true;
     });
