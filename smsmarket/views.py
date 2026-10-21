@@ -1,18 +1,22 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
-from marketplace.models import LogOrder
+
 from countries.models import Country
+from marketplace.models import LogOrder
+from pricing.models import Pricing
+from wallet.services import get_wallet
+
 from .models import NumberOrder, Service
 from .services import (InsufficientFunds, PricingNotAvailable,
                        cancel_user_order, maybe_deliver, reserve_number)
-from django.urls import reverse
-from wallet.services import get_wallet   # if not already imported
-import logging
+
 logger = logging.getLogger(__name__)
-from django.http import JsonResponse
-from pricing.models import Pricing   # confirm this import matches your project
 
 
 @login_required
@@ -75,6 +79,10 @@ def buy(request):
         try:
             Country.objects.get(code__iexact=country_code, is_active=True)
         except Country.DoesNotExist:
+            logger.warning(
+                'Buy rejected: country code %r (server=%s) not found or inactive for user %s',
+                country_code, server, request.user.id,
+            )
             messages.error(request,
                            'That country is no longer available. '
                            'Please refresh and pick another.')
