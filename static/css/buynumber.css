@@ -151,7 +151,9 @@
 .bn-button:hover { color: var(--bn-white); filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 8px 18px rgba(5, 150, 105, .38); }
 .bn-button:disabled { opacity: .7; cursor: not-allowed; transform: none; }
 
-/* ---------------- Active sessions ---------------- */
+/* ============================================================
+   Active Numbers — professional card
+   ============================================================ */
 .bn-sessions-title {
     display: flex;
     align-items: center;
@@ -169,81 +171,193 @@
 @keyframes bnPulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 
 .bn-session {
+    position: relative;
     background: var(--bn-white);
     border: 1px solid var(--bn-border);
-    border-radius: var(--bn-radius);
-    box-shadow: var(--bn-shadow);
-    padding: 18px;
+    border-radius: 16px;
+    padding: 18px 20px 20px;
     margin-bottom: 14px;
+    box-shadow: 0 2px 10px rgba(2, 44, 34, .05);
+    overflow: hidden;
+    transition: box-shadow .25s, transform .25s, border-color .25s;
+}
+/* gold hairline across the top */
+.bn-session::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--grad-gold);
+}
+.bn-session:hover {
+    box-shadow: 0 10px 28px rgba(2, 44, 34, .12);
+    transform: translateY(-2px);
+    border-color: #cfe0d8;
 }
 
+/* Card header */
 .bn-session-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 14px;
-}
-.bn-country { font-size: 1.15rem; }
-.bn-service { font-weight: 700; font-size: .95rem; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bn-timer { color: var(--bn-gold-dark); font-size: 1rem; font-weight: 700; }
-
-.bn-session-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     gap: 12px;
-    padding: 9px 0;
-    font-size: .85rem;
-    color: var(--bn-muted);
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #eef4f1;
 }
-.bn-session-item + .bn-session-item { border-top: 1px solid #eef4f1; }
-
-.bn-copy-box { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.bn-active-number { font-size: .95rem; color: var(--bn-ink); font-weight: 700; }
-
-.bn-otp-box {
-    background: var(--bn-green-50);
-    border: 1px dashed var(--bn-green-600);
-    border-radius: 9px;
-    padding: 6px 14px;
-    font-weight: 700;
-    font-size: .95rem;
-    letter-spacing: 2px;
-    color: var(--bn-muted);
-}
-.bn-otp-box.has-code { color: var(--bn-green-800); }
-
-.bn-copy-btn {
-    border: 1px solid var(--bn-border);
-    background: var(--bn-white);
-    color: var(--bn-muted);
-    width: 32px; height: 32px;
-    border-radius: 8px;
+.bn-country {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: .85rem;
+    min-width: 42px;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: var(--grad-brand);
+    color: var(--bn-gold);
+    font-size: .8rem;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    flex-shrink: 0;
+}
+.bn-service {
+    font-weight: 700;
+    font-size: 1rem;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.bn-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fdf6e3;
+    border: 1px solid #f3e3b3;
+    color: var(--bn-gold-dark);
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: .88rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.bn-waiting .bn-timer::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--bn-green-600);
+    animation: bnPulse 1.4s infinite;
+}
+
+/* Number + Code — two tinted cells, stacked on mobile */
+.bn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+.bn-field {
+    background: var(--bn-green-50);
+    border: 1px solid #e3efe9;
+    border-radius: 12px;
+    padding: 12px 14px;
+    min-width: 0;
+}
+.bn-field-label {
+    display: block;
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #8aa29a;
+    margin-bottom: 9px;
+}
+.bn-field-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+.bn-active-number {
+    flex: 1;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: .3px;
+    color: var(--bn-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Code box — dashed "waiting", solid brand card when delivered */
+.bn-otp-box {
+    flex: 1;
+    text-align: center;
+    border-radius: 9px;
+    padding: 8px 10px;
+    letter-spacing: 3px;
+    font-size: .98rem;
+    font-weight: 700;
+    background: var(--bn-white);
+    border: 1.5px dashed var(--bn-green-600);
+    color: var(--bn-muted);
+}
+.bn-otp-box.has-code {
+    background: var(--grad-brand);
+    border: none;
+    color: #ffffff;
+    letter-spacing: 4px;
+    box-shadow: 0 4px 12px rgba(2, 44, 34, .25);
+}
+
+/* Copy buttons */
+.bn-copy-btn {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    border: 1px solid var(--bn-border);
+    background: var(--bn-white);
+    color: #8aa29a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .9rem;
     transition: all .2s;
     flex-shrink: 0;
 }
-.bn-copy-btn:hover:not(:disabled) { background: var(--bn-green-600); border-color: transparent; color: var(--bn-white); }
+.bn-copy-btn:hover:not(:disabled) {
+    background: var(--bn-white);
+    border-color: var(--bn-green-600);
+    color: var(--bn-green-800);
+}
 .bn-copy-btn:disabled { opacity: .4; cursor: not-allowed; }
-.bn-copy-btn.copied { background: var(--bn-gold); border-color: var(--bn-gold); color: var(--bn-green-950); }
+.bn-copy-btn.copied {
+    background: var(--grad-gold);
+    border-color: transparent;
+    color: var(--bn-green-950);
+}
 
-/* Cancel */
-.bn-cancel-form { margin-top: 10px; }
+/* Cancel — refined outline-danger */
+.bn-cancel-form { margin-top: 16px; }
 .bn-cancel-btn {
     width: 100%;
-    border: 1.5px solid #fecaca;
-    background: #fef2f2;
-    color: #dc2626;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 1.5px solid #f3c6c6;
+    background: #fffafa;
+    color: #c62828;
     font-weight: 700;
-    font-size: .85rem;
-    border-radius: 9px;
-    padding: 9px;
+    font-size: .86rem;
+    border-radius: 10px;
+    padding: 11px;
     transition: all .2s;
 }
-.bn-cancel-btn:hover { background: #dc2626; border-color: #dc2626; color: var(--bn-white); }
+.bn-cancel-btn:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, .25);
+}
 
 /* ---------------- Overlay ---------------- */
 .bn-overlay {
@@ -282,9 +396,6 @@
 /* ============================================================
    Searchable dropdowns (built-in — no external library)
    ============================================================ */
-
-/* The native select stays in the DOM (form submission, required,
-   disabled-lock) but is visually replaced by the custom control. */
 .ss-native { display: none !important; }
 
 .ss-wrapper { position: relative; }
@@ -316,7 +427,6 @@
     cursor: not-allowed;
 }
 
-/* Dropdown panel — full-width card, same look as the reference design */
 .ss-panel {
     position: absolute;
     left: 0;
@@ -368,42 +478,6 @@
     font-size: .88rem;
 }
 
-/* ---------------- Responsive ---------------- */
-@media (max-width: 575px) {
-    .bn-head-text h2 { font-size: 1.25rem; }
-    .bn-card { padding: 20px 16px; }
-    .bn-balance-pill { font-size: .82rem; padding: 8px 14px; }
-    .bn-session { padding: 15px 14px; }
-    .bn-session-item { flex-wrap: wrap; }
-    .bn-overlay-box { padding: 26px 22px; }
-
-    /* Prevent iOS auto-zoom when the search field gains focus —
-       any input under 16px triggers page zoom on iPhone */
-    .ss-control,
-    .ss-search,
-    .ss-item {
-        font-size: 16px;
-    }
-    .ss-search {
-        margin: 8px;
-        width: calc(100% - 16px);
-    }
-    .ss-list {
-        max-height: min(300px, 45vh);
-    }
-}
-
-/* Server picker — bold green "primary choice" variant of the widget */
-.ss-control--server {
-    border-width: 2px;
-    border-color: var(--bn-green-600);
-    background-color: var(--bn-green-50);
-    font-weight: 700;
-}
-.ss-wrapper.disabled .ss-control--server {
-    background-color: var(--bn-green-50);
-    color: var(--bn-muted);
-}
 /* ---------------- Cancel confirmation modal ---------------- */
 .bn-modal {
     position: fixed;
@@ -427,7 +501,6 @@
     text-align: center;
     box-shadow: 0 24px 60px rgba(0, 0, 0, .30);
 }
-
 .bn-modal-icon {
     width: 54px; height: 54px;
     border-radius: 50%;
@@ -439,7 +512,6 @@
     font-size: 1.5rem;
     margin: 0 auto 14px;
 }
-
 .bn-modal-card h3 {
     font-weight: 800;
     font-size: 1.1rem;
@@ -452,11 +524,7 @@
     line-height: 1.5;
     margin-bottom: 20px;
 }
-
-.bn-modal-actions {
-    display: flex;
-    gap: 10px;
-}
+.bn-modal-actions { display: flex; gap: 10px; }
 .bn-modal-btn {
     flex: 1;
     border-radius: 10px;
@@ -481,151 +549,31 @@
 }
 .bn-modal-btn--danger:hover { filter: brightness(1.1); }
 
-/* ============================================================
-   Active Numbers card — professional restyle (overrides above)
-   ============================================================ */
-
-.bn-session {
-    position: relative;
-    border: 1px solid var(--bn-border);
-    border-radius: 16px;
-    padding: 20px 22px;
-    box-shadow: 0 2px 10px rgba(2, 44, 34, .05);
-    overflow: hidden;
-    transition: box-shadow .25s, transform .25s, border-color .25s;
-}
-/* gold hairline across the top of the card */
-.bn-session::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--grad-gold);
-}
-.bn-session:hover {
-    box-shadow: 0 10px 28px rgba(2, 44, 34, .12);
-    transform: translateY(-2px);
-    border-color: #cfe0d8;
-}
-
-/* Header row */
-.bn-session-header {
-    gap: 12px;
-    margin-bottom: 16px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid #eef4f1;
-}
-.bn-country {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 42px;
-    height: 26px;
-    padding: 0 10px;
-    border-radius: 8px;
-    background: var(--grad-brand);
-    color: var(--bn-gold);
-    font-size: .8rem;
-    font-weight: 800;
-    letter-spacing: 1.2px;
-}
-.bn-service { font-size: 1rem; font-weight: 700; }
-.bn-timer {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #fdf6e3;
-    border: 1px solid #f3e3b3;
-    color: var(--bn-gold-dark);
-    padding: 4px 12px;
-    border-radius: 100px;
-    font-size: .88rem;
-    font-weight: 700;
-}
-/* live pulse dot on the timer while waiting */
-.bn-waiting .bn-timer::before {
-    content: '';
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--bn-green-600);
-    animation: bnPulse 1.4s infinite;
-}
-
-/* Detail rows */
-.bn-session-item {
-    padding: 10px 2px;
-    font-size: .88rem;
-}
-.bn-session-item > span:first-child {
-    text-transform: uppercase;
-    font-size: .72rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: #8aa29a;
-}
-.bn-active-number {
-    font-size: 1.02rem;
-    letter-spacing: .3px;
-}
-
-/* Code box — dashed while waiting, solid brand card when code arrives */
-.bn-otp-box {
-    border-radius: 10px;
-    padding: 8px 18px;
-    letter-spacing: 3px;
-    font-size: 1rem;
-    background: var(--bn-green-50);
-    border: 1.5px dashed var(--bn-green-600);
-    color: var(--bn-muted);
-}
-.bn-otp-box.has-code {
-    background: var(--grad-brand);
-    border: none;
-    color: #ffffff;
-    letter-spacing: 4px;
-    box-shadow: 0 4px 12px rgba(2, 44, 34, .25);
-}
-
-/* Copy buttons — quieter, more professional */
-.bn-copy-btn {
-    width: 34px; height: 34px;
-    border-radius: 9px;
-    border: 1px solid var(--bn-border);
-    background: var(--bn-white);
-    color: #8aa29a;
-}
-.bn-copy-btn:hover:not(:disabled) {
-    background: var(--bn-green-50);
+/* Server picker — bold green variant */
+.ss-control--server {
+    border-width: 2px;
     border-color: var(--bn-green-600);
-    color: var(--bn-green-800);
-}
-.bn-copy-btn.copied {
-    background: var(--grad-gold);
-    border-color: transparent;
-    color: var(--bn-green-950);
+    background-color: var(--bn-green-50);
+    font-weight: 700;
 }
 
-/* Cancel — refined outline-danger with icon */
-.bn-cancel-form { margin-top: 14px; }
-.bn-cancel-btn {
-    width: 100%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    border: 1.5px solid #f3c6c6;
-    background: #fffafa;
-    color: #c62828;
-    font-weight: 700;
-    font-size: .86rem;
-    letter-spacing: .2px;
-    border-radius: 10px;
-    padding: 11px;
-    transition: all .2s;
-}
-.bn-cancel-btn:hover {
-    background: #dc2626;
-    border-color: #dc2626;
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(220, 38, 38, .25);
+/* ---------------- Responsive ---------------- */
+@media (max-width: 575px) {
+    .bn-head-text h2 { font-size: 1.25rem; }
+    .bn-card { padding: 20px 16px; }
+    .bn-balance-pill { font-size: .82rem; padding: 8px 14px; }
+    .bn-session { padding: 15px 14px 16px; }
+    .bn-overlay-box { padding: 26px 22px; }
+
+    /* Number & Code stack vertically on phones */
+    .bn-grid { grid-template-columns: 1fr; gap: 10px; }
+
+    /* Prevent iOS auto-zoom when the search field gains focus */
+    .ss-control,
+    .ss-search,
+    .ss-item {
+        font-size: 16px;
+    }
+    .ss-search { margin: 8px; width: calc(100% - 16px); }
+    .ss-list { max-height: min(300px, 45vh); }
 }

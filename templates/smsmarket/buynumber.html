@@ -5,7 +5,7 @@
 {% block page_title %}Buy Number{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/buynumber.css' %}?v=11">
+<link rel="stylesheet" href="{% static 'css/buynumber.css' %}?v=12">
 {% endblock %}
 
 {% block content %}
@@ -87,27 +87,29 @@
                 {% endif %}
             </div>
 
-            <div class="bn-session-item">
-                <span>Number</span>
-                <div class="bn-copy-box">
-                    <span class="bn-active-number mono">{{ order.phone_number }}</span>
-                    <button type="button" class="bn-copy-btn" data-copy="{{ order.phone_number }}" title="Copy number">
-                        <i class="bi bi-clipboard"></i>
-                    </button>
+            <div class="bn-grid">
+                <div class="bn-field">
+                    <span class="bn-field-label">Number</span>
+                    <div class="bn-field-value">
+                        <span class="bn-active-number mono">{{ order.phone_number }}</span>
+                        <button type="button" class="bn-copy-btn" data-copy="{{ order.phone_number }}" title="Copy number">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div class="bn-session-item">
-                <span>Code</span>
-                <div class="bn-copy-box">
-                    <span class="bn-otp-box {% if otp %}has-code{% endif %}">
-                        {% if otp %}{{ otp.otp_code }}{% else %}WAITING{% endif %}
-                    </span>
-                    {% if otp %}
-                    <button type="button" class="bn-copy-btn" data-copy="{{ otp.otp_code }}" title="Copy code">
-                        <i class="bi bi-clipboard"></i>
-                    </button>
-                    {% endif %}
+                <div class="bn-field">
+                    <span class="bn-field-label">Code</span>
+                    <div class="bn-field-value">
+                        <span class="bn-otp-box {% if otp %}has-code{% endif %}">
+                            {% if otp %}{{ otp.otp_code }}{% else %}WAITING{% endif %}
+                        </span>
+                        {% if otp %}
+                        <button type="button" class="bn-copy-btn" data-copy="{{ otp.otp_code }}" title="Copy code">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 
