@@ -2,7 +2,6 @@ import hashlib
 import hmac
 import json
 import uuid
-
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -10,11 +9,79 @@ from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-
 from .models import WalletTransaction
 from .payments.pocketfi import create_payment
 from .services import balance
+from django.shortcuts import render
+from marketplace.models import LogOrder
+from smsmarket.models import NumberOrder
 
+
+def _meta_dict(t):
+    """meta may be a JSONField dict or a stored string — normalize to dict."""
+    meta = getattr(t, 'meta', None) or {}
+    if isinstance(meta, str):
+        try:
+            meta = json.loads(meta)
+        except ValueError:
+            meta = {}
+    return meta if isinstance(meta, dict) else {}
+
+
+@login_required
+def transactions(request):
+    txns = list(WalletTransaction.objects
+                 .filter(user=request.user)
+                 .order_by('-created_at'))
+
+    # --- Collect order ids referenced in each transaction's meta ---
+    log_ids, num_ids = set(), set()
+    for t in txns:
+        meta = _meta_dict(t)
+        oid = meta.get('order_id')
+        if not oid:
+            continue
+        if meta.get('group_id'):              # log purchase
+            log_ids.add(oid)
+        elif meta.get('provider_order_id'):   # number purchase
+            num_ids.add(oid)
+
+    # --- Two queries total, no N+1 ---
+    logs = {
+        o.pk: o for o in
+        LogOrder.objects.filter(pk__in=log_ids).select_related('group')
+    }
+    numbers = {
+        o.pk: o for o in
+        NumberOrder.objects.filter(pk__in=num_ids)
+        .select_related('service', 'country')
+    }
+
+    # --- Attach a small `related` payload each row can render ---
+    for t in txns:
+        t.related = None
+        meta = _meta_dict(t)
+        oid = meta.get('order_id')
+        if not oid:
+            continue
+        if oid in logs and logs[oid].group:
+            t.related = {
+                'kind': 'log',
+                'image_url': logs[oid].group.image.url if logs[oid].group.image else '',
+                'title': logs[oid].group.name,
+            }
+        elif oid in numbers:
+            o = numbers[oid]
+            t.related = {
+                'kind': 'number',
+                'image_url': '',
+                'title': o.service.name if o.service else 'Number',
+                'extra': o.country.name if o.country else '',
+            }
+
+    return render(request, 'wallet/transactions.html', {
+        'transactions': txns,
+    })
 
 # ---------------- Live balance (sidebar/topbar) ----------------
 
@@ -142,12 +209,5 @@ def dev_confirm(request, reference):
     ''')
 
 
-# ---------------- Transactions ----------------
 
-@login_required
-def transactions(request):
-    return render(request, 'wallet/transactions.html', {
-        'transactions': (WalletTransaction.objects
-                       .filter(user=request.user)
-                       .order_by('-created_at')),
-    })
+

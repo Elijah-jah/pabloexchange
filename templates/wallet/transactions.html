@@ -6,7 +6,7 @@
 {% block page_title %}Transactions{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/purchases.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/purchases.css' %}?v=3">
 {% endblock %}
 
 {% block content %}
@@ -40,15 +40,22 @@
     <div class="mp-card" id="txList">
         {% for t in transactions %}
         <div class="mp-row tx-row" data-type="{{ t.type }}"
-             data-search="{{ t.description|lower }} {{ t.reference|lower }} {{ t.method|lower }}">
+             data-search="{{ t.description|lower }} {{ t.reference|lower }} {{ t.method|lower }} {{ t.related.title|lower }} {{ t.related.extra|lower }}">
 
+            {% if t.related and t.related.kind == 'log' and t.related.image_url %}
+            <img class="mp-thumb" src="{{ t.related.image_url }}" alt="{{ t.related.title }}">
+            {% else %}
             <div class="mp-icon {% if t.type == 'credit' %}log{% else %}number{% endif %}">
                 {% if t.type == 'credit' %}<i class="bi bi-arrow-down-left"></i>
                 {% else %}<i class="bi bi-arrow-up-right"></i>{% endif %}
             </div>
+            {% endif %}
 
             <div class="mp-main">
-                <p class="mp-name">{{ t.description|default:t.get_type_display }}</p>
+                <p class="mp-name">
+                    {% if t.related %}{{ t.related.title }}{% if t.related.extra %} &middot; {{ t.related.extra }}{% endif %}
+                    {% else %}{{ t.description|default:t.get_type_display }}{% endif %}
+                </p>
                 <p class="mp-sub">
                     <span>{{ t.created_at|date:"M j, Y" }} &middot; {{ t.created_at|date:"H:i" }}</span>
                     {% if t.method %}<span>&middot; {{ t.method }}</span>{% endif %}

@@ -437,3 +437,5 @@
     min-width: 0;
 }
 .mp-search:focus-within { border-color: #059669; box-shadow: 0 0 0 3px rgba(5, 150, 105, .12); }
+
+.mp-thumb { width: 42px; height: 42px; border-radius: 11px; object-fit: cover; flex-shrink: 0; border: 1px solid #e3ece8; }
