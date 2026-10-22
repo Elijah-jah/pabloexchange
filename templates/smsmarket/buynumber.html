@@ -82,7 +82,7 @@
             <div class="bn-session-header">
                 <span class="bn-country">{{ order.country.code|default:"🌐" }}</span>
                 <span class="bn-service">{{ order.service.name|default:"Number" }}</span>
-                <span class="bn-server-chip">{{ order.provider|default:"" }}</span>
+                <span class="bn-server-chip">{% if order.provider == 'instantnums' %}Server 2{% else %}Server 1{% endif %}</span>
                 {% if order.status == 'active' %}
                 <span class="bn-timer mono" data-expires="{{ order.expires_at|date:'c' }}">--:--</span>
                 {% endif %}
