@@ -38,8 +38,10 @@
     {% for section in sections %}
     <div class="prod-section" data-section="{{ section.key }}">
 
-        <div class="sec-head">
-            {% if section.products.0.image %}
+            <div class="sec-head">
+            {% if section.image %}
+            <img class="sec-logo" src="{{ section.image.url }}" alt="">
+            {% elif section.products.0.image %}
             <img class="sec-logo" src="{{ section.products.0.image.url }}" alt="">
             {% else %}
             <span class="sec-logo sec-logo--generic"><i class="bi bi-box-seam"></i></span>
