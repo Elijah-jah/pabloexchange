@@ -20,6 +20,7 @@ class LogSubCategory(models.Model):
     name = models.CharField(max_length=100)
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
+    image = models.ImageField(upload_to='subcategories/', blank=True, null=True)
 
     class Meta:
         ordering = ['order', 'name']
