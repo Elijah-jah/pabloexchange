@@ -151,15 +151,6 @@ def purchase_log(request, pk):
                                        f'but your balance is \u20A6{balance:,.2f}.')},
                             status=400)
 
-    # Duplicate-buy guard: same group reserved in the last 10 seconds
-    recent = LogOrder.objects.filter(
-        user=request.user, group=group, status='waiting',
-        created_at__gte=timezone.now() - timedelta(seconds=10),
-    ).exists()
-    if recent:
-        return JsonResponse({'success': False,
-                             'error': 'Your previous request is still processing.'}, status=400)
-
     order = LogOrder.objects.create(
         user=request.user,
         group=group,
