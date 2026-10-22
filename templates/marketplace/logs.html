@@ -6,7 +6,7 @@
 {% block page_title %}Marketplace{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/services.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'css/services.css' %}?v=2">
 {% endblock %}
 
 {% block content %}
@@ -39,6 +39,11 @@
     <div class="prod-section" data-section="{{ section.key }}">
 
         <div class="sec-head">
+            {% if section.products.0.image %}
+            <img class="sec-logo" src="{{ section.products.0.image.url }}" alt="">
+            {% else %}
+            <span class="sec-logo sec-logo--generic"><i class="bi bi-box-seam"></i></span>
+            {% endif %}
             <span class="sec-title">{{ section.name }}</span>
             {% if section.products|length > 4 %}
             <button class="see-more-btn" data-see-more>
@@ -58,27 +63,27 @@
                  data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
                  data-format="{{ product.format_labels|default:'UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL' }}">
 
-                <div class="prod-top">
-                    <span class="prod-cat">{{ section.name }}</span>
-                    <span class="prod-stock {% if product.stock == 0 %}out{% endif %}">
-                        {% if product.stock == 0 %}Sold out{% else %}{{ product.stock }} in stock{% endif %}
-                    </span>
-                </div>
-
-                {% if product.image %}
                 <div class="prod-img-wrap">
+                    {% if product.image %}
                     <img class="prod-img" src="{{ product.image.url }}" alt="{{ product.title }}" loading="lazy">
+                    {% else %}
+                    <i class="bi bi-box-seam prod-img-fallback"></i>
+                    {% endif %}
                 </div>
-                {% endif %}
 
-                <h6 class="prod-name">{{ product.title }}</h6>
-                <p class="prod-desc">{{ product.description|default:''|truncatechars:80 }}</p>
-                <div class="prod-foot">
-                    <span class="prod-price mono">&#8358;{{ product.price|floatformat:2|intcomma }}</span>
-                    <button class="prod-buy" {% if product.stock == 0 %}disabled{% endif %}>
-                        {% if product.stock == 0 %}Sold out{% else %}<i class="bi bi-bag-plus"></i>Buy{% endif %}
-                    </button>
+                <div class="prod-row-body">
+                    <h6 class="prod-name">{{ product.title }}</h6>
+                    <div class="prod-row-meta">
+                        <span class="prod-stock {% if product.stock == 0 %}out{% endif %}">
+                            {% if product.stock == 0 %}Sold out{% else %}{{ product.stock }} pcs.{% endif %}
+                        </span>
+                        <span class="prod-price mono">&#8358;{{ product.price|floatformat:2|intcomma }}</span>
+                    </div>
                 </div>
+
+                <button class="prod-buy" {% if product.stock == 0 %}disabled{% endif %}>
+                    {% if product.stock == 0 %}Sold out{% else %}<i class="bi bi-bag-plus"></i>Buy<i class="bi bi-chevron-right buy-arrow"></i>{% endif %}
+                </button>
             </div>
             {% endfor %}
         </div>
@@ -378,7 +383,7 @@
                 var stock = parseInt(currentCard.getAttribute("data-stock") || "0", 10);
                 if (stockEl && stock > 0) {
                     if (stock > 1) {
-                        stockEl.textContent = (stock - 1) + " in stock";
+                        stockEl.textContent = (stock - 1) + " pcs.";
                         currentCard.setAttribute("data-stock", String(stock - 1));
                     } else {
                         stockEl.textContent = "Sold out";
