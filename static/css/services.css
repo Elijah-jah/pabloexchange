@@ -499,3 +499,14 @@
     .lm-actions { flex-direction: column-reverse; }
     .log-modal { padding: 22px 16px 18px; }
 }
+/* ---------------- Buy button — PabloExchange gold ---------------- */
+.prod-buy {
+    background: var(--grad-gold);
+    color: var(--mk-green-950);
+    box-shadow: 0 4px 12px rgba(240, 180, 41, .35);
+}
+.prod-buy:hover:not(:disabled) {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(240, 180, 41, .45);
+}
