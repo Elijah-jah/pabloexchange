@@ -42,7 +42,9 @@
              data-format="{{ o.format_labels }}"
              data-price="{{ o.price }}"
              data-date="{{ o.created_at|date:'M j, Y' }} &middot; {{ o.created_at|date:'H:i' }}"
-             data-status="{{ o.status }}">
+             data-status="{{ o.status }}"
+             data-image="{{ o.image }}"
+             data-extra="{{ o.extra }}">
 
             {% if o.image %}
             <img class="mp-thumb" src="{{ o.image }}" alt="{{ o.name }}">
@@ -121,7 +123,9 @@
 <div class="mp-overlay" id="mpModal" hidden>
     <div class="mp-modal" role="dialog" aria-modal="true">
 
-        <div class="mpm-icon"><i class="bi bi-file-lock2" id="mpmIcon"></i></div>
+        <!-- product image (logs with image) or type icon -->
+        <img class="mpm-img" id="mpmImg" src="" alt="" hidden>
+        <div class="mpm-icon" id="mpmIconWrap"><i class="bi bi-file-lock2" id="mpmIcon"></i></div>
 
         <h5 class="mpm-title" id="mpmTitle"></h5>
         <span class="mpm-ref mono" id="mpmRef" hidden></span>
@@ -242,13 +246,28 @@
 
     /* ---------- DETAILS MODAL ---------- */
     var modal = document.getElementById("mpModal");
+    var mpmImg = document.getElementById("mpmImg");
+    var mpmIconWrap = document.getElementById("mpmIconWrap");
 
     function openModal(row) {
         var d = function (k) { return row.getAttribute("data-" + k) || ""; };
         var type = d("type");
 
-        document.getElementById("mpmIcon").className =
-            type === "log" ? "bi bi-file-lock2" : "bi bi-phone";
+        /* image takes priority over the generic icon */
+        var img = d("image");
+        if (img) {
+            mpmImg.src = img;
+            mpmImg.alt = d("name");
+            mpmImg.hidden = false;
+            mpmIconWrap.hidden = true;
+        } else {
+            mpmImg.hidden = true;
+            mpmImg.src = "";
+            mpmIconWrap.hidden = false;
+            document.getElementById("mpmIcon").className =
+                type === "log" ? "bi bi-file-lock2" : "bi bi-phone";
+        }
+
         document.getElementById("mpmTitle").textContent = d("name");
 
         var ref = document.getElementById("mpmRef");
