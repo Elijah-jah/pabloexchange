@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     'pricing',
     'django.contrib.humanize',
     'django_apscheduler',
+    'cloudinary_storage',
+    'cloudinary',
 ]
 
 SMS_MARGIN_MULTIPLIER = 1.4   # 1.4 = 40% markup on live provider prices; adjust freely
@@ -118,10 +120,19 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 # ← NEW: whitenoise compressed + cached storage
 STORAGES = {
-    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'default': {
+        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',   # ← media now lives on Cloudinary
+    },
     'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
 }
 
+
+# ---------------- Cloudinary (persistent media storage) ----------------
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
+    'API_KEY': config('CLOUDINARY_API_KEY', default=''),
+    'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
+}
 
 # ---------------- Production hardening (active only when DEBUG=False) ----------------
 if not DEBUG:
@@ -241,3 +252,4 @@ JAZZMIN_UI_TWEAKS = {
     },
     "actions_sticky_top": True,
 }
+MEDIA_ROOT = config('MEDIA_ROOT', default=BASE_DIR / 'media')
