@@ -20,8 +20,8 @@ class SmsmarketConfig(AppConfig):
             scheduler.add_jobstore(DjangoJobStore(), 'default')
             scheduler.add_job(deliver_pending_sms_job, 'interval', seconds=30,
                               id='deliver_pending_sms', replace_existing=True)
-            scheduler.add_job(expire_stale_orders_job, 'interval', minutes=1,
-                              id='expire_stale_orders', replace_existing=True)
+            scheduler.add_job(expire_stale_orders_job, 'interval', seconds=30,
+                  id='expire_stale_orders', replace_existing=True)
             scheduler.start()
         except Exception:
             # Tables don't exist yet (pre-migrate) — app must still boot.
