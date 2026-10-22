@@ -34,6 +34,7 @@ CSRF_TRUSTED_ORIGINS = config(
 
 
 INSTALLED_APPS = [
+    'jazzmin',  
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -162,3 +163,81 @@ SMS_PROVIDER = config('SMS_PROVIDER', default='dummy')
 DAISYSMS_API_KEY = config('DAISYSMS_API_KEY', default='')
 INSTANTNUMS_API_KEY = config('INSTANTNUMS_API_KEY', default='')
 INSTANTNUMS_BASE_URL = config('INSTANTNUMS_BASE_URL', default='https://instantnums.com')
+
+# ---------------- Django Jazzmin (admin theme) ----------------
+JAZZMIN_SETTINGS = {
+    "site_title": "PabloExchange Admin",
+    "site_header": "PabloExchange",
+    "site_brand": "PabloExchange",
+    "welcome_sign": "Welcome to PabloExchange Admin",
+    "copyright": "PabloExchange Ltd",
+    "search_model": ["auth.User", "smsmarket.NumberOrder", "marketplace.LogOrder"],
+    "topmenu_links": [
+        {"name": "Dashboard", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "View Site", "url": "/", "new_window": True},
+    ],
+    "usermenu_links": [
+        {"name": "View Site", "url": "/", "new_window": True},
+    ],
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "order_with_respect_to": [
+        "smsmarket", "marketplace", "pricing", "countries",
+        "wallet", "accounts", "auth",
+    ],
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "accounts": "fas fa-id-card",
+        "smsmarket": "fas fa-sim-card",
+        "smsmarket.numberorder": "fas fa-phone-alt",
+        "marketplace": "fas fa-store",
+        "marketplace.logorder": "fas fa-receipt",
+        "marketplace.loggroup": "fas fa-box-open",
+        "pricing": "fas fa-tags",
+        "countries": "fas fa-globe-africa",
+        "wallet": "fas fa-wallet",
+        "django_apscheduler": "fas fa-clock",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+    "related_modal_active": False,
+    "custom_css": None,
+    "custom_js": None,
+    "use_google_fonts_cdn": True,
+    "changeform_format": "horizontal_tabs",
+    "language_chooser": False,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-dark",
+    "accent": "accent-teal",
+    "navbar": "navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-teal",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "darkly",   # dark admin matching your brand; try "flatly" for light
+    "dark_mode_theme": "darkly",
+    "button_classes": {
+        "primary": "btn-outline-primary",
+        "secondary": "btn-outline-secondary",
+        "info": "btn-outline-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success",
+    },
+    "actions_sticky_top": True,
+}
