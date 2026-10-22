@@ -5,7 +5,7 @@
 {% block page_title %}Buy Number{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/buynumber.css' %}?v=12">
+<link rel="stylesheet" href="{% static 'css/buynumber.css' %}?v=13">
 {% endblock %}
 
 {% block content %}
@@ -28,7 +28,7 @@
 
         <div class="bn-card">
 
-            <!-- SERVER — starts EMPTY, nothing pre-selected -->
+            <!-- SERVER -->
             <div class="bn-group">
                 <label for="serverSelect">Server</label>
                 <select class="bn-select bn-server-select" id="serverSelect" name="server" required>
@@ -39,7 +39,7 @@
                 <p class="bn-server-hint" id="serverHint"></p>
             </div>
 
-            <!-- COUNTRY — disabled until a server is picked -->
+            <!-- COUNTRY -->
             <div class="bn-group">
                 <label for="countrySelect">Country</label>
                 <select class="bn-select" id="countrySelect" name="country" required disabled>
@@ -50,7 +50,7 @@
                 </select>
             </div>
 
-            <!-- SERVICE — disabled until a country is picked -->
+            <!-- SERVICE -->
             <div class="bn-group">
                 <label for="serviceSelect">Service</label>
                 <select class="bn-select" id="serviceSelect" name="service" required disabled>
@@ -82,6 +82,7 @@
             <div class="bn-session-header">
                 <span class="bn-country">{{ order.country.code|default:"🌐" }}</span>
                 <span class="bn-service">{{ order.service.name|default:"Number" }}</span>
+                <span class="bn-server-chip">{{ order.provider|default:"" }}</span>
                 {% if order.status == 'active' %}
                 <span class="bn-timer mono" data-expires="{{ order.expires_at|date:'c' }}">--:--</span>
                 {% endif %}
@@ -114,6 +115,10 @@
             </div>
 
             {% if order.status == 'active' %}
+            <div class="bn-status-line">
+                <span class="bn-status-dot"></span> Waiting for SMS…
+            </div>
+
             <form method="post" action="{% url 'smsmarket:cancel_order' %}" class="bn-cancel-form">
                 {% csrf_token %}
                 <input type="hidden" name="order_id" value="{{ order.pk }}">

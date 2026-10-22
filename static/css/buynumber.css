@@ -199,7 +199,7 @@
 .bn-session-header {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     padding-bottom: 14px;
     margin-bottom: 16px;
     border-bottom: 1px solid #eef4f1;
@@ -222,11 +222,27 @@
 .bn-service {
     font-weight: 700;
     font-size: 1rem;
-    flex: 1;
     min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+/* small server chip e.g. S1 / S2 */
+.bn-server-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    padding: 0 9px;
+    border-radius: 100px;
+    background: var(--bn-green-50);
+    border: 1px solid #cfe0d8;
+    color: var(--bn-green-800);
+    font-size: .7rem;
+    font-weight: 800;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    flex-shrink: 0;
 }
 .bn-timer {
     display: inline-flex;
@@ -240,6 +256,7 @@
     font-size: .88rem;
     font-weight: 700;
     flex-shrink: 0;
+    margin-left: auto;
 }
 .bn-waiting .bn-timer::before {
     content: '';
@@ -335,8 +352,26 @@
     color: var(--bn-green-950);
 }
 
+/* Waiting status line */
+.bn-status-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--bn-muted);
+}
+.bn-status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--bn-green-600);
+    animation: bnPulse 1.4s infinite;
+    flex-shrink: 0;
+}
+
 /* Cancel — refined outline-danger */
-.bn-cancel-form { margin-top: 16px; }
+.bn-cancel-form { margin-top: 14px; }
 .bn-cancel-btn {
     width: 100%;
     display: inline-flex;
@@ -567,13 +602,13 @@
 
     /* Number & Code stack vertically on phones */
     .bn-grid { grid-template-columns: 1fr; gap: 10px; }
+    .bn-session-header { flex-wrap: wrap; }
+    .bn-timer { margin-left: auto; }
 
     /* Prevent iOS auto-zoom when the search field gains focus */
     .ss-control,
     .ss-search,
-    .ss-item {
-        font-size: 16px;
-    }
+    .ss-item { font-size: 16px; }
     .ss-search { margin: 8px; width: calc(100% - 16px); }
     .ss-list { max-height: min(300px, 45vh); }
 }
