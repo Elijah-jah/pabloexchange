@@ -388,8 +388,9 @@
     .mp-chev { display: none; }            /* whole row is tappable on mobile */
 
     .mp-modal { padding: 22px 18px 18px; border-radius: 16px; }
-    .mpm-box { flex-wrap: wrap; }
-    .mpm-copy { width: 100%; justify-content: center; padding: 10px; }
+    .mpm-box { padding: 12px; gap: 8px; }
+    .mpm-box-text { font-size: .78rem; }
+    .mpm-copy { padding: 8px 10px; font-size: .74rem; }  /* stays inline, not full-width */
 }
 
 @media (max-width: 380px) {
@@ -450,36 +451,3 @@
     box-shadow: 0 4px 12px rgba(2, 44, 34, .12);
 }
 .mpm-img[hidden] { display: none; }
-/* ---------- Mobile: order-details card as bottom sheet ---------- */
-@media (max-width: 640px) {
-    .mp-overlay {
-        padding: 0;
-        align-items: flex-end;           /* pin card to bottom */
-    }
-    .mp-modal {
-        width: 100%;
-        max-width: 100%;
-        border-radius: 20px 20px 0 0;    /* rounded top corners only */
-        max-height: 88vh;
-        padding: 22px 18px calc(18px + env(safe-area-inset-bottom));
-        animation: mp-sheet .22s ease-out;
-    }
-    @keyframes mp-sheet {
-        from { transform: translateY(40px); opacity: 0; }
-        to   { transform: translateY(0);    opacity: 1; }
-    }
-    /* grabber handle so it feels like a native sheet */
-    .mp-modal::before {
-        content: "";
-        display: block;
-        width: 40px; height: 4px;
-        border-radius: 100px;
-        background: #e3ece8;
-        margin: 0 auto 14px;
-    }
-    .mpm-img { width: 60px; height: 60px; border-radius: 14px; }
-    .mpm-title { font-size: 1rem; }
-    .mpm-box { padding: 12px; }
-    .mpm-box-text { font-size: .78rem; }
-    .mpm-done { padding: 14px; }         /* bigger tap target */
-}
