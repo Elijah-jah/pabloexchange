@@ -12,15 +12,21 @@ def home(request):
     })
 
 
+from marketplace.models import LogOrder
+
 @login_required
 def dashboard(request):
     all_orders = NumberOrder.objects.filter(user=request.user)
+    all_logs = LogOrder.objects.filter(user=request.user)
     return render(request, 'pages/dashboard.html', {
         'balance': balance(request.user),
         'orders': all_orders[:5],
         'transactions': WalletTransaction.objects.filter(user=request.user)[:5],
-        # stats for the cards
-        'order_count': all_orders.count(),
-        'completed_count': all_orders.filter(status='completed').count(),
-        'active_count': all_orders.filter(status='active').count(),
+        # stats for the cards — logs + SMS combined
+        'order_count': all_orders.count() + all_logs.count(),
+        'completed_count': (
+            all_orders.filter(status='completed').count() +
+            all_logs.filter(status='completed').count()
+        ),
+        'active_count': all_orders.filter(status='active').count(),  # SMS only
     })
