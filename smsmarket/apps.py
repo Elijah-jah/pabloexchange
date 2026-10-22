@@ -10,19 +10,26 @@ class SmsmarketConfig(AppConfig):
     name = 'smsmarket'
 
     def ready(self):
+        # In-memory jobstore on purpose: job definitions are code — they
+        # re-register on every boot, so persisting them in the DB
+        # (DjangoJobStore) caused lock errors for zero benefit.
         try:
             from apscheduler.schedulers.background import BackgroundScheduler
-            from django_apscheduler.jobstores import DjangoJobStore
 
             from .jobs import deliver_pending_sms_job, expire_stale_orders_job
 
             scheduler = BackgroundScheduler()
-            scheduler.add_jobstore(DjangoJobStore(), 'default')
-            scheduler.add_job(deliver_pending_sms_job, 'interval', seconds=30,
-                              id='deliver_pending_sms', replace_existing=True)
-            scheduler.add_job(expire_stale_orders_job, 'interval', seconds=30,
-                  id='expire_stale_orders', replace_existing=True)
+            scheduler.add_job(
+                deliver_pending_sms_job, 'interval', seconds=5,
+                id='deliver_pending_sms', replace_existing=True,
+                max_instances=1, coalesce=True,
+            )
+            scheduler.add_job(
+                expire_stale_orders_job, 'interval', seconds=60,
+                id='expire_stale_orders', replace_existing=True,
+                max_instances=1, coalesce=True,
+            )
             scheduler.start()
+            logger.info('APScheduler started (memory jobstore)')
         except Exception:
-            # Tables don't exist yet (pre-migrate) — app must still boot.
-            logger.warning('APScheduler not started yet — run migrate, then restart')
+            logger.exception('APScheduler failed to start')
