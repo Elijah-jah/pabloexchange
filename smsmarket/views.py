@@ -228,7 +228,7 @@ def my_purchases(request):
     """All purchases — logs and numbers merged, newest first."""
     numbers = (NumberOrder.objects
                .filter(user=request.user)
-               .select_related('service'))
+               .select_related('service', 'country'))
     logs = (LogOrder.objects
             .filter(user=request.user)
             .select_related('group'))
@@ -248,6 +248,8 @@ def my_purchases(request):
             'price': o.price,
             'status': o.status,
             'created_at': o.created_at,
+            'image': '',
+            'extra': o.country.name if o.country else '',
         })
 
     # ---- Log purchases ----
@@ -263,6 +265,8 @@ def my_purchases(request):
             'price': o.price,
             'status': o.status,
             'created_at': o.created_at,
+            'image': o.group.image.url if (o.group and o.group.image) else '',
+            'extra': '',
         })
 
     # newest purchase first across both types

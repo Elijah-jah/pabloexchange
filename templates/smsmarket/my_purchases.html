@@ -6,7 +6,7 @@
 {% block page_title %}My Purchases{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/purchases.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'css/purchases.css' %}?v=3">
 {% endblock %}
 
 {% block content %}
@@ -44,14 +44,18 @@
              data-date="{{ o.created_at|date:'M j, Y' }} &middot; {{ o.created_at|date:'H:i' }}"
              data-status="{{ o.status }}">
 
+            {% if o.image %}
+            <img class="mp-thumb" src="{{ o.image }}" alt="{{ o.name }}">
+            {% else %}
             <div class="mp-icon {{ o.type }}">
                 {% if o.type == 'log' %}<i class="bi bi-file-lock2"></i>
                 {% else %}<i class="bi bi-phone"></i>{% endif %}
             </div>
+            {% endif %}
 
             <div class="mp-main">
                 <p class="mp-name">
-                    {{ o.name }}
+                    {{ o.name }}{% if o.extra %} &middot; {{ o.extra }}{% endif %}
                     {% if o.order_id %}<span class="mp-ref">{{ o.order_id }}</span>{% endif %}
                 </p>
                 {% if o.type == 'log' %}
