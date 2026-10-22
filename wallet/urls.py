@@ -6,6 +6,7 @@ app_name = 'wallet'
 
 urlpatterns = [
     path('fund/', views.fund_wallet, name='fund'),
+    path('deposit/', views.fund_wallet, name='deposit'),
     path('payments/pocketfi/callback/', views.pocketfi_callback, name='pocketfi_callback'),
     path('payments/pocketfi/dev-confirm/<str:reference>/', views.dev_confirm, name='pocketfi_dev_confirm'),
     path('transactions/', views.transactions, name='transactions'),

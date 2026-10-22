@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 from django.views.decorators.http import require_POST
 from .providers import get_provider
 from countries.models import Country
@@ -87,6 +87,11 @@ def buy(request):
     )
 
     def ajax_error_response(redirect_to="smsmarket:buy"):
+        try:
+            target = reverse(redirect_to)
+        except NoReverseMatch:
+            logger.exception('Could not reverse %r; falling back to buy page', redirect_to)
+            target = reverse("smsmarket:buy")
         if ajax:
             msg_text, msg_level = "", "error"
             for m in messages.get_messages(request):
@@ -96,9 +101,9 @@ def buy(request):
                 "success": False,
                 "message": msg_text,
                 "level": msg_level,
-                "redirect": reverse(redirect_to),
+                "redirect": target,
             })
-        return redirect(redirect_to)
+        return redirect(target)
 
     if request.method == 'POST':
         service_code = (request.POST.get('service') or '').strip()
