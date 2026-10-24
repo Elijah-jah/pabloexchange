@@ -1,6 +1,7 @@
 /* ============================================================
    PabloExchange — Landing theme
    Deep emerald green + white + touch of gold
+   Fully responsive: desktop / tablet / mobile / small phones
    ============================================================ */
 
 :root {
@@ -20,14 +21,27 @@
     --px-shadow:    0 6px 24px rgba(2, 44, 34, .10);
 }
 
+* { -webkit-tap-highlight-color: transparent; }
+
+html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+}
+
 body {
     font-family: 'Inter', system-ui, sans-serif;
     color: var(--px-ink);
     background: var(--px-white);
     overflow-x: hidden;
+    max-width: 100vw;
 }
 
+img, svg { max-width: 100%; height: auto; }
+
 .mono { font-family: 'JetBrains Mono', monospace; }
+
+/* Anchored sections must not hide under the fixed navbar */
+section[id], footer[id] { scroll-margin-top: 84px; }
 
 /* ---------------- Logo ---------------- */
 .logo-dot {
@@ -108,6 +122,7 @@ body {
     font-size: .85rem;
     font-weight: 600;
     margin-bottom: 22px;
+    max-width: 100%;
 }
 
 .hero-title {
@@ -115,6 +130,7 @@ body {
     font-weight: 900;
     line-height: 1.12;
     letter-spacing: -1px;
+    overflow-wrap: break-word;
 }
 .hero-title span { color: var(--px-gold); }
 
@@ -125,23 +141,29 @@ body {
     max-width: 520px;
 }
 
+.hero-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+}
 .hero-buttons .px-btn-outline { border-color: rgba(255,255,255,.4); }
 .hero-buttons .px-btn-outline:hover { border-color: var(--px-gold); }
 
 .hero-stats {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
-    flex-wrap: wrap;
     margin-top: 38px;
 }
 .stat-box {
     background: rgba(255, 255, 255, .07);
     border: 1px solid rgba(255, 255, 255, .12);
     border-radius: var(--px-radius);
-    padding: 14px 22px;
-    min-width: 100px;
+    padding: 14px 18px;
+    min-width: 0;
+    text-align: center;
 }
-.stat-box h3 { color: var(--px-gold); font-weight: 800; margin-bottom: 2px; }
+.stat-box h3 { color: var(--px-gold); font-weight: 800; margin-bottom: 2px; font-size: 1.35rem; }
 .stat-box p { color: rgba(209, 250, 229, .75); font-size: .8rem; margin: 0; }
 
 /* ---------------- Demo card (OTP live demo) ---------------- */
@@ -164,9 +186,9 @@ body {
     font-size: .85rem;
     font-weight: 600;
 }
-.demo-dot { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; animation: pulse 1.6s infinite; }
+.demo-dot { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; animation: pulse 1.6s infinite; flex-shrink: 0; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
-.demo-title { flex: 1; }
+.demo-title { flex: 1; min-width: 0; }
 .demo-live {
     background: var(--px-gold);
     color: var(--px-green-950);
@@ -175,6 +197,7 @@ body {
     padding: 2px 9px;
     border-radius: 100px;
     letter-spacing: 1px;
+    flex-shrink: 0;
 }
 .demo-body { padding: 20px 18px 10px; background: var(--px-tint); }
 
@@ -185,6 +208,7 @@ body {
     margin-bottom: 12px;
     max-width: 92%;
     line-height: 1.45;
+    overflow-wrap: break-word;
 }
 .chat-in {
     background: var(--px-white);
@@ -192,7 +216,7 @@ body {
     border-bottom-left-radius: 4px;
 }
 .chat-sender { font-weight: 700; color: var(--px-green-800); font-size: .82rem; }
-.chat-sub { color: var(--px-muted); font-size: .78rem; }
+.chat-sub { color: var(--px-muted); font-size: .78rem; overflow-wrap: anywhere; }
 .chat-meta { color: var(--px-muted); font-size: .72rem; margin-top: 4px; }
 .chat-out {
     background: var(--px-green-800);
@@ -208,6 +232,7 @@ body {
     letter-spacing: 6px;
     color: var(--px-gold);
     margin: 8px 0;
+    white-space: nowrap;
 }
 .otp-copy {
     background: rgba(240, 180, 41, .18);
@@ -247,6 +272,7 @@ body {
     overflow: hidden;
 }
 .ticker-track { display: flex; width: max-content; animation: scroll 28s linear infinite; }
+.ticker-track:hover { animation-play-state: paused; }
 .ticker-group { display: flex; gap: 44px; padding-right: 44px; }
 .ticker-item {
     color: var(--px-green-100);
@@ -285,6 +311,7 @@ body {
     padding: 26px 22px;
     box-shadow: var(--px-shadow);
     transition: transform .2s;
+    height: 100%;
 }
 .feature-card:hover { transform: translateY(-4px); }
 .feature-card h4 { font-weight: 700; font-size: 1.05rem; margin: 14px 0 8px; }
@@ -299,6 +326,7 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 1.3rem;
+    flex-shrink: 0;
 }
 
 /* Steps */
@@ -355,6 +383,8 @@ body {
     align-items: center;
     gap: 8px;
     box-shadow: var(--px-shadow);
+    flex-wrap: wrap;
+    height: 100%;
 }
 .service-chip i { color: var(--px-green-600); }
 .chip-price { margin-left: auto; color: var(--px-gold-dark); font-weight: 700; font-size: .82rem; }
@@ -370,6 +400,7 @@ body {
     color: var(--px-gold);
     border: 1px solid rgba(240, 180, 41, .4);
 }
+.px-cta-btns .btn { min-width: 200px; }
 
 /* ---------------- Footer ---------------- */
 .footer {
@@ -377,7 +408,7 @@ body {
     color: var(--px-green-100);
     padding: 60px 0 24px;
 }
-.footer-text { color: rgba(209, 250, 229, .65); font-size: .9rem; }
+.footer-text { color: rgba(209, 250, 229, .65); font-size: .9rem; overflow-wrap: anywhere; }
 .footer-title { font-weight: 700; color: var(--px-white); margin-bottom: 16px; }
 .footer-links { list-style: none; padding: 0; }
 .footer-links li { margin-bottom: 9px; }
@@ -403,14 +434,81 @@ body {
     z-index: 200;
 }
 
-/* ---------------- Responsive tweaks ---------------- */
+/* ============================================================
+   RESPONSIVE — Tablets (≤ 991px)
+   ============================================================ */
 @media (max-width: 991px) {
     .hero-section { padding: 130px 0 70px; }
+    .px-navbar .navbar-collapse {
+        padding-top: 10px;
+        padding-bottom: 14px;
+    }
     .px-navbar .nav-link { margin: 4px 0; }
-    .px-navbar .d-flex { margin-top: 12px; }
+    .px-nav-actions { margin-top: 12px; }
+    .px-nav-actions .btn { flex: 1; text-align: center; }
 }
+
+/* ============================================================
+   RESPONSIVE — Phones (≤ 767px)
+   ============================================================ */
+@media (max-width: 767px) {
+    .hero-section { padding: 120px 0 60px; }
+    .hero-description { font-size: 1rem; max-width: 100%; }
+    .hero-buttons { flex-direction: column; }
+    .hero-buttons .btn { width: 100%; }
+    .cta-section { padding: 60px 0; }
+    .px-cta-btns { flex-direction: column; align-items: stretch; }
+    .px-cta-btns .btn { width: 100%; min-width: 0; }
+    .display-5 { font-size: 2rem; }
+    .offer-card, .feature-card { padding: 22px 18px; }
+}
+
+/* ============================================================
+   RESPONSIVE — Small phones (≤ 575px)
+   ============================================================ */
 @media (max-width: 575px) {
-    .hero-stats { gap: 10px; }
-    .stat-box { padding: 10px 16px; min-width: 86px; }
+    .hero-badge { font-size: .78rem; padding: 6px 13px; }
+    .hero-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 30px; }
+    .stat-box { padding: 12px 10px; }
+    .stat-box h3 { font-size: 1.15rem; }
+    .stat-box p { font-size: .72rem; }
+
     .otp-code { font-size: 1.4rem; letter-spacing: 4px; }
+    .chat-msg { max-width: 100%; font-size: .84rem; }
+    .demo-card { border-radius: 16px; }
+
+    .step-card { padding: 24px 10px 18px; }
+    .step-card i { font-size: 1.5rem; }
+    .step-card h6 { font-size: .82rem; }
+
+    .service-chip { font-size: .82rem; padding: 10px 12px; }
+    .chip-price { font-size: .75rem; }
+
+    .section-badge { font-size: .68rem; letter-spacing: 1.5px; }
+    .cta-section .lead { font-size: 1rem; }
+
+    .back-top { bottom: 16px; right: 16px; width: 40px; height: 40px; }
+}
+
+/* ============================================================
+   RESPONSIVE — Tiny phones (≤ 400px)
+   ============================================================ */
+@media (max-width: 400px) {
+    .logo-text { font-size: 1.1rem; }
+    .hero-title { letter-spacing: -0.5px; }
+    .otp-code { font-size: 1.15rem; letter-spacing: 2px; }
+    .demo-header { font-size: .78rem; padding: 10px 14px; }
+    .demo-body { padding: 16px 14px 8px; }
+    .demo-footer { padding: 12px 14px 14px; }
+    .btn-lg { padding: 10px 16px !important; font-size: 1rem !important; }
+    .hero-stats { gap: 8px; }
+    #services .col-6 { width: 100%; }   /* service chips go full-width on tiny screens */
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .ticker-track { animation: none; }
+    .demo-dot { animation: none; }
+    .feature-card:hover, .step-card:hover, .px-btn-gold:hover { transform: none; }
 }
