@@ -41,7 +41,7 @@ img, svg { max-width: 100%; height: auto; }
 .mono { font-family: 'JetBrains Mono', monospace; }
 
 /* Anchored sections must not hide under the fixed navbar */
-section[id], footer[id] { scroll-margin-top: 84px; }
+section[id], footer[id], div[id="logs"] { scroll-margin-top: 70px; }
 
 /* ---------------- Logo ---------------- */
 .logo-dot {
@@ -265,14 +265,16 @@ section[id], footer[id] { scroll-margin-top: 84px; }
     transition: width 1s linear;
 }
 
-/* ---------------- Ticker ---------------- */
+/* ---------------- Ticker (SMS services + Logs marquee) ---------------- */
 .ticker-section {
     background: var(--px-green-950);
     padding: 16px 0;
     overflow: hidden;
 }
+#logs { border-top: 1px solid rgba(240, 180, 41, .18); }
 .ticker-track { display: flex; width: max-content; animation: scroll 28s linear infinite; }
 .ticker-track:hover { animation-play-state: paused; }
+#logs .ticker-track { animation-duration: 40s; }
 .ticker-group { display: flex; gap: 44px; padding-right: 44px; }
 .ticker-item {
     color: var(--px-green-100);
@@ -284,6 +286,7 @@ section[id], footer[id] { scroll-margin-top: 84px; }
     gap: 8px;
 }
 .ticker-item i { color: var(--px-gold); }
+.ticker-price { color: var(--px-gold); font-size: .78rem; font-weight: 700; }
 @keyframes scroll { to { transform: translateX(-50%); } }
 
 /* ---------------- Sections ---------------- */
