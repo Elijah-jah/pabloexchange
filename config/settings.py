@@ -162,7 +162,7 @@ LOGOUT_REDIRECT_URL = 'home'
 # ---------------- PabloExchange ----------------
 SITE_NAME = 'PabloExchange'
 CURRENCY = 'NGN'
-CURRENCY_SYMBOL = 'â‚¦'
+CURRENCY_SYMBOL = '₦'
 
 MIN_FUND_AMOUNT = config('MIN_FUND_AMOUNT', default=500, cast=int)
 MAX_FUND_AMOUNT = config('MAX_FUND_AMOUNT', default=100000, cast=int)
@@ -171,7 +171,7 @@ POCKETFI_PUBLIC_KEY = config('POCKETFI_PUBLIC_KEY', default='')
 POCKETFI_SECRET_KEY = config('POCKETFI_SECRET_KEY', default='')
 POCKETFI_WEBHOOK_SECRET = config('POCKETFI_WEBHOOK_SECRET', default='')
 POCKETFI_BASE_URL = config('POCKETFI_BASE_URL', default='https://api.pocketfi.example.com/v1')
-# â† CHANGED: your live domain â€” PocketFi must send users back here after payment
+# â† CHANGED: your live domain — PocketFi must send users back here after payment
 POCKETFI_CALLBACK_URL = config('POCKETFI_CALLBACK_URL', default='https://pabloexchange.com/payments/pocketfi/callback/')
 
 SMS_PROVIDER = config('SMS_PROVIDER', default='dummy')

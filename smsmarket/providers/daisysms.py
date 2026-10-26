@@ -1,4 +1,4 @@
-﻿"""DaisySMS provider â€” SERVER 1 (USA only).
+﻿"""DaisySMS provider — SERVER 1 (USA only).
 API docs: https://daisysms.io/docs/api  (sms-activate compatible)
 """
 import requests

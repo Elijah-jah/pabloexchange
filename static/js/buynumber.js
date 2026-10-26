@@ -1,4 +1,4 @@
-﻿/* PabloExchange â€” Buy Number: server â†’ country â†’ services â†’ price
+﻿/* PabloExchange — Buy Number: server â†’ country â†’ services â†’ price
    Built-in searchable dropdowns (no external library).
    OTP polling: every waiting order, code shown instantly without reload. */
 
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var expiredReloaded = false;
 
     function naira(n) {
-        return 'â‚¦' + parseFloat(n || 0).toLocaleString('en-NG', {
+        return '₦' + parseFloat(n || 0).toLocaleString('en-NG', {
             minimumFractionDigits: 2, maximumFractionDigits: 2
         });
     }
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function () {
         countrySS.syncLabel();
     }
 
-    // opts: [{value, text, price?}] â€” price optional (live-catalog items)
+    // opts: [{value, text, price?}] — price optional (live-catalog items)
     function setServiceOptions(opts, enabledAfter) {
         priceMap = {};
         var html = '';
@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 // Available = flag not explicitly false. Price may be absent
-                // for live-catalog items â€” fetched on selection.
+                // for live-catalog items — fetched on selection.
                 var available = (data.services || []).filter(function (s) {
                     return s.available !== false && s.price !== undefined;
                 });
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 setServiceOptions(opts, true);
             })
             .catch(function () {
-                resetServices('Failed to load â€” try again');
+                resetServices('Failed to load — try again');
             });
     }
 
@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     priceDisplay.textContent = 'Unavailable for this country';
                 }
             })
-            .catch(function () { priceDisplay.textContent = 'â€”'; });
+            .catch(function () { priceDisplay.textContent = '—'; });
     });
 
     // ---------- Submit â†’ show overlay ----------
@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
             return;
         }
-        // Disabled fields are NOT submitted by the browser â€” re-enable so
+        // Disabled fields are NOT submitted by the browser — re-enable so
         // the locked "US" value for DaisySMS actually reaches the server.
         countrySelect.disabled = false;
         overlay.hidden = false;
@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ---------- Countdown timers ----------
     // The timer IS the card's lifetime: when it hits 00:00 we reload, and
-    // the buy view excludes expired orders â€” card gone.
+    // the buy view excludes expired orders — card gone.
     document.querySelectorAll('.bn-timer').forEach(function (el) {
         var expires = new Date(el.dataset.expires).getTime();
         if (isNaN(expires)) return;
@@ -428,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // ---------- Silent poll: every waiting order, code shown WITHOUT reload ----------
     // ASAP behaviour:
     //   â€¢ polls ALL .bn-waiting cards every 5s while the tab is visible
-    //   â€¢ the moment a code lands, the card updates IN PLACE â€” no page reload,
+    //   â€¢ the moment a code lands, the card updates IN PLACE — no page reload,
     //     so server/country/service selections are preserved
     //   â€¢ when the user returns to a backgrounded tab, it polls instantly
     //     (browsers throttle hidden-tab timers, so we catch up on visibility)
@@ -469,7 +469,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         statusLine.classList.add('bn-status-line--done');
                         statusLine.innerHTML =
                             '<span class="bn-status-dot bn-status-dot--done"></span> ' +
-                            'Code received â€” card disappears when the timer ends.';
+                            'Code received — card disappears when the timer ends.';
                     }
 
                     // delivered/finished orders can no longer be cancelled
@@ -488,7 +488,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         pollTimer = null;
                     }
                 })
-                .catch(function () { /* network blip â€” next tick retries */ });
+                .catch(function () { /* network blip — next tick retries */ });
         });
     }
 
