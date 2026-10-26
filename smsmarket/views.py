@@ -2,9 +2,11 @@ import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import NoReverseMatch, reverse
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 from .providers import get_provider
 from countries.models import Country
@@ -164,7 +166,22 @@ def buy(request):
 
     # GET: render the buy page
     countries = Country.objects.filter(is_active=True)
-    active_orders = NumberOrder.objects.filter(user=request.user, status='active')
+
+    # Cards live until the timer runs out — NOT just until the SMS lands.
+    #   • status='active'  → still waiting for the code
+    #   • has messages     → code already delivered; card stays until expiry
+    # Orders past expires_at (timer hit 00:00) or cancelled are excluded,
+    # so the card disappears exactly when the timer ends.
+    now = timezone.now()
+    active_orders = (
+        NumberOrder.objects
+        .filter(user=request.user, expires_at__gt=now)
+        .exclude(status='cancelled')
+        .filter(Q(status='active') | Q(messages__isnull=False))
+        .distinct()
+        .order_by('expires_at')
+    )
+
     return render(request, 'smsmarket/buynumber.html', {
         'countries': countries,
         'active_orders': active_orders,
