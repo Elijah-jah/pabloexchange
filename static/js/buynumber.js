@@ -1,4 +1,3 @@
-
 /* PabloExchange — Buy Number: server → country → services → price
    Built-in searchable dropdowns (no external library). */
 
@@ -24,6 +23,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var priceMap = {};
 
     var openPanels = [];
+
+    // Guards against double-reloads when several timers hit 00:00 together.
+    var expiredReloaded = false;
 
     function naira(n) {
         return '₦' + parseFloat(n || 0).toLocaleString('en-NG', {
@@ -111,11 +113,9 @@ document.addEventListener('DOMContentLoaded', function () {
             var q = (filter || '').toLowerCase();
             list.innerHTML = '';
             var any = false;
-
             for (var i = 0; i < select.options.length; i++) {
                 var o = select.options[i];
                 if (q && o.text.toLowerCase().indexOf(q) === -1) { continue; }
-
                 any = true;
                 (function (opt) {
                     var item = document.createElement('div');
@@ -123,30 +123,25 @@ document.addEventListener('DOMContentLoaded', function () {
                         (opt.value === select.value ? ' selected' : '') +
                         (opt.value === '' ? ' ss-item--clear' : '');
                     item.textContent = opt.text;
-
                     item.addEventListener('click', function () {
                         select.value = opt.value;
                         fireChange(select);
                         close();
                     });
-
                     list.appendChild(item);
                 })(o);
             }
-
             emptyMsg.hidden = any;
         }
 
         function open() {
             if (select.disabled) { return; }
-
             closeAllPanels();
             search.value = '';
             render('');
             panel.hidden = false;
             isOpen = true;
             wrapper.classList.add('open');
-
             if (showSearch) {
                 setTimeout(function () { search.focus(); }, 30);
             }
@@ -222,13 +217,11 @@ document.addEventListener('DOMContentLoaded', function () {
     function setServiceOptions(opts, enabledAfter) {
         priceMap = {};
         var html = '';
-
         opts.forEach(function (o) {
             if (o.price) { priceMap[o.value] = o.price; }
             var p = o.price ? ' data-price="' + o.price + '"' : '';
             html += '<option value="' + o.value + '"' + p + '>' + o.text + '</option>';
         });
-
         serviceSelect.innerHTML = html;
         serviceSelect.value = '';
         serviceSelect.disabled = !enabledAfter;
@@ -294,7 +287,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 available.forEach(function (s) {
                     opts.push({ value: s.code, text: s.name, price: s.price });
                 });
-
                 setServiceOptions(opts, true);
             })
             .catch(function () {
@@ -311,9 +303,7 @@ document.addEventListener('DOMContentLoaded', function () {
             priceDisplay.textContent = naira(priceMap[code]);
             return;
         }
-
         priceDisplay.textContent = 'Checking…';
-
         fetch('/pricing/check-price/?service=' + encodeURIComponent(code)
               + '&country=' + encodeURIComponent(countrySelect.value)
               + '&server=' + encodeURIComponent(serverSelect.value))
@@ -335,7 +325,6 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
             return;
         }
-
         // Disabled fields are NOT submitted by the browser — re-enable so
         // the locked "US" value for DaisySMS actually reaches the server.
         countrySelect.disabled = false;
@@ -348,70 +337,47 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.addEventListener('click', function () {
             var value = (btn.dataset.copy || '').trim();
             if (!value) return;
-
             var done = function () {
                 btn.classList.add('copied');
                 setTimeout(function () { btn.classList.remove('copied'); }, 1500);
             };
-
             if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(value).then(done).catch(function () {
-                    fallback(value, done);
-                });
-            } else {
-                fallback(value, done);
-            }
+                navigator.clipboard.writeText(value).then(done).catch(function () { fallback(value, done); });
+            } else { fallback(value, done); }
         });
     });
 
     function fallback(text, done) {
         var ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
-        document.body.appendChild(ta);
-        ta.select();
-
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
         try { document.execCommand('copy'); } catch (e) {}
-
-        ta.remove();
-        done();
+        ta.remove(); done();
     }
 
     // ---------- Countdown timers ----------
-    // The card remains visible after OTP delivery and disappears at expiry.
+    // The timer IS the card's lifetime: when it hits 00:00 we reload, and
+    // the buy view now excludes expired orders — card gone. Before the fix
+    // the card vanished the moment the SMS arrived; now it only vanishes
+    // when time runs out.
     document.querySelectorAll('.bn-timer').forEach(function (el) {
         var expires = new Date(el.dataset.expires).getTime();
         if (isNaN(expires)) return;
-
-        var card = el.closest('.bn-session');
-        var iv;
-
         function tick() {
             var left = Math.max(0, expires - Date.now());
             var m = Math.floor(left / 60000);
             var s = Math.floor((left % 60000) / 1000);
-
-            el.textContent = String(m).padStart(2, '0') + ':' +
-                String(s).padStart(2, '0');
-
+            el.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
             if (left <= 0) {
-                el.textContent = '00:00';
                 clearInterval(iv);
-
-                if (card) {
-                    card.remove();
-                }
-
-                var sessionsWrap = document.getElementById('bnSessionsWrap');
-                if (sessionsWrap && !sessionsWrap.querySelector('.bn-session')) {
-                    sessionsWrap.remove();
+                if (!expiredReloaded) {
+                    expiredReloaded = true;
+                    location.reload();  // server drops the expired card
                 }
             }
         }
-
-        iv = setInterval(tick, 1000);
         tick();
+        var iv = setInterval(tick, 1000);
     });
 
     // ---------- Cancel (styled confirmation modal) ----------
@@ -460,66 +426,27 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ---------- Silent poll: update cards without reloading the page ----------
-    // Poll every active order, rather than only the first one.
-    document.querySelectorAll('.bn-session.bn-waiting').forEach(function (card) {
-        var orderId = card.dataset.orderId;
-        if (!orderId) return;
-
-        var poll = setInterval(function () {
-            fetch('/smsmarket/order/' + encodeURIComponent(orderId) + '/status/')
-                .then(function (r) {
-                    if (!r.ok) {
-                        throw new Error('Unable to check order status');
-                    }
-                    return r.json();
-                })
-                .then(function (data) {
-                    var otpBox = card.querySelector('.bn-otp-box');
-                    var statusText = card.querySelector('.bn-status-text');
-                    var codeCopyButton = card.querySelector('.bn-copy-code-btn');
-
-                    // When the SMS arrives, update this card in place.
-                    if (data.otp || data.status === 'completed') {
-                        if (data.otp && otpBox) {
-                            otpBox.textContent = data.otp;
-                            otpBox.classList.add('has-code');
+    // ---------- Silent poll while waiting for SMS ----------
+    // Reload once when the code actually arrives (otp present OR status
+    // flipped) so the card re-renders with the code — the card itself now
+    // survives because the view keeps delivered orders until expiry.
+    var waitingEl = document.querySelector('.bn-waiting');
+    if (waitingEl) {
+        var orderInput = document.querySelector('.bn-cancel-form input[name="order_id"]');
+        var orderId = orderInput ? orderInput.value : null;
+        if (orderId) {
+            var poll = setInterval(function () {
+                fetch('/smsmarket/order/' + orderId + '/status/')
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (data.status !== 'active' || data.otp) {
+                            clearInterval(poll);
+                            location.reload();  // render the code on the card
                         }
-
-                        if (data.otp && codeCopyButton) {
-                            codeCopyButton.dataset.copy = data.otp;
-                            codeCopyButton.hidden = false;
-                        }
-
-                        card.dataset.orderStatus = data.status;
-                        card.classList.remove('bn-waiting');
-                        card.classList.add('bn-completed');
-
-                        if (statusText) {
-                            statusText.textContent = 'Completed — SMS received';
-                        }
-
-                        var cancelForm = card.querySelector('.bn-cancel-form');
-                        if (cancelForm) {
-                            cancelForm.remove();
-                        }
-
-                        // Stop polling this order, but keep its card and timer.
-                        clearInterval(poll);
-                        return;
-                    }
-
-                    // Do not reload the page for cancelled or other terminal
-                    // statuses. Let the existing countdown control card expiry.
-                    if (data.status !== 'active') {
-                        card.dataset.orderStatus = data.status;
-                        clearInterval(poll);
-                    }
-                })
-                .catch(function () {
-                    // Network hiccup: retry on the next polling interval.
-                });
-        }, 10000);
-    });
+                    })
+                    .catch(function () { /* network blip — try again in 10s */ });
+            }, 10000);
+        }
+    }
 
 });
