@@ -1,5 +1,6 @@
 /* PabloExchange — Buy Number: server → country → services → price
-   Built-in searchable dropdowns (no external library). */
+   Built-in searchable dropdowns (no external library).
+   OTP polling: every waiting order, code shown instantly without reload. */
 
 document.addEventListener('DOMContentLoaded', function () {
     'use strict';
@@ -357,9 +358,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ---------- Countdown timers ----------
     // The timer IS the card's lifetime: when it hits 00:00 we reload, and
-    // the buy view now excludes expired orders — card gone. Before the fix
-    // the card vanished the moment the SMS arrived; now it only vanishes
-    // when time runs out.
+    // the buy view excludes expired orders — card gone.
     document.querySelectorAll('.bn-timer').forEach(function (el) {
         var expires = new Date(el.dataset.expires).getTime();
         if (isNaN(expires)) return;
@@ -426,26 +425,84 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ---------- Silent poll while waiting for SMS ----------
-    // Reload once when the code actually arrives (otp present OR status
-    // flipped) so the card re-renders with the code — the card itself now
-    // survives because the view keeps delivered orders until expiry.
-    var waitingEl = document.querySelector('.bn-waiting');
-    if (waitingEl) {
-        var orderInput = document.querySelector('.bn-cancel-form input[name="order_id"]');
-        var orderId = orderInput ? orderInput.value : null;
-        if (orderId) {
-            var poll = setInterval(function () {
-                fetch('/smsmarket/order/' + orderId + '/status/')
-                    .then(function (r) { return r.json(); })
-                    .then(function (data) {
-                        if (data.status !== 'active' || data.otp) {
-                            clearInterval(poll);
-                            location.reload();  // render the code on the card
-                        }
-                    })
-                    .catch(function () { /* network blip — try again in 10s */ });
-            }, 10000);
+    // ---------- Silent poll: every waiting order, code shown WITHOUT reload ----------
+    // ASAP behaviour:
+    //   • polls ALL .bn-waiting cards every 5s while the tab is visible
+    //   • the moment a code lands, the card updates IN PLACE — no page reload,
+    //     so server/country/service selections are preserved
+    //   • when the user returns to a backgrounded tab, it polls instantly
+    //     (browsers throttle hidden-tab timers, so we catch up on visibility)
+    var WAITING_POLL_MS = 5000;
+    var pollTimer = null;
+
+    function hasWaitingCards() {
+        return document.querySelectorAll('.bn-session.bn-waiting').length > 0;
+    }
+
+    function pollWaitingOrders() {
+        if (!hasWaitingCards()) {
+            if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+            return;
+        }
+
+        document.querySelectorAll('.bn-session.bn-waiting').forEach(function (card) {
+            var input = card.querySelector('.bn-cancel-form input[name="order_id"]');
+            if (!input) return;
+            var orderId = input.value;
+
+            fetch('/smsmarket/order/' + orderId + '/status/')
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.status === 'active' && !data.otp) return;  // still waiting
+
+                    // ---- Code landed (or order finished): update THIS card in place ----
+                    card.classList.remove('bn-waiting');
+
+                    var otpBox = card.querySelector('.bn-otp-box');
+                    if (otpBox && data.otp) {
+                        otpBox.textContent = data.otp;
+                        otpBox.classList.add('has-code');
+                    }
+
+                    var statusLine = card.querySelector('.bn-status-line');
+                    if (statusLine) {
+                        statusLine.classList.add('bn-status-line--done');
+                        statusLine.innerHTML =
+                            '<span class="bn-status-dot bn-status-dot--done"></span> ' +
+                            'Code received — card disappears when the timer ends.';
+                    }
+
+                    // delivered/finished orders can no longer be cancelled
+                    var cancelForm = card.querySelector('.bn-cancel-form');
+                    if (cancelForm) { cancelForm.remove(); }
+
+                    // ping the user even if they're on another tab
+                    if (document.hidden && 'Notification' in window &&
+                        Notification.permission === 'granted') {
+                        new Notification('PabloExchange',
+                            { body: 'Your code arrived: ' + (data.otp || 'check your order') });
+                    }
+
+                    if (!hasWaitingCards() && pollTimer) {
+                        clearInterval(pollTimer);
+                        pollTimer = null;
+                    }
+                })
+                .catch(function () { /* network blip — next tick retries */ });
+        });
+    }
+
+    if (hasWaitingCards()) {
+        pollTimer = setInterval(pollWaitingOrders, WAITING_POLL_MS);
+
+        // catch up instantly the moment the user returns to this tab
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) { pollWaitingOrders(); }
+        });
+
+        // ask once so the arrival notification can fire
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
         }
     }
 
