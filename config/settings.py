@@ -1,3 +1,5 @@
+﻿import os
+
 """
 Django settings for config project.
 """
@@ -13,10 +15,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ---------------- Core security ----------------
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-(h4^rt%2c4lo8_r(2!!-c23(ei@vmw^5&^epp3i(a#d8r)f!1y')
 
-# ← CHANGED: default is now False (production-safe). Turn True only in local .env
+# â† CHANGED: default is now False (production-safe). Turn True only in local .env
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-# ← CHANGED: your domain
+# â† CHANGED: your domain
 ALLOWED_HOSTS = [
     "pabloexchange.onrender.com",
     "pabloexchange.com",
@@ -25,7 +27,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
 ]
 
-# ← NEW: required by Django 4+ when requests come via https:// domain (fixes CSRF "origin not trusted" errors)
+# â† NEW: required by Django 4+ when requests come via https:// domain (fixes CSRF "origin not trusted" errors)
 CSRF_TRUSTED_ORIGINS = config(
     'CSRF_TRUSTED_ORIGINS',
     default='https://pabloexchange.onrender.com,https://pabloexchange.com,https://www.pabloexchange.com',
@@ -59,7 +61,7 @@ SMS_MARGIN_MULTIPLIER = 1.4   # 1.4 = 40% markup on live provider prices; adjust
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # ← NEW: serves static files efficiently in production (pip install whitenoise)
+    # â† NEW: serves static files efficiently in production (pip install whitenoise)
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -116,12 +118,12 @@ USE_TZ = True
 # ---------------- Static files ----------------
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-# ← NEW: where collectstatic gathers files for production
+# â† NEW: where collectstatic gathers files for production
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-# ← NEW: whitenoise compressed + cached storage
+# â† NEW: whitenoise compressed + cached storage
 STORAGES = {
     'default': {
-        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',   # ← media now lives on Cloudinary
+        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',   # â† media now lives on Cloudinary
     },
     'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
 }
@@ -134,17 +136,20 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
 }
 
+
+
+
 # ---------------- Production hardening (active only when DEBUG=False) ----------------
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True                      # ← NEW: force http→https
-    SESSION_COOKIE_SECURE = True                    # ← NEW: cookies only over https
-    CSRF_COOKIE_SECURE = True                       # ← NEW
-    SECURE_HSTS_SECONDS = 31536000                  # ← NEW: browsers remember https for 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True           # ← NEW
-    SECURE_HSTS_PRELOAD = True                      # ← NEW
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # ← NEW: needed behind nginx
-    SECURE_CONTENT_TYPE_NOSNIFF = True              # ← NEW
-    X_FRAME_OPTIONS = 'DENY'                        # ← NEW
+    SECURE_SSL_REDIRECT = True                      # â† NEW: force httpâ†’https
+    SESSION_COOKIE_SECURE = True                    # â† NEW: cookies only over https
+    CSRF_COOKIE_SECURE = True                       # â† NEW
+    SECURE_HSTS_SECONDS = 31536000                  # â† NEW: browsers remember https for 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True           # â† NEW
+    SECURE_HSTS_PRELOAD = True                      # â† NEW
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # â† NEW: needed behind nginx
+    SECURE_CONTENT_TYPE_NOSNIFF = True              # â† NEW
+    X_FRAME_OPTIONS = 'DENY'                        # â† NEW
 
 
 # ---------------- Auth ----------------
@@ -157,7 +162,7 @@ LOGOUT_REDIRECT_URL = 'home'
 # ---------------- PabloExchange ----------------
 SITE_NAME = 'PabloExchange'
 CURRENCY = 'NGN'
-CURRENCY_SYMBOL = '₦'
+CURRENCY_SYMBOL = 'â‚¦'
 
 MIN_FUND_AMOUNT = config('MIN_FUND_AMOUNT', default=500, cast=int)
 MAX_FUND_AMOUNT = config('MAX_FUND_AMOUNT', default=100000, cast=int)
@@ -166,7 +171,7 @@ POCKETFI_PUBLIC_KEY = config('POCKETFI_PUBLIC_KEY', default='')
 POCKETFI_SECRET_KEY = config('POCKETFI_SECRET_KEY', default='')
 POCKETFI_WEBHOOK_SECRET = config('POCKETFI_WEBHOOK_SECRET', default='')
 POCKETFI_BASE_URL = config('POCKETFI_BASE_URL', default='https://api.pocketfi.example.com/v1')
-# ← CHANGED: your live domain — PocketFi must send users back here after payment
+# â† CHANGED: your live domain â€” PocketFi must send users back here after payment
 POCKETFI_CALLBACK_URL = config('POCKETFI_CALLBACK_URL', default='https://pabloexchange.com/payments/pocketfi/callback/')
 
 SMS_PROVIDER = config('SMS_PROVIDER', default='dummy')
@@ -253,3 +258,7 @@ JAZZMIN_UI_TWEAKS = {
     "actions_sticky_top": True,
 }
 MEDIA_ROOT = config('MEDIA_ROOT', default=BASE_DIR / 'media')
+
+# True = let provider live prices fill gaps (API calls on every catalog view).
+# False = customers ONLY see DB Pricing rows. No live price polling.
+LIVE_PROVIDER_PRICING = False

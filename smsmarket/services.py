@@ -85,6 +85,8 @@ def _extract_catalog(payload):
 def live_sell_price(provider_name, service_code, country_code):
     """Sell price from the provider's live cost, cached 10 min.
     Returns Decimal or None if the provider has no price for it."""
+    if not getattr(settings, 'LIVE_PROVIDER_PRICING', False):
+        return None
     key = f'live_sell:{provider_name}:{service_code}:{country_code}'
     cached = cache.get(key)
     if cached is not None:
@@ -119,6 +121,8 @@ def live_catalog(provider_name, country_code, exclude_codes=()):
     item (that would be hundreds of API calls). Price is fetched on demand
     per selected service via live_sell_price(). Codes in exclude_codes are
     already covered by DB Pricing and win."""
+    if not getattr(settings, 'LIVE_PROVIDER_PRICING', False):
+        return []
     provider = get_provider(provider_name)
     if not hasattr(provider, 'get_services'):
         return []
