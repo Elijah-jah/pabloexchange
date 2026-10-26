@@ -1,4 +1,4 @@
-﻿/* PabloExchange — Buy Number: server â†’ country â†’ services â†’ price
+/* PabloExchange — Buy Number: server → country → services → price
    Built-in searchable dropdowns (no external library).
    OTP polling: every waiting order, code shown instantly without reload. */
 
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setServiceOptions([{ value: '', text: msg }], false);
     }
 
-    // ---------- Server changed â†’ set up country, then load services ----------
+    // ---------- Server changed → set up country, then load services ----------
     serverSelect.addEventListener('change', function () {
         var server = this.value;
         serverHint.textContent = server ? (SERVER_HINTS[server] || '') : '';
@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         setCountryEnabled(true);
-        clearCountryValue();  // fires change â†’ resets the service list
+        clearCountryValue();  // fires change → resets the service list
 
         if (server === 'daisysms') {
             // Server 1 = USA only: lock country to US. fireChange runs the
@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // ---------- Country selected â†’ fetch services for that server ----------
+    // ---------- Country selected → fetch services for that server ----------
     countrySelect.addEventListener('change', function () {
         var code = this.value;
         if (!code) { resetServices('Select Country First'); return; }
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function loadServices(code, server) {
-        setServiceOptions([{ value: '', text: 'Loadingâ€¦' }], false);
+        setServiceOptions([{ value: '', text: 'Loading…' }], false);
 
         fetch('/pricing/for-country/' + encodeURIComponent(code) + '/?server=' + encodeURIComponent(server))
             .then(function (r) { return r.json(); })
@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    // ---------- Service selected â†’ show price (fetch live if needed) ----------
+    // ---------- Service selected → show price (fetch live if needed) ----------
     serviceSelect.addEventListener('change', function () {
         var code = this.value;
         if (!code) { priceDisplay.textContent = naira(0); return; }
@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function () {
             priceDisplay.textContent = naira(priceMap[code]);
             return;
         }
-        priceDisplay.textContent = 'Checkingâ€¦';
+        priceDisplay.textContent = 'Checking…';
         fetch('/pricing/check-price/?service=' + encodeURIComponent(code)
               + '&country=' + encodeURIComponent(countrySelect.value)
               + '&server=' + encodeURIComponent(serverSelect.value))
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(function () { priceDisplay.textContent = '—'; });
     });
 
-    // ---------- Submit â†’ show overlay ----------
+    // ---------- Submit → show overlay ----------
     requestForm.addEventListener('submit', function (e) {
         if (!serverSelect.value || !countrySelect.value || !serviceSelect.value) {
             e.preventDefault();
@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function () {
     cancelModalYes.addEventListener('click', function () {
         if (pendingCancelForm) {
             overlay.hidden = false;
-            document.getElementById('bnOverlayText').textContent = 'Cancelling orderâ€¦';
+            document.getElementById('bnOverlayText').textContent = 'Cancelling order…';
             // native submit() bypasses this listener (no re-intercept loop)
             pendingCancelForm.submit();
         }
@@ -427,10 +427,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ---------- Silent poll: every waiting order, code shown WITHOUT reload ----------
     // ASAP behaviour:
-    //   â€¢ polls ALL .bn-waiting cards every 5s while the tab is visible
-    //   â€¢ the moment a code lands, the card updates IN PLACE — no page reload,
+    //   • polls ALL .bn-waiting cards every 5s while the tab is visible
+    //   • the moment a code lands, the card updates IN PLACE — no page reload,
     //     so server/country/service selections are preserved
-    //   â€¢ when the user returns to a backgrounded tab, it polls instantly
+    //   • when the user returns to a backgrounded tab, it polls instantly
     //     (browsers throttle hidden-tab timers, so we catch up on visibility)
     var WAITING_POLL_MS = 5000;
     var pollTimer = null;
