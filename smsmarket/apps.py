@@ -30,6 +30,6 @@ class SmsmarketConfig(AppConfig):
                 max_instances=1, coalesce=True,
             )
             scheduler.start()
-            logger.info('APScheduler started (memory jobstore)')
+            print('APScheduler started (memory jobstore)')   # instead of logger.info(...)
         except Exception:
             logger.exception('APScheduler failed to start')

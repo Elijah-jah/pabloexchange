@@ -1,4 +1,4 @@
-/* PabloExchange — Buy Number: server → country → services → price
+﻿/* PabloExchange â€” Buy Number: server â†’ country â†’ services â†’ price
    Built-in searchable dropdowns (no external library).
    OTP polling: every waiting order, code shown instantly without reload. */
 
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var expiredReloaded = false;
 
     function naira(n) {
-        return '₦' + parseFloat(n || 0).toLocaleString('en-NG', {
+        return 'â‚¦' + parseFloat(n || 0).toLocaleString('en-NG', {
             minimumFractionDigits: 2, maximumFractionDigits: 2
         });
     }
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function () {
         countrySS.syncLabel();
     }
 
-    // opts: [{value, text, price?}] — price optional (live-catalog items)
+    // opts: [{value, text, price?}] â€” price optional (live-catalog items)
     function setServiceOptions(opts, enabledAfter) {
         priceMap = {};
         var html = '';
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setServiceOptions([{ value: '', text: msg }], false);
     }
 
-    // ---------- Server changed → set up country, then load services ----------
+    // ---------- Server changed â†’ set up country, then load services ----------
     serverSelect.addEventListener('change', function () {
         var server = this.value;
         serverHint.textContent = server ? (SERVER_HINTS[server] || '') : '';
@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         setCountryEnabled(true);
-        clearCountryValue();  // fires change → resets the service list
+        clearCountryValue();  // fires change â†’ resets the service list
 
         if (server === 'daisysms') {
             // Server 1 = USA only: lock country to US. fireChange runs the
@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // ---------- Country selected → fetch services for that server ----------
+    // ---------- Country selected â†’ fetch services for that server ----------
     countrySelect.addEventListener('change', function () {
         var code = this.value;
         if (!code) { resetServices('Select Country First'); return; }
@@ -268,13 +268,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function loadServices(code, server) {
-        setServiceOptions([{ value: '', text: 'Loading…' }], false);
+        setServiceOptions([{ value: '', text: 'Loadingâ€¦' }], false);
 
         fetch('/pricing/for-country/' + encodeURIComponent(code) + '/?server=' + encodeURIComponent(server))
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 // Available = flag not explicitly false. Price may be absent
-                // for live-catalog items — fetched on selection.
+                // for live-catalog items â€” fetched on selection.
                 var available = (data.services || []).filter(function (s) {
                     return s.available !== false && s.price !== undefined;
                 });
@@ -291,11 +291,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 setServiceOptions(opts, true);
             })
             .catch(function () {
-                resetServices('Failed to load — try again');
+                resetServices('Failed to load â€” try again');
             });
     }
 
-    // ---------- Service selected → show price (fetch live if needed) ----------
+    // ---------- Service selected â†’ show price (fetch live if needed) ----------
     serviceSelect.addEventListener('change', function () {
         var code = this.value;
         if (!code) { priceDisplay.textContent = naira(0); return; }
@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function () {
             priceDisplay.textContent = naira(priceMap[code]);
             return;
         }
-        priceDisplay.textContent = 'Checking…';
+        priceDisplay.textContent = 'Checkingâ€¦';
         fetch('/pricing/check-price/?service=' + encodeURIComponent(code)
               + '&country=' + encodeURIComponent(countrySelect.value)
               + '&server=' + encodeURIComponent(serverSelect.value))
@@ -317,16 +317,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     priceDisplay.textContent = 'Unavailable for this country';
                 }
             })
-            .catch(function () { priceDisplay.textContent = '—'; });
+            .catch(function () { priceDisplay.textContent = 'â€”'; });
     });
 
-    // ---------- Submit → show overlay ----------
+    // ---------- Submit â†’ show overlay ----------
     requestForm.addEventListener('submit', function (e) {
         if (!serverSelect.value || !countrySelect.value || !serviceSelect.value) {
             e.preventDefault();
             return;
         }
-        // Disabled fields are NOT submitted by the browser — re-enable so
+        // Disabled fields are NOT submitted by the browser â€” re-enable so
         // the locked "US" value for DaisySMS actually reaches the server.
         countrySelect.disabled = false;
         overlay.hidden = false;
@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ---------- Countdown timers ----------
     // The timer IS the card's lifetime: when it hits 00:00 we reload, and
-    // the buy view excludes expired orders — card gone.
+    // the buy view excludes expired orders â€” card gone.
     document.querySelectorAll('.bn-timer').forEach(function (el) {
         var expires = new Date(el.dataset.expires).getTime();
         if (isNaN(expires)) return;
@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function () {
     cancelModalYes.addEventListener('click', function () {
         if (pendingCancelForm) {
             overlay.hidden = false;
-            document.getElementById('bnOverlayText').textContent = 'Cancelling order…';
+            document.getElementById('bnOverlayText').textContent = 'Cancelling orderâ€¦';
             // native submit() bypasses this listener (no re-intercept loop)
             pendingCancelForm.submit();
         }
@@ -427,10 +427,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ---------- Silent poll: every waiting order, code shown WITHOUT reload ----------
     // ASAP behaviour:
-    //   • polls ALL .bn-waiting cards every 5s while the tab is visible
-    //   • the moment a code lands, the card updates IN PLACE — no page reload,
+    //   â€¢ polls ALL .bn-waiting cards every 5s while the tab is visible
+    //   â€¢ the moment a code lands, the card updates IN PLACE â€” no page reload,
     //     so server/country/service selections are preserved
-    //   • when the user returns to a backgrounded tab, it polls instantly
+    //   â€¢ when the user returns to a backgrounded tab, it polls instantly
     //     (browsers throttle hidden-tab timers, so we catch up on visibility)
     var WAITING_POLL_MS = 5000;
     var pollTimer = null;
@@ -450,7 +450,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!input) return;
             var orderId = input.value;
 
-            fetch('/smsmarket/order/' + orderId + '/status/')
+            fetch('/order/' + orderId + '/status/')
                 .then(function (r) { return r.json(); })
                 .then(function (data) {
                     if (data.status === 'active' && !data.otp) return;  // still waiting
@@ -469,7 +469,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         statusLine.classList.add('bn-status-line--done');
                         statusLine.innerHTML =
                             '<span class="bn-status-dot bn-status-dot--done"></span> ' +
-                            'Code received — card disappears when the timer ends.';
+                            'Code received â€” card disappears when the timer ends.';
                     }
 
                     // delivered/finished orders can no longer be cancelled
@@ -488,7 +488,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         pollTimer = null;
                     }
                 })
-                .catch(function () { /* network blip — next tick retries */ });
+                .catch(function () { /* network blip â€” next tick retries */ });
         });
     }
 
