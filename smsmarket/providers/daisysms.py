@@ -1,4 +1,4 @@
-"""DaisySMS provider — SERVER 1 (USA only).
+﻿"""DaisySMS provider â€” SERVER 1 (USA only).
 API docs: https://daisysms.io/docs/api  (sms-activate compatible)
 """
 import requests
@@ -56,7 +56,7 @@ class DaisySmsProvider:
         data = self._get(action='getPricesVerification').json()
         return {code: self._normalize_entry(info) for code, info in data.items()}
 
-    def get_services(self):
+    def get_services(self, country=None):
         return [{'ID': code, 'name': self.service_display_name(code)}
                 for code in self.get_all_prices()]
 
