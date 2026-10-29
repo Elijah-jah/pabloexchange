@@ -1,20 +1,23 @@
 /* ============================================================
-   PabloExchange — Dashboard v4
-   Dark charcoal panels · green accents · responsive without zoom
+   PabloExchange — Dashboard v5
+   Light gray canvas · white cards · green accents · dark sidebar
+   Responsive without zoom or artificial scaling
    ============================================================ */
 
 .db-dashboard {
-    --db-primary: var(--px-primary, #10b981);
-    --db-primary-dark: var(--px-primary-dark, #0b9f75);
-    --db-primary-soft: var(--px-primary-soft, rgba(16, 185, 129, .12));
-    --db-charcoal: var(--px-charcoal, #0b1220);
-    --db-panel: var(--px-panel, #111c2e);
-    --db-panel-light: var(--px-panel-light, #162235);
-    --db-slate: var(--px-slate, #334155);
-    --db-text: var(--px-text, #f8fafc);
-    --db-muted: var(--px-muted, #94a3b8);
-    --db-border: var(--px-border, rgba(148, 163, 184, .14));
-    --db-white: var(--px-white, #ffffff);
+    --db-primary: #10b981;
+    --db-primary-dark: #0b9f75;
+    --db-primary-text: #047857;
+    --db-primary-soft: rgba(16, 185, 129, .1);
+    --db-charcoal: #0b1220;
+    --db-page: #f3f4f6;
+    --db-panel: #ffffff;
+    --db-panel-light: #f8fafc;
+    --db-slate: #334155;
+    --db-text: #0f172a;
+    --db-muted: #64748b;
+    --db-border: #e2e8f0;
+    --db-white: #ffffff;
     --db-amber: #f59e0b;
     --db-red: #ef4444;
     width: 100%;
@@ -27,6 +30,22 @@
     font-weight: 400;
     line-height: 1.5;
     letter-spacing: normal;
+}
+
+/* Give only the dashboard a light content area; the shell stays dark. */
+.app-body:has(.db-dashboard) {
+    background: var(--db-page, #f3f4f6);
+}
+
+.app-body:has(.db-dashboard) .app-content {
+    background: #f3f4f6;
+    color: #0f172a;
+}
+
+.app-body:has(.db-dashboard) .app-footer {
+    border-top-color: #e2e8f0;
+    background: #f3f4f6;
+    color: #64748b;
 }
 
 .db-dashboard,
@@ -61,10 +80,14 @@
     min-width: 0;
 }
 
-.db-hello {
+/* Charcoal heading overrides any inherited white heading style. */
+.app-content .db-dashboard .db-hello,
+.db-dashboard .db-hello {
     margin: 0 0 5px;
     overflow-wrap: anywhere;
-    color: var(--db-white);
+    color: var(--db-charcoal) !important;
+    background: none;
+    -webkit-text-fill-color: var(--db-charcoal);
     font-size: 1.5rem;
     font-style: normal;
     font-weight: 700;
@@ -118,20 +141,21 @@
 }
 
 .db-action-secondary {
-    border-color: var(--db-border);
-    background: var(--db-panel);
-    color: var(--db-text);
+    border-color: #dbe3ec;
+    background: var(--db-white);
+    color: var(--db-charcoal);
+    box-shadow: 0 3px 10px rgba(15, 23, 42, .04);
 }
 
 .db-action-secondary i {
-    color: var(--db-primary);
+    color: var(--db-primary-text);
 }
 
 .db-action-secondary:hover,
 .db-action-secondary:focus-visible {
-    border-color: rgba(16, 185, 129, .35);
-    background: var(--db-primary-soft);
-    color: var(--db-primary);
+    border-color: rgba(16, 185, 129, .45);
+    background: #ecfdf5;
+    color: var(--db-primary-text);
 }
 
 /* ---------------- Overview layout ---------------- */
@@ -150,7 +174,7 @@
     gap: 16px;
 }
 
-/* ---------------- Wallet balance ---------------- */
+/* ---------------- Wallet balance: dark accent card ---------------- */
 .db-balance {
     position: relative;
     display: flex;
@@ -160,10 +184,10 @@
     flex-direction: column;
     padding: 24px;
     overflow: hidden;
-    border: 1px solid rgba(16, 185, 129, .25);
+    border: 1px solid rgba(16, 185, 129, .28);
     border-radius: 14px;
-    background: linear-gradient(135deg, var(--db-panel) 0%, #102a29 100%);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, .2);
+    background: linear-gradient(135deg, #0b1220 0%, #123c35 100%);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, .16);
     color: var(--db-white);
 }
 
@@ -175,7 +199,7 @@
     width: 240px;
     height: 240px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(16, 185, 129, .18), transparent 70%);
+    background: radial-gradient(circle, rgba(16, 185, 129, .2), transparent 70%);
     pointer-events: none;
 }
 
@@ -194,13 +218,13 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: #c8d4e2;
+    color: #d7e2ec;
     font-size: .86rem;
     font-weight: 500;
 }
 
 .db-balance-label i {
-    color: var(--db-primary);
+    color: #34d399;
     font-size: 1rem;
 }
 
@@ -250,7 +274,7 @@
 .db-balance-foot {
     margin-top: auto;
     flex-wrap: wrap;
-    color: var(--db-muted);
+    color: #a9b8c8;
     font-size: .77rem;
 }
 
@@ -261,7 +285,7 @@
 }
 
 .db-balance-foot > span i {
-    color: var(--db-primary);
+    color: #34d399;
 }
 
 .db-balance-link {
@@ -269,7 +293,7 @@
     flex-shrink: 0;
     align-items: center;
     gap: 5px;
-    color: var(--db-primary);
+    color: #34d399;
     font-weight: 600;
 }
 
@@ -278,7 +302,7 @@
     color: var(--db-white);
 }
 
-/* ---------------- Statistics ---------------- */
+/* ---------------- Statistics: white cards ---------------- */
 .db-stats {
     display: grid;
     flex: 1;
@@ -293,13 +317,13 @@
     border: 1px solid var(--db-border);
     border-radius: 14px;
     background: var(--db-panel);
-    box-shadow: 0 8px 22px rgba(0, 0, 0, .12);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, .05);
     transition: border-color .18s, background .18s;
 }
 
 .db-stat:hover {
-    border-color: rgba(16, 185, 129, .3);
-    background: var(--db-panel-light);
+    border-color: rgba(16, 185, 129, .38);
+    background: #fbfffd;
 }
 
 .db-stat-icon,
@@ -320,24 +344,24 @@
 
 .db-stat-icon.slate,
 .db-row-icon.slate {
-    background: rgba(148, 163, 184, .12);
-    color: #cbd5e1;
+    background: #f1f5f9;
+    color: #475569;
 }
 
 .db-stat-icon.emerald,
 .db-row-icon.emerald {
-    background: var(--db-primary-soft);
-    color: var(--db-primary);
+    background: #d1fae5;
+    color: #047857;
 }
 
 .db-stat-icon.amber,
 .db-row-icon.amber {
-    background: rgba(245, 158, 11, .12);
-    color: var(--db-amber);
+    background: #fef3c7;
+    color: #b45309;
 }
 
 .db-stat-num {
-    color: var(--db-white);
+    color: var(--db-charcoal);
     font-size: 1.5rem;
     font-style: normal;
     font-weight: 700;
@@ -362,7 +386,8 @@
     padding: 8px;
     border: 1px solid var(--db-border);
     border-radius: 14px;
-    background: var(--db-panel);
+    background: var(--db-white);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, .04);
 }
 
 .db-quick-link {
@@ -374,9 +399,9 @@
     gap: 8px;
     padding: 9px 10px;
     border-radius: 9px;
-    color: #d6dee8;
+    color: var(--db-slate);
     font-size: .82rem;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.35;
     text-align: center;
     transition: background .18s, color .18s;
@@ -384,16 +409,16 @@
 
 .db-quick-link i {
     flex-shrink: 0;
-    color: var(--db-primary);
+    color: var(--db-primary-text);
 }
 
 .db-quick-link:hover,
 .db-quick-link:focus-visible {
-    background: var(--db-primary-soft);
-    color: var(--db-primary);
+    background: #ecfdf5;
+    color: var(--db-primary-text);
 }
 
-/* ---------------- Recent activity cards ---------------- */
+/* ---------------- Recent activity: white cards ---------------- */
 .db-list-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -406,8 +431,8 @@
     padding: 20px;
     border: 1px solid var(--db-border);
     border-radius: 14px;
-    background: var(--db-panel);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+    background: var(--db-white);
+    box-shadow: 0 6px 20px rgba(15, 23, 42, .05);
 }
 
 .db-card-head {
@@ -427,17 +452,17 @@
     align-items: center;
     gap: 8px;
     margin: 0;
-    color: var(--db-text);
+    color: var(--db-charcoal);
     font-size: .96rem;
     font-style: normal;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.4;
     letter-spacing: normal;
 }
 
 .db-card-title i {
     flex-shrink: 0;
-    color: var(--db-primary);
+    color: var(--db-primary-text);
 }
 
 .db-view-all {
@@ -445,7 +470,7 @@
     flex-shrink: 0;
     align-items: center;
     gap: 5px;
-    color: var(--db-primary);
+    color: var(--db-primary-text);
     font-size: .78rem;
     font-weight: 600;
     white-space: nowrap;
@@ -453,7 +478,7 @@
 
 .db-view-all:hover,
 .db-view-all:focus-visible {
-    color: var(--db-white);
+    color: var(--db-charcoal);
 }
 
 .db-card-body {
@@ -478,7 +503,7 @@
 
 a.db-row:hover,
 a.db-row:focus-visible {
-    background: var(--db-panel-light);
+    background: #f0fdf9;
     color: var(--db-text);
 }
 
@@ -495,7 +520,7 @@ a.db-row:focus-visible {
 
 .db-row-title {
     overflow: hidden;
-    color: var(--db-text);
+    color: var(--db-charcoal);
     font-size: .88rem;
     font-weight: 600;
     line-height: 1.4;
@@ -529,10 +554,10 @@ a.db-row:focus-visible {
     justify-content: center;
     padding: 3px 8px;
     overflow: hidden;
-    border: 1px solid rgba(148, 163, 184, .18);
+    border: 1px solid #e2e8f0;
     border-radius: 100px;
-    background: rgba(148, 163, 184, .1);
-    color: #cbd5e1;
+    background: #f1f5f9;
+    color: #475569;
     font-family: inherit;
     font-size: .66rem;
     font-style: normal;
@@ -548,17 +573,17 @@ a.db-row:focus-visible {
 .db-dashboard .px-pill.success,
 .db-dashboard .px-pill.successful,
 .db-dashboard .px-pill.delivered {
-    border-color: rgba(16, 185, 129, .22);
-    background: var(--db-primary-soft);
-    color: var(--db-primary);
+    border-color: #a7f3d0;
+    background: #ecfdf5;
+    color: #047857;
 }
 
 .db-dashboard .px-pill.active,
 .db-dashboard .px-pill.pending,
 .db-dashboard .px-pill.processing {
-    border-color: rgba(245, 158, 11, .22);
-    background: rgba(245, 158, 11, .1);
-    color: #fbbf24;
+    border-color: #fde68a;
+    background: #fffbeb;
+    color: #b45309;
 }
 
 .db-dashboard .px-pill.failed,
@@ -566,14 +591,14 @@ a.db-row:focus-visible {
 .db-dashboard .px-pill.canceled,
 .db-dashboard .px-pill.expired,
 .db-dashboard .px-pill.error {
-    border-color: rgba(239, 68, 68, .22);
-    background: rgba(239, 68, 68, .1);
-    color: #f87171;
+    border-color: #fecaca;
+    background: #fef2f2;
+    color: #dc2626;
 }
 
 .db-row-amount {
     margin-top: 5px;
-    color: var(--db-text);
+    color: var(--db-charcoal);
     font-family: inherit;
     font-size: .84rem;
     font-style: normal;
@@ -584,7 +609,7 @@ a.db-row:focus-visible {
 }
 
 .db-row-amount.db-in {
-    color: var(--db-primary);
+    color: var(--db-primary-text);
 }
 
 /* ---------------- Empty states ---------------- */
@@ -598,7 +623,7 @@ a.db-row:focus-visible {
 .db-empty > i {
     display: block;
     margin-bottom: 9px;
-    color: var(--db-slate);
+    color: #94a3b8;
     font-size: 1.8rem;
 }
 
@@ -619,10 +644,10 @@ a.db-row:focus-visible {
     align-items: center;
     justify-content: center;
     padding: 8px 14px;
-    border: 1px solid rgba(16, 185, 129, .42);
+    border: 1px solid rgba(4, 120, 87, .35);
     border-radius: 9px;
-    background: transparent;
-    color: var(--db-primary);
+    background: var(--db-white);
+    color: var(--db-primary-text);
     font-size: .8rem;
     font-weight: 600;
     transition: background .18s, color .18s;
@@ -630,8 +655,8 @@ a.db-row:focus-visible {
 
 .db-btn-ghost:hover,
 .db-btn-ghost:focus-visible {
-    background: var(--db-primary-soft);
-    color: var(--db-white);
+    background: #ecfdf5;
+    color: var(--db-charcoal);
 }
 
 /* ---------------- Responsive: reflow, never scale or zoom ---------------- */
@@ -663,7 +688,8 @@ a.db-row:focus-visible {
         margin-bottom: 20px;
     }
 
-    .db-hello {
+    .app-content .db-dashboard .db-hello,
+    .db-dashboard .db-hello {
         font-size: 1.3rem;
     }
 
