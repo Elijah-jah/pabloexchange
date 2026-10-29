@@ -1019,3 +1019,31 @@ body.app-body {
         transition-duration: .01ms !important;
     }
 }
+/* Bold white wallet balances */
+.wallet-amount,
+.wallet-chip,
+.wallet-chip .mono {
+    font-family: Arial, Helvetica, sans-serif;
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: normal;
+    color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
+}
+
+/* Desktop sidebar balance */
+.wallet-amount {
+    font-size: 1.2rem;
+}
+
+/* Topbar balance */
+.wallet-chip {
+    font-size: .92rem;
+}
+
+/* Keep it compact on smaller phones */
+@media (max-width: 575.98px) {
+    .wallet-chip {
+        font-size: .8rem;
+    }
+}
