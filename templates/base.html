@@ -1,4 +1,5 @@
 {% load static %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -82,7 +83,7 @@
     <div class="sidebar-wallet">
         <p class="sidebar-label mb-2">Wallet balance</p>
         <div class="d-flex align-items-end justify-content-between">
-            <span class="wallet-amount mono">&#8358;{{ balance|default:"0.00" }}</span>
+            <span class="wallet-amount mono">&#8358;₦{{ balance|default:"0.00"|floatformat:2|intcomma }}</span>
             <a href="{% url 'wallet:fund' %}" class="wallet-plus"><i class="bi bi-plus-lg"></i></a>
         </div>
     </div>
@@ -178,12 +179,12 @@
         <div class="topbar-actions ms-auto">
 
             <a href="{% url 'wallet:fund' %}" class="wallet-chip wallet-chip-sm d-inline-flex d-sm-none">
-                <span class="mono">&#8358;{{ balance|default:"0.00" }}</span>
+                <span class="mono">&#8358;₦{{ balance|default:"0.00"|floatformat:2|intcomma }}</span>
             </a>
 
             <a href="{% url 'wallet:fund' %}" class="wallet-chip d-none d-sm-inline-flex">
                 <i class="bi bi-wallet2"></i>
-                <span class="mono">&#8358;{{ balance|default:"0.00" }}</span>
+                <span class="mono">&#8358;₦{{ balance|default:"0.00"|floatformat:2|intcomma }}</span>
                 <span class="wallet-chip-plus"><i class="bi bi-plus-lg"></i></span>
             </a>
 

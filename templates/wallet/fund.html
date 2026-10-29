@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}Fund Wallet{% endblock %}
 {% block page_title %}Fund Wallet{% endblock %}
@@ -92,7 +93,7 @@
             <p class="fund-date">{{ tx.created_at|date:"M j, Y · H:i" }}</p>
         </div>
         <div class="text-end">
-            <p class="mono fw-semibold fund-amount">+₦{{ tx.amount }}</p>
+            <p class="mono fw-semibold fund-amount">+₦{{ tx.amount|floatformat:2|intcomma }}</p>
             <span class="px-pill {{ tx.status }}">{{ tx.status|title }}</span>
         </div>
     </div>

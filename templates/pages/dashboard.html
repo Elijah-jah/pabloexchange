@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}Dashboard{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
@@ -48,7 +49,7 @@
                 </a>
             </div>
 
-            <div class="db-balance-amount">&#8358;{{ balance|default:"0.00" }}</div>
+            <div class="db-balance-amount">&#8358;₦{{ balance|default:"0.00"|floatformat:2|intcomma }}</div>
 
             <div class="db-balance-foot">
                 <span><i class="bi bi-shield-check" aria-hidden="true"></i> Pay only on OTP delivery</span>
@@ -116,7 +117,7 @@
                     </div>
                     <div class="db-row-side">
                         <span class="px-pill {{ o.status }}">{{ o.status }}</span>
-                        <div class="db-row-amount">&#8358;{{ o.price }}</div>
+                        <div class="db-row-amount">&#8358;{{ o.price|floatformat:2|intcomma }}</div>
                     </div>
                 </a>
                 {% empty %}
@@ -154,7 +155,7 @@
                     <div class="db-row-side">
                         <span class="px-pill {{ t.status }}">{{ t.status }}</span>
                         <div class="db-row-amount {% if t.type == 'credit' %}db-in{% endif %}">
-                            {% if t.type == 'credit' %}+{% else %}−{% endif %}&#8358;{{ t.amount }}
+                            {% if t.type == 'credit' %}+{% else %}−{% endif %}&#8358;{{ t.amount|floatformat:2|intcomma }}
                         </div>
                     </div>
                 </div>

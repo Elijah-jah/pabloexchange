@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}Buy Number{% endblock %}
 {% block page_title %}Buy Number{% endblock %}
@@ -22,7 +23,7 @@
             <span class="bn-balance-icon"><i class="bi bi-wallet2"></i></span>
             <span class="bn-balance-copy">
                 <small>Available balance</small>
-                <span class="mono">₦{{ balance|default:"0.00" }}</span>
+                <span class="mono">₦{{ balance|default:"0.00"|floatformat:2|intcomma }}</span>
             </span>
         </div>
     </div>
