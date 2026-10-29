@@ -20,6 +20,67 @@ DEBUG = os.getenv('DEBUG', 'False').strip().lower() in {
     '1', 'true', 'yes', 'on'
 }
 
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'formatters': {
+        'verbose': {
+            'format': (
+                '[{levelname}] {asctime} {name} '
+                '{module}: {message}'
+            ),
+            'style': '{',
+        },
+    },
+
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+
+        # Unhandled view exceptions, including their tracebacks.
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
+        # Your application logs.
+        'wallet': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'smsmarket': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'marketplace': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
+
 # ← CHANGED: your domain
 ALLOWED_HOSTS = [
     "pabloexchange.onrender.com",
