@@ -1,4 +1,4 @@
-/* PabloExchange — Buy Number: server → country → services → price
+﻿/* PabloExchange — Buy Number: server → country → services → price
    Built-in searchable dropdowns (no external library).
    OTP polling: every waiting order, code shown instantly without reload. */
 
@@ -332,6 +332,29 @@ document.addEventListener('DOMContentLoaded', function () {
         overlay.hidden = false;
         requestBtn.disabled = true;
     });
+
+    // ---------- Newest order first ----------
+    // The buy form returns to this view after a successful purchase. Reorder
+    // the existing card nodes (without recreating them) so the newest order
+    // is first while timers, polling and event handlers remain intact.
+    function showNewestOrdersFirst() {
+        var wrap = document.querySelector('.bn-sessions-wrap');
+        if (!wrap) return;
+
+        var cards = Array.prototype.slice.call(wrap.children).filter(function (child) {
+            return child.classList.contains('bn-session');
+        });
+
+        cards.sort(function (a, b) {
+            var aId = parseInt(a.dataset.orderId, 10) || 0;
+            var bId = parseInt(b.dataset.orderId, 10) || 0;
+            return bId - aId;
+        });
+
+        cards.forEach(function (card) { wrap.appendChild(card); });
+    }
+
+    showNewestOrdersFirst();
 
     // ---------- Copy buttons ----------
     document.querySelectorAll('.bn-copy-btn').forEach(function (btn) {
