@@ -1,7 +1,7 @@
 /* ============================================================
-   PabloExchange — App shell v8
-   Normal typography, restrained green-and-gold colors,
-   comfortable spacing, responsive layout, half-width mobile drawer
+   PabloExchange — App shell v9
+   White-and-green interface · normal typography · clean spacing
+   Responsive layout · half-width mobile navigation drawer
    ============================================================ */
 
 :root {
@@ -12,8 +12,6 @@
     --sb-green-600: #1b8468;
     --sb-green-100: #dcefe8;
     --sb-green-50:  #f1f8f5;
-    --sb-gold:      #e7b94e;
-    --sb-gold-dark: #c9982e;
     --sb-ink:       #21332c;
     --sb-muted:     #66766f;
     --sb-white:     #ffffff;
@@ -23,10 +21,12 @@
     --sb-shadow:    0 4px 18px rgba(6, 42, 34, .07);
     --sb-width:     264px;
 
-    /* Retained for compatibility with other PabloExchange stylesheets. */
-    --grad-brand:  var(--sb-green-900);
-    --grad-active: var(--sb-green-800);
-    --grad-gold:   var(--sb-gold);
+    /* Green aliases retained for compatibility with other page styles. */
+    --sb-gold:      var(--sb-green-700);
+    --sb-gold-dark: var(--sb-green-800);
+    --grad-brand:   var(--sb-green-900);
+    --grad-active:  var(--sb-green-800);
+    --grad-gold:    var(--sb-green-700);
 }
 
 * {
@@ -38,7 +38,7 @@ html,
 body {
     overflow-x: clip;
     scrollbar-width: thin;
-    scrollbar-color: rgba(27, 132, 104, .38) transparent;
+    scrollbar-color: rgba(27, 132, 104, .36) transparent;
 }
 
 body.app-body {
@@ -69,6 +69,7 @@ body.app-body {
 .mono {
     font-family: inherit;
     font-style: normal;
+    font-weight: inherit;
     letter-spacing: normal;
 }
 
@@ -94,11 +95,11 @@ body.app-body {
 
 ::-webkit-scrollbar-thumb {
     border-radius: 100px;
-    background: rgba(27, 132, 104, .32);
+    background: rgba(27, 132, 104, .3);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(27, 132, 104, .55);
+    background: rgba(27, 132, 104, .52);
 }
 
 /* ---------------- Links ---------------- */
@@ -130,14 +131,13 @@ body.app-body {
     height: 34px;
     margin-right: 10px;
     border-radius: 10px;
-    background: var(--sb-gold);
-    color: var(--sb-green-950);
-    box-shadow: 0 3px 10px rgba(231, 185, 78, .2);
+    background: var(--sb-green-800);
+    color: var(--sb-white);
     font-size: 1rem;
 }
 
 .logo-text {
-    color: var(--sb-white);
+    color: var(--sb-green-900);
     font-size: 1.18rem;
     font-style: normal;
     font-weight: 700;
@@ -147,7 +147,7 @@ body.app-body {
 }
 
 .logo-text span {
-    color: var(--sb-gold);
+    color: var(--sb-green-700);
     background: none;
     -webkit-text-fill-color: currentColor;
 }
@@ -163,20 +163,22 @@ body.app-body {
     min-width: var(--sb-width);
     max-width: var(--sb-width);
     overflow: hidden;
-    background: var(--sb-green-900);
-    color: var(--sb-green-100);
+    border-right: 1px solid var(--sb-border);
+    background: var(--sb-white);
+    color: var(--sb-ink);
 }
 
 .sidebar-header {
-    padding: 22px 18px 14px;
+    padding: 22px 18px 18px;
+    border-bottom: 1px solid var(--sb-border);
 }
 
 .sidebar-nav {
-    padding: 8px 12px;
+    padding: 12px;
     overflow-x: hidden;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, .24) transparent;
+    scrollbar-color: rgba(23, 112, 90, .22) transparent;
 }
 
 .sidebar-nav::-webkit-scrollbar {
@@ -189,12 +191,12 @@ body.app-body {
 
 .sidebar-nav::-webkit-scrollbar-thumb {
     border-radius: 100px;
-    background: rgba(255, 255, 255, .2);
+    background: rgba(23, 112, 90, .2);
 }
 
 .sidebar-label {
     margin: 16px 12px 7px;
-    color: rgba(220, 239, 232, .58);
+    color: var(--sb-muted);
     font-size: .72rem;
     font-style: normal;
     font-weight: 600;
@@ -211,10 +213,11 @@ body.app-body {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 4px;
-    padding: 12px;
+    min-height: 44px;
+    margin-bottom: 5px;
+    padding: 11px 12px;
     border-radius: 10px;
-    color: rgba(220, 239, 232, .84);
+    color: #41564d;
     font-size: .93rem;
     font-style: normal;
     font-weight: 500;
@@ -226,52 +229,53 @@ body.app-body {
 .side-link i {
     flex-shrink: 0;
     width: 20px;
-    color: rgba(220, 239, 232, .72);
+    color: var(--sb-green-700);
     font-size: 1.05rem;
     text-align: center;
     transition: color .18s;
 }
 
 .side-link:hover {
-    background: rgba(255, 255, 255, .07);
-    color: var(--sb-white);
+    background: var(--sb-green-50);
+    color: var(--sb-green-900);
 }
 
 .side-link.active {
-    background: var(--sb-green-800);
-    color: var(--sb-white);
-    box-shadow: inset 3px 0 0 var(--sb-gold);
+    background: var(--sb-green-50);
+    color: var(--sb-green-800);
+    box-shadow: inset 3px 0 0 var(--sb-green-700);
     font-weight: 600;
 }
 
 .side-link.active i {
-    color: var(--sb-gold);
+    color: var(--sb-green-700);
     background: none;
     -webkit-text-fill-color: currentColor;
 }
 
-/* ---------------- Sidebar wallet ---------------- */
+/* ---------------- Desktop sidebar wallet ---------------- */
 .sidebar-wallet {
     flex-shrink: 0;
     margin: 14px 12px;
     padding: 15px;
-    border: 1px solid rgba(231, 185, 78, .28);
+    border: 1px solid var(--sb-border);
     border-radius: 12px;
-    background: rgba(231, 185, 78, .08);
+    background: var(--sb-green-50);
 }
 
 .sidebar-wallet .sidebar-label {
     margin: 0 0 7px;
-    color: rgba(220, 239, 232, .64);
+    color: var(--sb-muted);
 }
 
 .wallet-amount {
-    color: var(--sb-gold);
+    color: var(--sb-green-800);
     background: none;
     -webkit-text-fill-color: currentColor;
-    font-size: 1.2rem;
+    font-family: inherit;
+    font-size: 1.16rem;
     font-style: normal;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.3;
     letter-spacing: normal;
 }
@@ -284,26 +288,27 @@ body.app-body {
     width: 32px;
     height: 32px;
     border-radius: 9px;
-    background: var(--sb-gold);
-    color: var(--sb-green-950);
+    background: var(--sb-green-700);
+    color: var(--sb-white);
     font-size: 1rem;
     transition: background .18s, transform .18s;
 }
 
 .wallet-plus:hover {
     transform: translateY(-1px);
-    background: var(--sb-gold-dark);
-    color: var(--sb-green-950);
+    background: var(--sb-green-800);
+    color: var(--sb-white);
 }
 
-/* ---------------- Sidebar user ---------------- */
+/* ---------------- Desktop sidebar user ---------------- */
 .sidebar-user {
     display: flex;
     flex-shrink: 0;
     align-items: center;
     gap: 11px;
     padding: 15px 16px;
-    border-top: 1px solid rgba(255, 255, 255, .09);
+    border-top: 1px solid var(--sb-border);
+    background: var(--sb-white);
 }
 
 .user-avatar {
@@ -314,11 +319,11 @@ body.app-body {
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    background: var(--sb-gold);
-    color: var(--sb-green-950);
+    background: var(--sb-green-50);
+    color: var(--sb-green-800);
     font-size: .95rem;
     font-style: normal;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: normal;
 }
 
@@ -335,7 +340,7 @@ body.app-body {
 .user-name {
     margin: 0;
     overflow: hidden;
-    color: var(--sb-white);
+    color: var(--sb-ink);
     font-size: .88rem;
     font-style: normal;
     font-weight: 600;
@@ -347,7 +352,7 @@ body.app-body {
 .user-role {
     margin: 2px 0 0;
     overflow: hidden;
-    color: rgba(220, 239, 232, .58);
+    color: var(--sb-muted);
     font-size: .72rem;
     letter-spacing: normal;
     text-overflow: ellipsis;
@@ -361,17 +366,17 @@ body.app-body {
     justify-content: center;
     width: 36px;
     height: 36px;
-    border: 1px solid rgba(255, 255, 255, .14);
+    border: 1px solid var(--sb-border);
     border-radius: 9px;
-    background: rgba(255, 255, 255, .05);
-    color: rgba(220, 239, 232, .76);
+    background: var(--sb-white);
+    color: var(--sb-green-700);
     transition: background .18s, color .18s, border-color .18s;
 }
 
 .logout-btn:hover {
-    border-color: var(--sb-gold);
-    background: var(--sb-gold);
-    color: var(--sb-green-950);
+    border-color: var(--sb-green-100);
+    background: var(--sb-green-50);
+    color: var(--sb-green-800);
 }
 
 /* ---------------- Mobile drawer: exactly half the screen ---------------- */
@@ -379,15 +384,18 @@ body.app-body {
     width: 50vw !important;
     min-width: 0 !important;
     max-width: 50vw !important;
-    border-right: 1px solid rgba(255, 255, 255, .08);
-    background: var(--sb-green-900);
-    color: var(--sb-green-100);
+    border-right: 1px solid var(--sb-border);
+    background: var(--sb-white);
+    color: var(--sb-ink);
+    box-shadow: 12px 0 32px rgba(6, 42, 34, .12);
 }
 
 .app-offcanvas .offcanvas-header {
     gap: 6px;
+    min-height: 64px;
     padding: 14px 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, .09);
+    border-bottom: 1px solid var(--sb-border);
+    background: var(--sb-white);
 }
 
 .app-offcanvas .sidebar-brand {
@@ -396,86 +404,91 @@ body.app-body {
 }
 
 .app-offcanvas .logo-badge {
-    width: 27px;
-    height: 27px;
+    width: 28px;
+    height: 28px;
     margin-right: 6px;
     border-radius: 8px;
-    font-size: .82rem;
+    font-size: .84rem;
 }
 
 .app-offcanvas .logo-text {
     overflow: hidden;
-    font-size: .84rem;
-    line-height: 1.2;
+    color: var(--sb-green-800);
+    font-size: .78rem;
+    font-weight: 700;
+    line-height: 1.25;
     text-overflow: ellipsis;
+}
+
+.app-offcanvas .logo-text span {
+    color: var(--sb-green-700);
 }
 
 .app-offcanvas .offcanvas-header .btn-close {
     flex-shrink: 0;
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     margin: 0 !important;
     padding: 0;
+    opacity: .62;
+}
+
+.app-offcanvas .offcanvas-header .btn-close:hover {
+    opacity: 1;
 }
 
 .app-offcanvas .sidebar-nav {
-    padding: 8px 6px;
+    padding: 18px 9px;
 }
 
 .app-offcanvas .sidebar-label {
-    margin-right: 8px;
-    margin-left: 8px;
-    font-size: .68rem;
+    display: none;
 }
 
 .app-offcanvas .side-link {
-    gap: 8px;
-    padding: 11px 8px;
-    font-size: .84rem;
+    gap: 9px;
+    min-height: 46px;
+    margin-bottom: 7px;
+    padding: 12px 9px;
+    border-radius: 9px;
+    color: #41564d;
+    font-size: .86rem;
+    font-weight: 500;
 }
 
 .app-offcanvas .side-link i {
-    width: 17px;
-    font-size: .96rem;
-}
-
-.app-offcanvas .sidebar-wallet {
-    margin: 10px 8px;
-    padding: 12px 10px;
-}
-
-.app-offcanvas .wallet-amount {
+    width: 18px;
+    color: var(--sb-green-700);
     font-size: 1rem;
 }
 
-.app-offcanvas .wallet-plus {
-    width: 28px;
-    height: 28px;
+.app-offcanvas .side-link:hover {
+    background: var(--sb-green-50);
+    color: var(--sb-green-900);
 }
 
-.app-offcanvas .sidebar-user {
-    gap: 8px;
-    padding: 12px 9px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+.app-offcanvas .side-link.active {
+    background: var(--sb-green-50);
+    color: var(--sb-green-800);
+    box-shadow: inset 3px 0 0 var(--sb-green-700);
 }
 
-.app-offcanvas .user-avatar {
-    width: 32px;
-    height: 32px;
-    font-size: .82rem;
+.mobile-logout-form {
+    margin: 0;
 }
 
-.app-offcanvas .user-name {
-    font-size: .8rem;
+.side-link-button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
 }
 
-.app-offcanvas .user-role {
-    font-size: .66rem;
-}
-
-.app-offcanvas .logout-btn {
-    width: 32px;
-    height: 32px;
+.side-link-button:hover,
+.side-link-button:focus-visible {
+    background: var(--sb-green-50);
+    color: var(--sb-green-900);
 }
 
 /* ---------------- Main layout ---------------- */
@@ -544,16 +557,17 @@ body.app-body {
     gap: 12px;
 }
 
-/* ---------------- Wallet chip ---------------- */
+/* ---------------- Wallet chip: normal inherited typography ---------------- */
 .wallet-chip {
     align-items: center;
     gap: 8px;
     padding: 8px 8px 8px 15px;
     border-radius: 100px;
-    background: var(--sb-green-900);
-    color: var(--sb-gold);
-    box-shadow: 0 3px 10px rgba(6, 42, 34, .16);
-    font-size: .88rem;
+    background: var(--sb-green-800);
+    color: var(--sb-white);
+    box-shadow: 0 3px 10px rgba(6, 42, 34, .13);
+    font-family: inherit;
+    font-size: .86rem;
     font-style: normal;
     font-weight: 600;
     letter-spacing: normal;
@@ -563,8 +577,8 @@ body.app-body {
 
 .wallet-chip:hover {
     transform: translateY(-1px);
-    background: var(--sb-green-800);
-    color: var(--sb-gold);
+    background: var(--sb-green-700);
+    color: var(--sb-white);
 }
 
 .wallet-chip-plus {
@@ -574,8 +588,8 @@ body.app-body {
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background: var(--sb-gold);
-    color: var(--sb-green-950);
+    background: var(--sb-white);
+    color: var(--sb-green-800);
     font-size: .85rem;
 }
 
@@ -605,7 +619,7 @@ body.app-body {
     padding: 8px;
     border: 1px solid var(--sb-border);
     border-radius: 12px;
-    box-shadow: 0 12px 30px rgba(6, 42, 34, .13);
+    box-shadow: 0 12px 30px rgba(6, 42, 34, .12);
 }
 
 .app-dropdown .dropdown-item {
@@ -676,23 +690,23 @@ body.app-body {
 .px-exit-spinner {
     width: 44px;
     height: 44px;
-    border: 4px solid rgba(255, 255, 255, .15);
-    border-top-color: var(--sb-gold);
+    border: 4px solid rgba(255, 255, 255, .18);
+    border-top-color: var(--sb-white);
     border-radius: 50%;
     animation: pxSpin .8s linear infinite;
 }
 
 .px-exit p {
     margin: 0;
-    color: var(--sb-green-50);
+    color: var(--sb-white);
     font-size: .95rem;
     font-style: normal;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: normal;
 }
 
 .px-exit-brand {
-    color: var(--sb-gold);
+    color: var(--sb-white);
     background: none;
     -webkit-text-fill-color: currentColor;
     font-size: 1.05rem;
@@ -728,11 +742,11 @@ body.app-body {
     width: 100%;
     padding: 14px 42px 14px 15px;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .1);
     border-radius: 12px;
     background: var(--sb-green-900);
-    color: var(--sb-green-50);
-    box-shadow: 0 12px 30px rgba(6, 42, 34, .24);
+    color: var(--sb-white);
+    box-shadow: 0 12px 30px rgba(6, 42, 34, .22);
     opacity: 0;
     transform: translateY(-140%);
     font-size: .9rem;
@@ -762,7 +776,7 @@ body.app-body {
 .px-toast--success .px-toast-icon,
 .px-toast--info .px-toast-icon,
 .px-toast--warning .px-toast-icon {
-    color: var(--sb-gold);
+    color: var(--sb-green-100);
 }
 
 .px-toast--error {
@@ -791,7 +805,7 @@ body.app-body {
     border: none;
     border-radius: 7px;
     background: rgba(255, 255, 255, .1);
-    color: rgba(255, 255, 255, .78);
+    color: rgba(255, 255, 255, .8);
     transform: translateY(-50%);
     cursor: pointer;
     font-size: 1.05rem;
@@ -809,7 +823,7 @@ body.app-body {
     left: 0;
     width: 100%;
     height: 3px;
-    background: var(--sb-gold);
+    background: var(--sb-green-100);
     animation: pxToastBar 4s linear forwards;
 }
 
@@ -873,6 +887,7 @@ body.app-body {
     .wallet-chip {
         padding: 7px 11px;
         font-size: .78rem;
+        font-weight: 500;
     }
 
     .wallet-chip-plus {
@@ -907,7 +922,7 @@ body.app-body {
     }
 
     .app-offcanvas .logo-text {
-        font-size: .74rem;
+        font-size: .7rem;
     }
 
     .app-offcanvas .offcanvas-header .btn-close {
@@ -915,26 +930,16 @@ body.app-body {
         height: 20px;
     }
 
-    .app-offcanvas .side-link {
-        gap: 6px;
-        padding-right: 6px;
-        padding-left: 6px;
-        font-size: .78rem;
-    }
-
-    .app-offcanvas .sidebar-wallet {
-        margin-right: 6px;
-        margin-left: 6px;
-    }
-
-    .app-offcanvas .wallet-amount {
-        font-size: .9rem;
-    }
-
-    .app-offcanvas .sidebar-user {
-        gap: 6px;
+    .app-offcanvas .sidebar-nav {
         padding-right: 7px;
         padding-left: 7px;
+    }
+
+    .app-offcanvas .side-link {
+        gap: 7px;
+        padding-right: 7px;
+        padding-left: 7px;
+        font-size: .8rem;
     }
 
     .topbar-title {

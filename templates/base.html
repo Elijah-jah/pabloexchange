@@ -13,7 +13,7 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <!-- App shell -->
-    <link rel="stylesheet" href="{% static 'css/base.css' %}?v=8">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}?v=9">
     <!-- Shared page components (pills, lists) -->
     <link rel="stylesheet" href="{% static 'css/app.css' %}?v=5">
 
@@ -106,63 +106,53 @@
             <span class="logo-badge"><i class="bi bi-shield-check"></i></span>
             <span class="logo-text">Pablo<span>Exchange</span></span>
         </a>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
 
     <div class="offcanvas-body d-flex flex-column p-0">
-        <nav class="sidebar-nav flex-grow-1">
-            <p class="sidebar-label">Menu</p>
-
-            <a href="{% url 'dashboard' %}" class="side-link">
+        <nav class="sidebar-nav flex-grow-1" aria-label="Mobile navigation">
+            <a href="{% url 'dashboard' %}"
+               class="side-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                 <i class="bi bi-speedometer2"></i><span>Dashboard</span>
             </a>
-            <a href="{% url 'wallet:fund' %}" class="side-link">
+
+            <a href="{% url 'wallet:fund' %}"
+               class="side-link {% if request.resolver_match.url_name == 'fund' %}active{% endif %}">
                 <i class="bi bi-wallet2"></i><span>Fund Wallet</span>
             </a>
-            <a href="{% url 'buynumber' %}" class="side-link">
+
+            <a href="{% url 'buynumber' %}"
+               class="side-link {% if request.resolver_match.url_name == 'buynumber' %}active{% endif %}">
                 <i class="bi bi-phone"></i><span>Buy Number</span>
             </a>
-            <a href="{% url 'marketplace' %}" class="side-link">
+
+            <a href="{% url 'marketplace' %}"
+               class="side-link {% if request.resolver_match.url_name == 'marketplace' %}active{% endif %}">
                 <i class="bi bi-shop"></i><span>Marketplace</span>
             </a>
 
-            <p class="sidebar-label mt-3">History</p>
-
-            <a href="{% url 'smsmarket:my_purchases' %}" class="side-link">
+            <a href="{% url 'smsmarket:my_purchases' %}"
+               class="side-link {% if request.resolver_match.url_name == 'my_purchases' %}active{% endif %}">
                 <i class="bi bi-bag-check"></i><span>My Purchases</span>
             </a>
-            <a href="{% url 'wallet:transactions' %}" class="side-link">
+
+            <a href="{% url 'wallet:transactions' %}"
+               class="side-link {% if request.resolver_match.url_name == 'transactions' %}active{% endif %}">
                 <i class="bi bi-receipt"></i><span>Transactions</span>
             </a>
 
-            <p class="sidebar-label mt-3">Account</p>
-
-            <a href="{% url 'settings' %}" class="side-link">
+            <a href="{% url 'settings' %}"
+               class="side-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
                 <i class="bi bi-gear"></i><span>Settings</span>
             </a>
-        </nav>
 
-        <div class="sidebar-wallet">
-            <p class="sidebar-label mb-2">Wallet balance</p>
-            <div class="d-flex align-items-end justify-content-between">
-                <span class="wallet-amount mono">&#8358;{{ balance|default:"0.00" }}</span>
-                <a href="{% url 'wallet:fund' %}" class="wallet-plus"><i class="bi bi-plus-lg"></i></a>
-            </div>
-        </div>
-
-        <div class="sidebar-user">
-            <div class="user-avatar">{{ user.username|first|upper }}</div>
-            <div class="user-meta">
-                <p class="user-name">{{ user.username|truncatechars:14 }}</p>
-                <p class="user-role">{{ user.email|truncatechars:20 }}</p>
-            </div>
-            <form method="post" action="{% url 'logout' %}" class="ms-auto">
+            <form method="post" action="{% url 'logout' %}" class="mobile-logout-form">
                 {% csrf_token %}
-                <button type="submit" class="logout-btn" title="Log out">
-                    <i class="bi bi-box-arrow-right"></i>
+                <button type="submit" class="side-link side-link-button">
+                    <i class="bi bi-box-arrow-right"></i><span>Log out</span>
                 </button>
             </form>
-        </div>
+        </nav>
     </div>
 </div>
 
