@@ -1,7 +1,7 @@
 /* ============================================================
-   PabloExchange — Fund Wallet v4
-   Permanent account card · professional light green/white theme
-   Existing markup and copy-account JavaScript retained
+   PabloExchange — Fund Wallet v5
+   One-time account setup · permanent account card · funding history
+   Responsive light green/white theme with normal typography
    ============================================================ */
 
 :root {
@@ -76,6 +76,269 @@
     color: var(--fw-muted);
     font-size: .9rem;
     line-height: 1.55;
+}
+
+/* ---------------- Alerts ---------------- */
+.fund-alert {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding: 13px 15px;
+    border: 1px solid #fecaca;
+    border-radius: 11px;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: .85rem;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.fund-alert i {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.fund-alert span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* ---------------- One-time account setup ---------------- */
+.account-setup-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.setup-intro {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.setup-intro > div {
+    min-width: 0;
+}
+
+.setup-icon {
+    display: inline-flex;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #a7f3d0;
+    border-radius: 13px;
+    background: var(--fw-primary-soft);
+    color: var(--fw-primary-text);
+    font-size: 1.3rem;
+}
+
+.setup-kicker {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--fw-primary-text);
+    font-size: .72rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.setup-intro h3 {
+    margin: 0 0 6px;
+    color: var(--fw-charcoal);
+    font-size: 1.08rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: normal;
+}
+
+.setup-intro p {
+    max-width: 680px;
+    margin: 0;
+    color: var(--fw-muted);
+    font-size: .84rem;
+    line-height: 1.6;
+}
+
+.setup-benefits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 18px 0 0 63px;
+}
+
+.setup-benefits span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border: 1px solid #d1fae5;
+    border-radius: 8px;
+    background: #f0fdf4;
+    color: #166534;
+    font-size: .72rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.setup-benefits i {
+    color: var(--fw-primary-text);
+}
+
+.account-setup-form {
+    min-width: 0;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--fw-border);
+}
+
+.setup-input-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    min-width: 0;
+}
+
+.setup-field {
+    min-width: 0;
+}
+
+.setup-field-full {
+    grid-column: 1 / -1;
+}
+
+.setup-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--fw-slate);
+    font-size: .8rem;
+    font-weight: 650;
+    line-height: 1.4;
+}
+
+.setup-field input {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding: 11px 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    outline: none;
+    background: var(--fw-white);
+    color: var(--fw-charcoal);
+    font-family: inherit;
+    font-size: .88rem;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: normal;
+    transition: border-color .18s, box-shadow .18s;
+}
+
+.setup-field input::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+}
+
+.setup-field input:hover {
+    border-color: #94a3b8;
+}
+
+.setup-field input:focus {
+    border-color: var(--fw-primary);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, .13);
+}
+
+.setup-help {
+    margin: 6px 0 0;
+    color: var(--fw-muted);
+    font-size: .73rem;
+    line-height: 1.5;
+}
+
+.setup-submit {
+    display: inline-flex;
+    width: 100%;
+    max-width: 360px;
+    min-height: 47px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 11px 18px;
+    border: 1px solid var(--fw-primary);
+    border-radius: 10px;
+    background: var(--fw-primary);
+    color: var(--fw-charcoal);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: .86rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: normal;
+    transition: background .18s, border-color .18s, color .18s;
+}
+
+.setup-submit:hover:not(:disabled) {
+    border-color: var(--fw-primary-dark);
+    background: var(--fw-primary-dark);
+    color: var(--fw-white);
+}
+
+.setup-submit:disabled {
+    cursor: wait;
+    opacity: .78;
+}
+
+.setup-submit-label,
+.setup-submit-loading {
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.setup-submit-label {
+    display: inline-flex;
+}
+
+.setup-submit-loading {
+    display: none;
+}
+
+.setup-submit.is-loading .setup-submit-label {
+    display: none;
+}
+
+.setup-submit.is-loading .setup-submit-loading {
+    display: inline-flex;
+}
+
+.setup-submit.is-loading .setup-submit-loading i {
+    animation: fund-spin .8s linear infinite;
+}
+
+.setup-privacy {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 12px 0 0;
+    color: var(--fw-muted);
+    font-size: .72rem;
+    line-height: 1.5;
+}
+
+.setup-privacy i {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--fw-primary-text);
+}
+
+@keyframes fund-spin {
+    to { transform: rotate(360deg); }
 }
 
 /* ---------------- Assigned account card ---------------- */
@@ -501,6 +764,38 @@
         font-size: .85rem;
     }
 
+    .setup-intro {
+        gap: 12px;
+    }
+
+    .setup-icon {
+        width: 43px;
+        height: 43px;
+        border-radius: 11px;
+        font-size: 1.15rem;
+    }
+
+    .setup-intro h3 {
+        font-size: 1rem;
+    }
+
+    .setup-benefits {
+        margin-left: 0;
+    }
+
+    .setup-input-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .setup-field-full {
+        grid-column: auto;
+    }
+
+    .setup-submit {
+        max-width: none;
+    }
+
     .acct-card {
         padding: 20px 17px;
     }
@@ -541,6 +836,15 @@
 }
 
 @media (max-width: 380px) {
+    .setup-benefits {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .setup-benefits span {
+        width: 100%;
+    }
+
     .acct-number {
         font-size: 1.7rem;
     }
@@ -554,5 +858,9 @@
     .acct-card *,
     .app-body:has(.fund-head) .px-card * {
         transition-duration: .01ms !important;
+    }
+
+    .setup-submit.is-loading .setup-submit-loading i {
+        animation: none;
     }
 }

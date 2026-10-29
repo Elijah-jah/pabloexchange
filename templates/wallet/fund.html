@@ -1,22 +1,114 @@
 {% extends 'base.html' %}
-{% load static %}
-{% load humanize %}
+{% load static humanize %}
 
 {% block title %}Fund Wallet{% endblock %}
 {% block page_title %}Fund Wallet{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/fund.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'css/fund.css' %}?v=5">
 {% endblock %}
 
 {% block content %}
 
 <!-- PAGE HEAD -->
 <div class="fund-head">
+    {% if needs_account_details %}
+    <h2 class="page-heading">Set up wallet funding</h2>
+    <p class="page-sub">Create your personal bank account once, then use it whenever you want to fund your wallet.</p>
+    {% else %}
     <h2 class="page-heading">Fund your wallet</h2>
     <p class="page-sub">Transfer to your personal account number — your wallet is credited automatically.</p>
+    {% endif %}
 </div>
 
+{% if error %}
+<div class="fund-alert" role="alert">
+    <i class="bi bi-exclamation-circle-fill"></i>
+    <span>{{ error }}</span>
+</div>
+{% endif %}
+
+{% if needs_account_details %}
+<!-- ONE-TIME ACCOUNT SETUP -->
+<section class="px-card account-setup-card" aria-labelledby="accountSetupTitle">
+    <div class="setup-intro">
+        <span class="setup-icon"><i class="bi bi-bank2"></i></span>
+        <div>
+            <span class="setup-kicker">One-time setup</span>
+            <h3 id="accountSetupTitle">Create your permanent account</h3>
+            <p>Enter your details exactly as they appear on your bank account. PocketFi will assign a dedicated account number to you.</p>
+        </div>
+    </div>
+
+    <div class="setup-benefits" aria-label="Account benefits">
+        <span><i class="bi bi-check2-circle"></i> Assigned only to you</span>
+        <span><i class="bi bi-check2-circle"></i> Automatic wallet credit</span>
+        <span><i class="bi bi-check2-circle"></i> Available anytime</span>
+    </div>
+
+    <form method="post" action="{% url 'wallet:add_account_details' %}" id="accountSetupForm" class="account-setup-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create_account">
+
+        <div class="setup-input-grid">
+            <div class="setup-field">
+                <label for="setupFirstName">First name</label>
+                <input
+                    type="text"
+                    id="setupFirstName"
+                    name="first_name"
+                    value="{{ form_first_name }}"
+                    placeholder="Enter your first name"
+                    autocomplete="given-name"
+                    maxlength="150"
+                    required
+                >
+            </div>
+
+            <div class="setup-field">
+                <label for="setupLastName">Last name</label>
+                <input
+                    type="text"
+                    id="setupLastName"
+                    name="last_name"
+                    value="{{ form_last_name }}"
+                    placeholder="Enter your last name"
+                    autocomplete="family-name"
+                    maxlength="150"
+                    required
+                >
+            </div>
+
+            <div class="setup-field setup-field-full">
+                <label for="setupPhone">Phone number</label>
+                <input
+                    type="tel"
+                    id="setupPhone"
+                    name="phone"
+                    value="{{ form_phone }}"
+                    placeholder="08012345678"
+                    autocomplete="tel"
+                    inputmode="numeric"
+                    pattern="[0-9]{11}"
+                    minlength="11"
+                    maxlength="11"
+                    title="Enter exactly 11 digits"
+                    aria-describedby="setupPhoneHelp"
+                    required
+                >
+                <p class="setup-help" id="setupPhoneHelp">Enter your active 11-digit Nigerian phone number without spaces.</p>
+            </div>
+        </div>
+
+        <button type="submit" class="setup-submit" id="createAccountBtn">
+            <span class="setup-submit-label"><i class="bi bi-shield-check"></i> Create my account</span>
+            <span class="setup-submit-loading"><i class="bi bi-arrow-repeat"></i> Creating your account…</span>
+        </button>
+
+        <p class="setup-privacy"><i class="bi bi-lock-fill"></i> Your details are used only to create and identify your funding account.</p>
+    </form>
+</section>
+{% else %}
 <!-- ASSIGNED ACCOUNT CARD -->
 <div class="acct-card">
     <div class="acct-card-top">
@@ -26,12 +118,12 @@
     <p class="acct-label">Account number</p>
     <div class="acct-number-row">
         <div class="acct-number-block">
-            <span class="acct-number mono">{{ account_number|default:"—" }}</span>
+            <span class="acct-number mono">{{ account_number }}</span>
             <span class="acct-bank-name">
                 <span class="bank-label">Bank name:</span> {{ bank_name|default:"—" }}
             </span>
         </div>
-        <button class="acct-copy" data-copy="{{ account_number|default:'' }}" title="Copy account number">
+        <button type="button" class="acct-copy" data-copy="{{ account_number }}" title="Copy account number" aria-label="Copy account number">
             <i class="bi bi-clipboard"></i> Copy
         </button>
     </div>
@@ -77,6 +169,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <!-- RECENT FUNDINGS -->
 <div class="px-card">
@@ -100,7 +193,11 @@
     {% empty %}
     <div class="fund-empty">
         <i class="bi bi-wallet2"></i>
+        {% if needs_account_details %}
+        <p>No fundings yet — your credits will appear here.</p>
+        {% else %}
         <p>No fundings yet — make your first transfer.</p>
+        {% endif %}
     </div>
     {% endfor %}
 </div>
@@ -144,5 +241,16 @@ document.querySelectorAll('.acct-copy').forEach(btn => {
         }
     });
 });
+
+const accountSetupForm = document.getElementById('accountSetupForm');
+if (accountSetupForm) {
+    accountSetupForm.addEventListener('submit', () => {
+        const button = document.getElementById('createAccountBtn');
+        if (!button || !accountSetupForm.checkValidity()) return;
+        button.disabled = true;
+        button.classList.add('is-loading');
+        button.setAttribute('aria-busy', 'true');
+    });
+}
 </script>
 {% endblock %}

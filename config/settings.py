@@ -162,17 +162,17 @@ LOGOUT_REDIRECT_URL = 'home'
 # ---------------- PabloExchange ----------------
 SITE_NAME = 'PabloExchange'
 CURRENCY = 'NGN'
-CURRENCY_SYMBOL = '₦'
 
-MIN_FUND_AMOUNT = config('MIN_FUND_AMOUNT', default=500, cast=int)
-MAX_FUND_AMOUNT = config('MAX_FUND_AMOUNT', default=100000, cast=int)
+MIN_FUND_AMOUNT = float(os.getenv('MIN_FUND_AMOUNT', '100'))
+MAX_FUND_AMOUNT = float(os.getenv('MAX_FUND_AMOUNT', '1000000'))
+CURRENCY_SYMBOL = os.getenv('CURRENCY_SYMBOL', '₦')
 
 POCKETFI_PUBLIC_KEY = config('POCKETFI_PUBLIC_KEY', default='')
+POCKETFI_BUSINESS_ID = os.getenv('POCKETFI_BUSINESS_ID', '')
 POCKETFI_SECRET_KEY = config('POCKETFI_SECRET_KEY', default='')
 POCKETFI_WEBHOOK_SECRET = config('POCKETFI_WEBHOOK_SECRET', default='')
-POCKETFI_BASE_URL = config('POCKETFI_BASE_URL', default='https://api.pocketfi.example.com/v1')
-# ← CHANGED: your live domain — PocketFi must send users back here after payment
-POCKETFI_CALLBACK_URL = config('POCKETFI_CALLBACK_URL', default='https://pabloexchange.com/payments/pocketfi/callback/')
+POCKETFI_BASE_URL = config('POCKETFI_BASE_URL', default='https://api.pocketfi.ng/api/v1')
+POCKETFI_CALLBACK_URL = config('POCKETFI_CALLBACK_URL', default='https://pabloexchange.com/wallet/verify/')
 
 SMS_PROVIDER = config('SMS_PROVIDER', default='dummy')
 
