@@ -1,44 +1,57 @@
 /* ============================================================
-   PabloExchange — App shell v9
-   White-and-green interface · normal typography · clean spacing
-   Responsive layout · half-width mobile navigation drawer
+   PabloExchange — App shell v10
+   Dark charcoal shell · primary green accents · normal typography
+   Responsive navigation · half-width mobile drawer · Telegram support
    ============================================================ */
 
 :root {
-    --sb-green-950: #062a22;
-    --sb-green-900: #0b3b30;
-    --sb-green-800: #125443;
-    --sb-green-700: #17705a;
-    --sb-green-600: #1b8468;
-    --sb-green-100: #dcefe8;
-    --sb-green-50:  #f1f8f5;
-    --sb-ink:       #21332c;
-    --sb-muted:     #66766f;
-    --sb-white:     #ffffff;
-    --sb-paper:     #f5f7f6;
-    --sb-border:    #dfe7e2;
-    --sb-radius:    14px;
-    --sb-shadow:    0 4px 18px rgba(6, 42, 34, .07);
-    --sb-width:     264px;
+    --px-primary:       #10b981;
+    --px-primary-dark:  #0b9f75;
+    --px-primary-soft:  rgba(16, 185, 129, .12);
+    --px-charcoal:      #0b1220;
+    --px-sidebar:       #0f1725;
+    --px-panel:         #111c2e;
+    --px-panel-light:   #162235;
+    --px-slate:         #334155;
+    --px-text:          #f8fafc;
+    --px-muted:         #94a3b8;
+    --px-border:        rgba(148, 163, 184, .14);
+    --px-white:         #ffffff;
+    --px-radius:        14px;
+    --px-sidebar-width: 264px;
 
-    /* Green aliases retained for compatibility with other page styles. */
-    --sb-gold:      var(--sb-green-700);
-    --sb-gold-dark: var(--sb-green-800);
-    --grad-brand:   var(--sb-green-900);
-    --grad-active:  var(--sb-green-800);
-    --grad-gold:    var(--sb-green-700);
+    /* Compatibility aliases for the other PabloExchange stylesheets. */
+    --sb-green-950: var(--px-charcoal);
+    --sb-green-900: var(--px-sidebar);
+    --sb-green-800: var(--px-primary-dark);
+    --sb-green-700: var(--px-primary-dark);
+    --sb-green-600: var(--px-primary);
+    --sb-green-100: #d1fae5;
+    --sb-green-50:  var(--px-primary-soft);
+    --sb-gold:      var(--px-primary);
+    --sb-gold-dark: var(--px-primary-dark);
+    --sb-ink:       var(--px-text);
+    --sb-muted:     var(--px-muted);
+    --sb-white:     var(--px-white);
+    --sb-paper:     var(--px-charcoal);
+    --sb-border:    var(--px-border);
+    --sb-radius:    var(--px-radius);
+    --sb-shadow:    0 8px 24px rgba(0, 0, 0, .18);
+    --sb-width:     var(--px-sidebar-width);
+    --grad-brand:   var(--px-sidebar);
+    --grad-active:  var(--px-primary-soft);
+    --grad-gold:    var(--px-primary);
 }
 
 * {
     box-sizing: border-box;
 }
 
-/* ---------------- Base typography ---------------- */
 html,
 body {
     overflow-x: clip;
     scrollbar-width: thin;
-    scrollbar-color: rgba(27, 132, 104, .36) transparent;
+    scrollbar-color: rgba(16, 185, 129, .38) transparent;
 }
 
 body.app-body {
@@ -46,8 +59,8 @@ body.app-body {
     min-height: 100vh;
     margin: 0;
     padding: 0;
-    background: var(--sb-paper);
-    color: var(--sb-ink);
+    background: var(--px-charcoal);
+    color: var(--px-text);
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 16px;
     font-style: normal;
@@ -78,12 +91,11 @@ body.app-body {
 }
 
 :focus-visible {
-    outline: 2px solid var(--sb-green-600);
+    outline: 2px solid var(--px-primary);
     outline-offset: 3px;
     border-radius: 4px;
 }
 
-/* ---------------- Slim scrollbars ---------------- */
 ::-webkit-scrollbar {
     width: 5px;
     height: 5px;
@@ -95,14 +107,13 @@ body.app-body {
 
 ::-webkit-scrollbar-thumb {
     border-radius: 100px;
-    background: rgba(27, 132, 104, .3);
+    background: rgba(16, 185, 129, .3);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(27, 132, 104, .52);
+    background: rgba(16, 185, 129, .52);
 }
 
-/* ---------------- Links ---------------- */
 .app-sidebar a,
 .app-offcanvas a,
 .app-topbar a,
@@ -114,7 +125,7 @@ body.app-body {
     text-decoration: none !important;
 }
 
-/* ---------------- Brand ---------------- */
+/* ---------------- Bootstrap globe logo ---------------- */
 .sidebar-brand {
     display: flex;
     align-items: center;
@@ -123,22 +134,36 @@ body.app-body {
 }
 
 .logo-badge {
+    position: relative;
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     margin-right: 10px;
-    border-radius: 10px;
-    background: var(--sb-green-800);
-    color: var(--sb-white);
-    font-size: 1rem;
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 11px;
+    background: var(--px-primary);
+    color: var(--px-charcoal);
+    font-size: 1.08rem;
+}
+
+.logo-badge::after {
+    content: "";
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 9px;
+    height: 9px;
+    border: 2px solid var(--px-sidebar);
+    border-radius: 50%;
+    background: var(--px-white);
 }
 
 .logo-text {
-    color: var(--sb-green-900);
-    font-size: 1.18rem;
+    color: var(--px-white);
+    font-size: 1.16rem;
     font-style: normal;
     font-weight: 700;
     line-height: 1.2;
@@ -147,7 +172,7 @@ body.app-body {
 }
 
 .logo-text span {
-    color: var(--sb-green-700);
+    color: var(--px-primary);
     background: none;
     -webkit-text-fill-color: currentColor;
 }
@@ -159,18 +184,18 @@ body.app-body {
     bottom: 0;
     left: 0;
     z-index: 1045;
-    width: var(--sb-width);
-    min-width: var(--sb-width);
-    max-width: var(--sb-width);
+    width: var(--px-sidebar-width);
+    min-width: var(--px-sidebar-width);
+    max-width: var(--px-sidebar-width);
     overflow: hidden;
-    border-right: 1px solid var(--sb-border);
-    background: var(--sb-white);
-    color: var(--sb-ink);
+    border-right: 1px solid var(--px-border);
+    background: var(--px-sidebar);
+    color: var(--px-text);
 }
 
 .sidebar-header {
-    padding: 22px 18px 18px;
-    border-bottom: 1px solid var(--sb-border);
+    padding: 20px 18px 17px;
+    border-bottom: 1px solid var(--px-border);
 }
 
 .sidebar-nav {
@@ -178,34 +203,25 @@ body.app-body {
     overflow-x: hidden;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: rgba(23, 112, 90, .22) transparent;
+    scrollbar-color: rgba(16, 185, 129, .24) transparent;
 }
 
 .sidebar-nav::-webkit-scrollbar {
     width: 4px;
 }
 
-.sidebar-nav::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.sidebar-nav::-webkit-scrollbar-thumb {
-    border-radius: 100px;
-    background: rgba(23, 112, 90, .2);
-}
-
 .sidebar-label {
-    margin: 16px 12px 7px;
-    color: var(--sb-muted);
+    margin: 15px 12px 7px;
+    color: var(--px-muted);
     font-size: .72rem;
     font-style: normal;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.4;
     letter-spacing: normal;
 }
 
 .sidebar-nav .sidebar-label:first-child {
-    margin-top: 8px;
+    margin-top: 7px;
 }
 
 .side-link {
@@ -216,11 +232,11 @@ body.app-body {
     min-height: 44px;
     margin-bottom: 5px;
     padding: 11px 12px;
-    border-radius: 10px;
-    color: #41564d;
-    font-size: .93rem;
+    border-radius: 9px;
+    color: #c3ceda;
+    font-size: .92rem;
     font-style: normal;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1.35;
     letter-spacing: normal;
     transition: background .18s, color .18s;
@@ -229,53 +245,58 @@ body.app-body {
 .side-link i {
     flex-shrink: 0;
     width: 20px;
-    color: var(--sb-green-700);
-    font-size: 1.05rem;
+    color: var(--px-muted);
+    font-size: 1.02rem;
     text-align: center;
     transition: color .18s;
 }
 
 .side-link:hover {
-    background: var(--sb-green-50);
-    color: var(--sb-green-900);
+    background: rgba(255, 255, 255, .045);
+    color: var(--px-white);
+}
+
+.side-link:hover i {
+    color: var(--px-primary);
 }
 
 .side-link.active {
-    background: var(--sb-green-50);
-    color: var(--sb-green-800);
-    box-shadow: inset 3px 0 0 var(--sb-green-700);
-    font-weight: 600;
+    background: var(--px-primary-soft);
+    color: var(--px-primary);
+    box-shadow: inset 3px 0 0 var(--px-primary);
+    font-weight: 500;
 }
 
-.side-link.active i {
-    color: var(--sb-green-700);
+.side-link.active i,
+.telegram-nav-link i {
+    color: var(--px-primary);
     background: none;
     -webkit-text-fill-color: currentColor;
 }
 
-/* ---------------- Desktop sidebar wallet ---------------- */
+/* ---------------- Desktop wallet and user ---------------- */
 .sidebar-wallet {
     flex-shrink: 0;
-    margin: 14px 12px;
-    padding: 15px;
-    border: 1px solid var(--sb-border);
+    margin: 12px;
+    padding: 14px 15px;
+    border: 1px solid var(--px-border);
     border-radius: 12px;
-    background: var(--sb-green-50);
+    background: var(--px-panel);
 }
 
 .sidebar-wallet .sidebar-label {
-    margin: 0 0 7px;
-    color: var(--sb-muted);
+    margin: 0 0 6px;
+    color: var(--px-muted);
 }
 
 .wallet-amount {
-    color: var(--sb-green-800);
+    color: var(--px-white);
     background: none;
     -webkit-text-fill-color: currentColor;
     font-family: inherit;
-    font-size: 1.16rem;
+    font-size: 1.14rem;
     font-style: normal;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.3;
     letter-spacing: normal;
 }
@@ -288,27 +309,26 @@ body.app-body {
     width: 32px;
     height: 32px;
     border-radius: 9px;
-    background: var(--sb-green-700);
-    color: var(--sb-white);
+    background: var(--px-primary);
+    color: var(--px-charcoal);
     font-size: 1rem;
     transition: background .18s, transform .18s;
 }
 
 .wallet-plus:hover {
     transform: translateY(-1px);
-    background: var(--sb-green-800);
-    color: var(--sb-white);
+    background: var(--px-primary-dark);
+    color: var(--px-white);
 }
 
-/* ---------------- Desktop sidebar user ---------------- */
 .sidebar-user {
     display: flex;
     flex-shrink: 0;
     align-items: center;
     gap: 11px;
-    padding: 15px 16px;
-    border-top: 1px solid var(--sb-border);
-    background: var(--sb-white);
+    padding: 14px 16px;
+    border-top: 1px solid var(--px-border);
+    background: var(--px-sidebar);
 }
 
 .user-avatar {
@@ -318,10 +338,11 @@ body.app-body {
     justify-content: center;
     width: 38px;
     height: 38px;
+    border: 1px solid rgba(16, 185, 129, .2);
     border-radius: 50%;
-    background: var(--sb-green-50);
-    color: var(--sb-green-800);
-    font-size: .95rem;
+    background: var(--px-primary-soft);
+    color: var(--px-primary);
+    font-size: .94rem;
     font-style: normal;
     font-weight: 600;
     letter-spacing: normal;
@@ -340,10 +361,10 @@ body.app-body {
 .user-name {
     margin: 0;
     overflow: hidden;
-    color: var(--sb-ink);
-    font-size: .88rem;
+    color: var(--px-text);
+    font-size: .87rem;
     font-style: normal;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: normal;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -352,8 +373,8 @@ body.app-body {
 .user-role {
     margin: 2px 0 0;
     overflow: hidden;
-    color: var(--sb-muted);
-    font-size: .72rem;
+    color: var(--px-muted);
+    font-size: .71rem;
     letter-spacing: normal;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -366,17 +387,17 @@ body.app-body {
     justify-content: center;
     width: 36px;
     height: 36px;
-    border: 1px solid var(--sb-border);
+    border: 1px solid var(--px-border);
     border-radius: 9px;
-    background: var(--sb-white);
-    color: var(--sb-green-700);
+    background: var(--px-panel);
+    color: var(--px-muted);
     transition: background .18s, color .18s, border-color .18s;
 }
 
 .logout-btn:hover {
-    border-color: var(--sb-green-100);
-    background: var(--sb-green-50);
-    color: var(--sb-green-800);
+    border-color: rgba(16, 185, 129, .3);
+    background: var(--px-primary-soft);
+    color: var(--px-primary);
 }
 
 /* ---------------- Mobile drawer: exactly half the screen ---------------- */
@@ -384,18 +405,18 @@ body.app-body {
     width: 50vw !important;
     min-width: 0 !important;
     max-width: 50vw !important;
-    border-right: 1px solid var(--sb-border);
-    background: var(--sb-white);
-    color: var(--sb-ink);
-    box-shadow: 12px 0 32px rgba(6, 42, 34, .12);
+    border-right: 1px solid var(--px-border);
+    background: var(--px-sidebar);
+    color: var(--px-text);
+    box-shadow: 12px 0 32px rgba(0, 0, 0, .3);
 }
 
 .app-offcanvas .offcanvas-header {
     gap: 6px;
     min-height: 64px;
     padding: 14px 10px;
-    border-bottom: 1px solid var(--sb-border);
-    background: var(--sb-white);
+    border-bottom: 1px solid var(--px-border);
+    background: var(--px-sidebar);
 }
 
 .app-offcanvas .sidebar-brand {
@@ -408,20 +429,19 @@ body.app-body {
     height: 28px;
     margin-right: 6px;
     border-radius: 8px;
-    font-size: .84rem;
+    font-size: .82rem;
+}
+
+.app-offcanvas .logo-badge::after {
+    width: 7px;
+    height: 7px;
+    border-width: 1px;
 }
 
 .app-offcanvas .logo-text {
     overflow: hidden;
-    color: var(--sb-green-800);
-    font-size: .78rem;
-    font-weight: 700;
-    line-height: 1.25;
+    font-size: .76rem;
     text-overflow: ellipsis;
-}
-
-.app-offcanvas .logo-text span {
-    color: var(--sb-green-700);
 }
 
 .app-offcanvas .offcanvas-header .btn-close {
@@ -430,7 +450,7 @@ body.app-body {
     height: 22px;
     margin: 0 !important;
     padding: 0;
-    opacity: .62;
+    opacity: .68;
 }
 
 .app-offcanvas .offcanvas-header .btn-close:hover {
@@ -438,7 +458,7 @@ body.app-body {
 }
 
 .app-offcanvas .sidebar-nav {
-    padding: 18px 9px;
+    padding: 16px 8px;
 }
 
 .app-offcanvas .sidebar-label {
@@ -446,35 +466,23 @@ body.app-body {
 }
 
 .app-offcanvas .side-link {
-    gap: 9px;
-    min-height: 46px;
-    margin-bottom: 7px;
-    padding: 12px 9px;
-    border-radius: 9px;
-    color: #41564d;
-    font-size: .86rem;
-    font-weight: 500;
+    gap: 8px;
+    min-height: 45px;
+    margin-bottom: 6px;
+    padding: 11px 8px;
+    border-radius: 8px;
+    font-size: .84rem;
 }
 
 .app-offcanvas .side-link i {
     width: 18px;
-    color: var(--sb-green-700);
-    font-size: 1rem;
-}
-
-.app-offcanvas .side-link:hover {
-    background: var(--sb-green-50);
-    color: var(--sb-green-900);
-}
-
-.app-offcanvas .side-link.active {
-    background: var(--sb-green-50);
-    color: var(--sb-green-800);
-    box-shadow: inset 3px 0 0 var(--sb-green-700);
+    font-size: .96rem;
 }
 
 .mobile-logout-form {
-    margin: 0;
+    margin: 8px 0 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--px-border);
 }
 
 .side-link-button {
@@ -487,18 +495,18 @@ body.app-body {
 
 .side-link-button:hover,
 .side-link-button:focus-visible {
-    background: var(--sb-green-50);
-    color: var(--sb-green-900);
+    background: rgba(255, 255, 255, .045);
+    color: var(--px-white);
 }
 
-/* ---------------- Main layout ---------------- */
+/* ---------------- Main shell and topbar ---------------- */
 .app-body .app-main {
     display: flex;
     flex-direction: column;
     width: auto;
     max-width: none;
     min-height: 100vh;
-    margin-left: var(--sb-width);
+    margin-left: var(--px-sidebar-width);
     padding: 0 !important;
 }
 
@@ -511,8 +519,9 @@ body.app-body {
     gap: 14px;
     min-height: 66px;
     padding: 12px 24px;
-    border-bottom: 1px solid var(--sb-border);
-    background: rgba(255, 255, 255, .98);
+    border-bottom: 1px solid var(--px-border);
+    background: rgba(11, 18, 32, .97);
+    backdrop-filter: blur(10px);
 }
 
 .topbar-burger {
@@ -522,17 +531,17 @@ body.app-body {
     justify-content: center;
     width: 40px;
     height: 40px;
-    border: 1px solid var(--sb-border);
-    border-radius: 10px;
-    background: var(--sb-white);
-    color: var(--sb-green-800);
-    font-size: 1.25rem;
+    border: 1px solid var(--px-border);
+    border-radius: 9px;
+    background: var(--px-panel);
+    color: var(--px-text);
+    font-size: 1.24rem;
     transition: background .18s, border-color .18s;
 }
 
 .topbar-burger:hover {
-    border-color: var(--sb-green-600);
-    background: var(--sb-green-50);
+    border-color: rgba(16, 185, 129, .35);
+    background: var(--px-primary-soft);
 }
 
 .topbar-title {
@@ -540,10 +549,10 @@ body.app-body {
     min-width: 0;
     margin: 0;
     overflow: hidden;
-    color: var(--sb-ink);
-    font-size: 1.15rem;
+    color: var(--px-text);
+    font-size: 1.1rem;
     font-style: normal;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.3;
     letter-spacing: normal;
     text-overflow: ellipsis;
@@ -557,90 +566,99 @@ body.app-body {
     gap: 12px;
 }
 
-/* ---------------- Wallet chip: normal inherited typography ---------------- */
+/* Wallet values use normal inherited typography. */
 .wallet-chip {
     align-items: center;
     gap: 8px;
-    padding: 8px 8px 8px 15px;
+    padding: 8px 8px 8px 14px;
+    border: 1px solid var(--px-border);
     border-radius: 100px;
-    background: var(--sb-green-800);
-    color: var(--sb-white);
-    box-shadow: 0 3px 10px rgba(6, 42, 34, .13);
+    background: var(--px-panel);
+    color: var(--px-white);
     font-family: inherit;
-    font-size: .86rem;
+    font-size: .85rem;
     font-style: normal;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: normal;
     white-space: nowrap;
-    transition: background .18s, transform .18s;
+    transition: background .18s, border-color .18s;
 }
 
 .wallet-chip:hover {
-    transform: translateY(-1px);
-    background: var(--sb-green-700);
-    color: var(--sb-white);
+    border-color: rgba(16, 185, 129, .32);
+    background: var(--px-panel-light);
+    color: var(--px-white);
 }
 
 .wallet-chip-plus {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    height: 26px;
+    width: 25px;
+    height: 25px;
     border-radius: 50%;
-    background: var(--sb-white);
-    color: var(--sb-green-800);
-    font-size: .85rem;
+    background: var(--px-primary);
+    color: var(--px-charcoal);
+    font-size: .83rem;
 }
 
 .wallet-chip-sm {
-    padding: 8px 13px;
+    padding: 8px 12px;
 }
 
-/* ---------------- Account dropdown ---------------- */
 .avatar-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 10px 4px 4px;
-    border: 1px solid var(--sb-border);
+    padding: 4px 9px 4px 4px;
+    border: 1px solid var(--px-border);
     border-radius: 100px;
-    background: var(--sb-white);
+    background: var(--px-panel);
+    color: var(--px-muted);
     transition: background .18s, border-color .18s;
 }
 
 .avatar-btn:hover {
-    border-color: var(--sb-green-600);
-    background: var(--sb-green-50);
+    border-color: rgba(16, 185, 129, .32);
+    background: var(--px-panel-light);
 }
 
 .app-dropdown {
     min-width: 210px;
     padding: 8px;
-    border: 1px solid var(--sb-border);
+    border: 1px solid var(--px-border);
     border-radius: 12px;
-    box-shadow: 0 12px 30px rgba(6, 42, 34, .12);
+    background: var(--px-panel);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .28);
 }
 
 .app-dropdown .dropdown-item {
     padding: 9px 12px;
     border-radius: 8px;
+    color: var(--px-text);
+    font-size: .9rem;
+    font-style: normal;
+    font-weight: 400;
+    letter-spacing: normal;
+}
+
+.app-dropdown .dropdown-item:hover {
+    background: var(--px-primary-soft);
+    color: var(--px-primary);
+}
+
+.app-dropdown .dropdown-item-text,
+.dropdown-user {
+    padding: 7px 12px;
+    color: var(--px-text);
     font-size: .9rem;
     font-style: normal;
     font-weight: 500;
     letter-spacing: normal;
 }
 
-.app-dropdown .dropdown-item:hover {
-    background: var(--sb-green-50);
-}
-
-.dropdown-user {
-    padding: 7px 12px;
-    font-size: .9rem;
-    font-style: normal;
-    font-weight: 600;
-    letter-spacing: normal;
+.app-dropdown .dropdown-divider {
+    border-color: var(--px-border);
 }
 
 /* ---------------- Content and footer ---------------- */
@@ -649,19 +667,48 @@ body.app-body {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 30px 26px;
+    padding: 28px 24px;
 }
 
 .app-body .app-footer {
-    padding: 20px 18px;
-    border-top: 1px solid var(--sb-border);
+    padding: 19px 18px;
+    border-top: 1px solid var(--px-border);
     border-bottom: none;
-    background: var(--sb-white);
-    color: var(--sb-muted);
-    font-size: .83rem;
+    background: var(--px-charcoal);
+    color: var(--px-muted);
+    font-size: .82rem;
     font-style: normal;
     letter-spacing: normal;
     text-align: center;
+}
+
+/* ---------------- Floating Telegram support ---------------- */
+.telegram-support {
+    position: fixed;
+    right: 24px;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    z-index: 1020;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    padding: 0;
+    border: 3px solid var(--px-white);
+    border-radius: 50%;
+    background: var(--px-primary);
+    color: var(--px-white);
+    box-shadow: 0 10px 26px rgba(16, 185, 129, .28);
+    font-size: 1.8rem;
+    line-height: 1;
+    text-decoration: none;
+    transition: background .18s, transform .18s;
+}
+
+.telegram-support:hover {
+    transform: translateY(-2px);
+    background: var(--px-primary-dark);
+    color: var(--px-white);
 }
 
 /* ---------------- Page-exit veil ---------------- */
@@ -675,7 +722,7 @@ body.app-body {
     align-items: center;
     justify-content: center;
     gap: 18px;
-    background: var(--sb-green-900);
+    background: var(--px-charcoal);
     opacity: 0;
     pointer-events: none;
     transition: opacity .18s ease;
@@ -690,15 +737,15 @@ body.app-body {
 .px-exit-spinner {
     width: 44px;
     height: 44px;
-    border: 4px solid rgba(255, 255, 255, .18);
-    border-top-color: var(--sb-white);
+    border: 4px solid rgba(255, 255, 255, .12);
+    border-top-color: var(--px-primary);
     border-radius: 50%;
     animation: pxSpin .8s linear infinite;
 }
 
 .px-exit p {
     margin: 0;
-    color: var(--sb-white);
+    color: var(--px-text);
     font-size: .95rem;
     font-style: normal;
     font-weight: 500;
@@ -706,12 +753,12 @@ body.app-body {
 }
 
 .px-exit-brand {
-    color: var(--sb-white);
+    color: var(--px-primary);
     background: none;
     -webkit-text-fill-color: currentColor;
     font-size: 1.05rem;
     font-style: normal;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: normal;
 }
 
@@ -742,11 +789,11 @@ body.app-body {
     width: 100%;
     padding: 14px 42px 14px 15px;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, .1);
+    border: 1px solid var(--px-border);
     border-radius: 12px;
-    background: var(--sb-green-900);
-    color: var(--sb-white);
-    box-shadow: 0 12px 30px rgba(6, 42, 34, .22);
+    background: var(--px-panel);
+    color: var(--px-text);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .28);
     opacity: 0;
     transform: translateY(-140%);
     font-size: .9rem;
@@ -776,15 +823,15 @@ body.app-body {
 .px-toast--success .px-toast-icon,
 .px-toast--info .px-toast-icon,
 .px-toast--warning .px-toast-icon {
-    color: var(--sb-green-100);
+    color: var(--px-primary);
 }
 
 .px-toast--error {
-    background: #7f1d1d;
+    background: #451a24;
 }
 
 .px-toast--error .px-toast-icon {
-    color: #fca5a5;
+    color: #ef4444;
 }
 
 .px-toast-text {
@@ -804,8 +851,8 @@ body.app-body {
     padding: 0;
     border: none;
     border-radius: 7px;
-    background: rgba(255, 255, 255, .1);
-    color: rgba(255, 255, 255, .8);
+    background: rgba(255, 255, 255, .07);
+    color: var(--px-muted);
     transform: translateY(-50%);
     cursor: pointer;
     font-size: 1.05rem;
@@ -813,8 +860,8 @@ body.app-body {
 }
 
 .px-toast-close:hover {
-    background: rgba(255, 255, 255, .2);
-    color: #fff;
+    background: rgba(255, 255, 255, .13);
+    color: var(--px-white);
 }
 
 .px-toast-bar {
@@ -823,7 +870,7 @@ body.app-body {
     left: 0;
     width: 100%;
     height: 3px;
-    background: var(--sb-green-100);
+    background: var(--px-primary);
     animation: pxToastBar 4s linear forwards;
 }
 
@@ -856,7 +903,7 @@ body.app-body {
     }
 
     .topbar-title {
-        font-size: 1.05rem;
+        font-size: 1.03rem;
     }
 }
 
@@ -877,7 +924,7 @@ body.app-body {
     }
 
     .topbar-title {
-        font-size: .96rem;
+        font-size: .94rem;
     }
 
     .topbar-actions {
@@ -907,6 +954,14 @@ body.app-body {
         padding: 17px 14px;
         font-size: .78rem;
     }
+
+    .telegram-support {
+        right: 16px;
+        bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+        width: 52px;
+        height: 52px;
+        font-size: 1.62rem;
+    }
 }
 
 @media (max-width: 380px) {
@@ -922,7 +977,7 @@ body.app-body {
     }
 
     .app-offcanvas .logo-text {
-        font-size: .7rem;
+        font-size: .69rem;
     }
 
     .app-offcanvas .offcanvas-header .btn-close {
@@ -936,14 +991,14 @@ body.app-body {
     }
 
     .app-offcanvas .side-link {
-        gap: 7px;
-        padding-right: 7px;
-        padding-left: 7px;
-        font-size: .8rem;
+        gap: 6px;
+        padding-right: 6px;
+        padding-left: 6px;
+        font-size: .78rem;
     }
 
     .topbar-title {
-        font-size: .9rem;
+        font-size: .88rem;
     }
 
     .wallet-chip {
@@ -951,7 +1006,6 @@ body.app-body {
     }
 }
 
-/* Prevent accidental sideways page movement. */
 .app-main,
 .app-content {
     overflow-x: clip;
