@@ -19,13 +19,6 @@
             <h2>Buy Virtual Number</h2>
             <p class="bn-subtitle">Choose a server, country and service to receive your verification code.</p>
         </div>
-        <div class="bn-balance-pill">
-            <span class="bn-balance-icon"><i class="bi bi-wallet2"></i></span>
-            <span class="bn-balance-copy">
-                <small>Available balance</small>
-                <span class="mono">₦{{ balance|default:"0.00"|floatformat:2|intcomma }}</span>
-            </span>
-        </div>
     </div>
 
     <form method="post" action="{% url 'smsmarket:buy' %}" id="requestNumberForm">
