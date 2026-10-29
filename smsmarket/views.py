@@ -1,5 +1,4 @@
 import logging
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -13,12 +12,32 @@ from countries.models import Country
 from marketplace.models import LogOrder
 from pricing.models import Pricing
 from wallet.services import get_wallet
-
 from .models import NumberOrder, Service
 from .services import (InsufficientFunds, PricingNotAvailable,
                        cancel_user_order, maybe_deliver, reserve_number)
 
 logger = logging.getLogger(__name__)
+
+
+@login_required
+def order_detail(request, order_id):
+    """Show one number order only to the user who owns it."""
+    order = get_object_or_404(
+        NumberOrder.objects.select_related(
+            'service',
+            'country',
+        ).prefetch_related('messages'),
+        pk=order_id,
+        user=request.user,
+    )
+
+    return render(
+        request,
+        'smsmarket/order_detail.html',
+        {'order': order},
+    )
+
+
 
 
 @login_required
@@ -199,17 +218,6 @@ def order_status(request, pk):
     return JsonResponse({
         'status': order.status,
         'otp': msg.otp_code if msg else '',
-    })
-
-
-@login_required
-def order_detail(request, pk):
-    order = get_object_or_404(NumberOrder, pk=pk, user=request.user)
-    maybe_deliver(order)   # poll: delivers OTP if due, charges wallet once
-    order.refresh_from_db()
-    return render(request, 'smsmarket/order_detail.html', {
-        'order': order,
-        'received': order.messages.all(),
     })
 
 

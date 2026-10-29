@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Order #{{ order.pk }}{% endblock %}
+{% block page_title %}Order Details{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/order_detail.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+<div class="od-page" data-order-status="{{ order.status }}">
+
+    <div class="od-back-row">
+        <a href="{% url 'smsmarket:my_purchases' %}" class="od-back-link">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i> Back to My Purchases
+        </a>
+    </div>
+
+    <section class="od-heading" aria-labelledby="odTitle">
+        <div class="od-heading-copy">
+            <span class="od-eyebrow"><i class="bi bi-chat-square-dots"></i> SMS verification order</span>
+            <h2 id="odTitle">Order #{{ order.pk }}</h2>
+            <p>Your virtual number, verification code, and order information.</p>
+        </div>
+        <span class="od-status od-status--{{ order.status }}">
+            <span class="od-status-dot"></span>{{ order.status|title }}
+        </span>
+    </section>
+
+    {% with otp=order.messages.last %}
+    <!-- NUMBER AND OTP -->
+    <section class="od-hero" aria-label="Number and verification code">
+        <div class="od-hero-head">
+            <div class="od-service">
+                <span class="od-service-icon"><i class="bi bi-sim-fill"></i></span>
+                <div>
+                    <h3>{{ order.service.name|default:"Virtual Number" }}</h3>
+                    <p>{{ order.country.name|default:"Country unavailable" }}</p>
+                </div>
+            </div>
+            <span class="od-server-chip">
+                <i class="bi bi-hdd-network"></i>
+                {% if order.provider == 'instantnums' %}Server 2{% else %}Server 1{% endif %}
+            </span>
+        </div>
+
+        <div class="od-live-grid">
+            <div class="od-live-field">
+                <span class="od-live-label">Virtual number</span>
+                <div class="od-live-value-row">
+                    <span class="od-live-value mono">{{ order.phone_number|default:"Awaiting number" }}</span>
+                    {% if order.phone_number %}
+                    <button type="button" class="od-copy" data-copy="{{ order.phone_number }}" aria-label="Copy virtual number">
+                        <i class="bi bi-clipboard"></i><span>Copy</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="od-live-field">
+                <span class="od-live-label">Verification code</span>
+                <div class="od-live-value-row">
+                    {% if otp %}
+                    <span class="od-live-value od-otp mono">{{ otp.otp_code }}</span>
+                    <button type="button" class="od-copy" data-copy="{{ otp.otp_code }}" aria-label="Copy verification code">
+                        <i class="bi bi-clipboard"></i><span>Copy</span>
+                    </button>
+                    {% else %}
+                    <span class="od-live-value od-waiting"><span class="od-waiting-dot"></span> WAITING</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="od-hero-foot">
+            {% if order.status == 'active' %}
+            <div class="od-state-message">
+                <span class="od-pulse"></span>
+                <div>
+                    <strong>Waiting for your SMS</strong>
+                    <span>The page refreshes automatically while this order is active.</span>
+                </div>
+            </div>
+            <div class="od-countdown">
+                <span>Time remaining</span>
+                <strong class="mono" data-expires="{{ order.expires_at|date:'c' }}">--:--</strong>
+            </div>
+            {% elif otp %}
+            <div class="od-state-message od-state-message--done">
+                <i class="bi bi-check-circle-fill"></i>
+                <div>
+                    <strong>Verification code received</strong>
+                    <span>Your code is ready to use above.</span>
+                </div>
+            </div>
+            {% else %}
+            <div class="od-state-message">
+                <i class="bi bi-info-circle-fill"></i>
+                <div>
+                    <strong>This order is {{ order.status }}</strong>
+                    <span>Contact support if you need help with this order.</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+    {% endwith %}
+
+    <div class="od-content-grid">
+        <!-- ORDER INFORMATION -->
+        <section class="od-card" aria-labelledby="odInfoTitle">
+            <div class="od-card-head">
+                <h3 id="odInfoTitle"><i class="bi bi-receipt"></i> Order information</h3>
+            </div>
+            <dl class="od-details-list">
+                <div class="od-detail">
+                    <dt>Order ID</dt>
+                    <dd class="mono">#{{ order.pk }}</dd>
+                </div>
+                <div class="od-detail">
+                    <dt>Service</dt>
+                    <dd>{{ order.service.name|default:"—" }}</dd>
+                </div>
+                <div class="od-detail">
+                    <dt>Country</dt>
+                    <dd>{{ order.country.name|default:"—" }}</dd>
+                </div>
+                <div class="od-detail">
+                    <dt>Server</dt>
+                    <dd>{% if order.provider == 'instantnums' %}Server 2 — InstantNums{% else %}Server 1 — DaisySMS{% endif %}</dd>
+                </div>
+                <div class="od-detail">
+                    <dt>Provider reference</dt>
+                    <dd class="mono od-reference">{{ order.provider_order_id|default:"—" }}</dd>
+                </div>
+                <div class="od-detail">
+                    <dt>Amount paid</dt>
+                    <dd class="od-price">₦{{ order.price|floatformat:2|intcomma }}</dd>
+                </div>
+                <div class="od-detail">
+                    <dt>Created</dt>
+                    <dd>{{ order.created_at|date:"M j, Y · H:i" }}</dd>
+                </div>
+                <div class="od-detail">
+                    <dt>Expires</dt>
+                    <dd>{{ order.expires_at|date:"M j, Y · H:i" }}</dd>
+                </div>
+            </dl>
+        </section>
+
+        <!-- ACTIONS AND HELP -->
+        <aside class="od-side">
+            {% if order.status == 'active' %}
+            <section class="od-card od-action-card">
+                <span class="od-action-icon"><i class="bi bi-x-circle"></i></span>
+                <h3>No longer need this number?</h3>
+                <p>You can cancel while the order is still active. This uses your existing cancellation and refund logic.</p>
+                <form method="post" action="{% url 'smsmarket:cancel_order' %}" class="od-cancel-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="order_id" value="{{ order.pk }}">
+                    <button type="submit" class="od-cancel-btn">Cancel order — no charge</button>
+                </form>
+            </section>
+            {% endif %}
+
+            <section class="od-card od-help-card">
+                <span class="od-help-icon"><i class="bi bi-shield-check"></i></span>
+                <h3>Using your verification code</h3>
+                <ol class="od-help-list">
+                    <li>Copy the virtual number into the selected service.</li>
+                    <li>Request the verification SMS from that service.</li>
+                    <li>Return here and copy the code when it arrives.</li>
+                </ol>
+                <p class="od-security-note"><i class="bi bi-lock-fill"></i> Only you can view this order while signed in.</p>
+            </section>
+
+            <a href="{% url 'buynumber' %}" class="od-buy-another">
+                <i class="bi bi-plus-lg"></i> Buy another number
+            </a>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    'use strict';
+
+    var page = document.querySelector('.od-page');
+    if (!page) return;
+
+    function copyFallback(value, done) {
+        var textarea = document.createElement('textarea');
+        textarea.value = value;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try { document.execCommand('copy'); } catch (error) {}
+        textarea.remove();
+        done();
+    }
+
+    document.querySelectorAll('.od-copy').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var value = (button.dataset.copy || '').trim();
+            if (!value) return;
+
+            var done = function () {
+                var original = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check2"></i><span>Copied</span>';
+                button.classList.add('copied');
+                window.setTimeout(function () {
+                    button.innerHTML = original;
+                    button.classList.remove('copied');
+                }, 1500);
+            };
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(value).then(done).catch(function () {
+                    copyFallback(value, done);
+                });
+            } else {
+                copyFallback(value, done);
+            }
+        });
+    });
+
+    var timer = document.querySelector('[data-expires]');
+    if (timer) {
+        var expiresAt = Date.parse(timer.dataset.expires);
+
+        var updateTimer = function () {
+            if (Number.isNaN(expiresAt)) {
+                timer.textContent = '—';
+                return;
+            }
+
+            var seconds = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+            var minutesPart = Math.floor(seconds / 60);
+            var secondsPart = seconds % 60;
+            timer.textContent = String(minutesPart).padStart(2, '0') + ':' + String(secondsPart).padStart(2, '0');
+        };
+
+        updateTimer();
+        window.setInterval(updateTimer, 1000);
+    }
+
+    var cancelForm = document.querySelector('.od-cancel-form');
+    if (cancelForm) {
+        cancelForm.addEventListener('submit', function (event) {
+            if (!window.confirm('Cancel this order and release the number? This cannot be undone.')) {
+                event.preventDefault();
+                return;
+            }
+            var button = cancelForm.querySelector('button[type="submit"]');
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Cancelling…';
+            }
+        });
+    }
+
+    if (page.dataset.orderStatus === 'active') {
+        window.setTimeout(function () {
+            window.location.reload();
+        }, 20000);
+    }
+}());
+</script>
+{% endblock %}
