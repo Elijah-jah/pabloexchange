@@ -1,34 +1,109 @@
 import logging
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db import transaction
-from django.db.models import Sum
+from django.db import models, transaction
+from django.utils import timezone
 
-from .models import WalletTransaction
+from .models import Wallet, WalletTransaction
 
 
 logger = logging.getLogger(__name__)
 
 
+class InsufficientBalance(ValueError):
+    """Raised when a wallet cannot cover a requested debit."""
+
+
+def _decimal_amount(amount):
+    """Convert an amount to a finite, positive Decimal."""
+    try:
+        value = Decimal(str(amount))
+    except (InvalidOperation, TypeError, ValueError) as exc:
+        raise ValueError('Invalid wallet amount.') from exc
+
+    if not value.is_finite() or value <= Decimal('0'):
+        raise ValueError('Wallet amount must be greater than zero.')
+    return value
+
+
+def get_wallet(user):
+    """Return the user's wallet, creating it on first use."""
+    wallet, _ = Wallet.objects.get_or_create(user=user)
+    return wallet
+
+
+def _locked_wallet(user):
+    """Return a row-locked wallet. Call inside transaction.atomic()."""
+    wallet = get_wallet(user)
+    return Wallet.objects.select_for_update().get(pk=wallet.pk)
+
+
 def balance(user):
-    """Return the user's available balance from confirmed ledger entries."""
-    zero = Decimal('0.00')
-    confirmed = WalletTransaction.objects.filter(
-        user=user,
-        status='confirmed',
-    )
+    """Return the current available wallet balance as a Decimal."""
+    return get_wallet(user).balance
 
-    credits = confirmed.filter(type='credit').aggregate(
-        total=Sum('amount')
-    )['total'] or zero
-    debits = confirmed.filter(type='debit').aggregate(
-        total=Sum('amount')
-    )['total'] or zero
 
-    return credits - debits
+def can_afford(user, amount):
+    """Return True when the wallet can cover the requested amount."""
+    try:
+        value = _decimal_amount(amount)
+    except ValueError:
+        return False
+    return balance(user) >= value
+
+
+def credit(user, amount, description='Wallet credit', meta=None, method='wallet'):
+    """Atomically credit the wallet and create a confirmed ledger entry."""
+    value = _decimal_amount(amount)
+
+    with transaction.atomic():
+        wallet = _locked_wallet(user)
+        txn = WalletTransaction.objects.create(
+            user=user,
+            type='credit',
+            amount=value,
+            status='confirmed',
+            method=method,
+            description=description,
+            meta=meta or {},
+        )
+        Wallet.objects.filter(pk=wallet.pk).update(
+            balance=models.F('balance') + value,
+            updated_at=timezone.now(),
+        )
+
+    return txn
+
+
+def debit(user, amount, description='Wallet debit', meta=None, method='wallet'):
+    """Atomically debit the wallet and create a confirmed ledger entry."""
+    value = _decimal_amount(amount)
+
+    with transaction.atomic():
+        # Locking the wallet serializes purchases for this user. A second
+        # request cannot spend the same balance after the first debit commits.
+        wallet = _locked_wallet(user)
+        if wallet.balance < value:
+            raise InsufficientBalance('Insufficient wallet balance.')
+
+        txn = WalletTransaction.objects.create(
+            user=user,
+            type='debit',
+            amount=value,
+            status='confirmed',
+            method=method,
+            description=description,
+            meta=meta or {},
+        )
+        Wallet.objects.filter(pk=wallet.pk).update(
+            balance=models.F('balance') - value,
+            updated_at=timezone.now(),
+        )
+
+    return txn
 
 
 class VirtualAccountError(Exception):
