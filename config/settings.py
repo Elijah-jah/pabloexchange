@@ -16,7 +16,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-(h4^rt%2c4lo8_r(2!!-c23(ei@vmw^5&^epp3i(a#d8r)f!1y')
 
 # ← CHANGED: default is now False (production-safe). Turn True only in local .env
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = os.getenv('DEBUG', 'False').strip().lower() in {
+    '1', 'true', 'yes', 'on'
+}
 
 # ← CHANGED: your domain
 ALLOWED_HOSTS = [
