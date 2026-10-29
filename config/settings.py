@@ -186,9 +186,11 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # ← NEW: whitenoise compressed + cached storage
 STORAGES = {
     'default': {
-        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',   # ← media now lives on Cloudinary
+        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
     },
-    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+    'staticfiles': {
+        'BACKEND': 'static_storage.PabloStaticStorage',
+    },
 }
 
 
