@@ -5,190 +5,211 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=4">
 {% endblock %}
 
 {% block content %}
+<div class="db-dashboard">
 
-<!-- ===== Welcome row ===== -->
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-    <div>
-        <h2 class="db-hello" id="dbHello">Welcome back, {{ user.username }}</h2>
-        <p class="db-hello-sub mb-0">Here's what's happening with your numbers.</p>
-    </div>
-    <a href="{% url 'buynumber' %}" class="btn db-btn-primary">
-        <i class="bi bi-phone"></i> Buy Number
-    </a>
+    <!-- Welcome and primary actions -->
+    <section class="db-welcome" aria-labelledby="dbHello">
+        <div class="db-welcome-copy">
+            <h2 class="db-hello" id="dbHello">Welcome back, {{ user.username }}</h2>
+            <p class="db-hello-sub">Here’s what’s happening with your numbers and logs.</p>
+        </div>
 
-    <a href="{% url 'marketplace' %}" class="btn db-btn-primary">
-        <i class="bi bi-phone"></i> Buy Logs
-    </a>
-</div>
+        <div class="db-actions" aria-label="Dashboard actions">
+            <a href="{% url 'wallet:fund' %}" class="db-action db-action-primary">
+                <i class="bi bi-wallet2" aria-hidden="true"></i>
+                <span>Fund Wallet</span>
+            </a>
+            <a href="{% url 'buynumber' %}" class="db-action db-action-secondary">
+                <i class="bi bi-phone" aria-hidden="true"></i>
+                <span>Buy Number</span>
+            </a>
+            <a href="{% url 'marketplace' %}" class="db-action db-action-secondary">
+                <i class="bi bi-box-seam" aria-hidden="true"></i>
+                <span>Buy Logs</span>
+            </a>
+        </div>
+    </section>
 
-<!-- ===== Balance + stats ===== -->
-<div class="row g-3 mb-4">
-
-    <!-- Balance card -->
-    <div class="col-lg-5">
-        <div class="db-balance">
+    <!-- Wallet and order overview -->
+    <section class="db-overview" aria-label="Account overview">
+        <article class="db-balance">
             <div class="db-balance-top">
-                <span class="db-balance-label"><i class="bi bi-wallet2"></i> Wallet Balance</span>
+                <span class="db-balance-label">
+                    <i class="bi bi-wallet2" aria-hidden="true"></i>
+                    Wallet Balance
+                </span>
                 <a href="{% url 'wallet:fund' %}" class="db-balance-fund">
-                    <i class="bi bi-plus-lg"></i> Fund
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                    Fund Wallet
                 </a>
             </div>
-            <div class="db-balance-amount mono">₦{{ balance }}</div>
+
+            <div class="db-balance-amount">&#8358;{{ balance|default:"0.00" }}</div>
+
             <div class="db-balance-foot">
-                <span><i class="bi bi-shield-check"></i> Pay only on OTP delivery</span>
-                <a href="{% url 'wallet:transactions' %}" class="db-balance-link">History →</a>
+                <span><i class="bi bi-shield-check" aria-hidden="true"></i> Pay only on OTP delivery</span>
+                <a href="{% url 'wallet:transactions' %}" class="db-balance-link">
+                    History <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+                </a>
             </div>
-        </div>
-    </div>
+        </article>
 
-    <!-- Stats -->
-    <div class="col-lg-7">
-        <div class="row g-3">
-
-            <div class="col-sm-4 col-4">
-                <div class="db-stat">
-                    <div class="db-stat-icon emerald"><i class="bi bi-grid"></i></div>
-                    <div class="db-stat-num" data-count="{{ order_count }}">0</div>
+        <div class="db-overview-side">
+            <div class="db-stats">
+                <article class="db-stat">
+                    <div class="db-stat-icon slate"><i class="bi bi-grid" aria-hidden="true"></i></div>
+                    <div class="db-stat-num" data-count="{{ order_count|default:0 }}">0</div>
                     <div class="db-stat-label">Total Orders</div>
-                </div>
-            </div>
+                </article>
 
-            <div class="col-sm-4 col-4">
-                <div class="db-stat">
-                    <div class="db-stat-icon gold"><i class="bi bi-check-circle-fill"></i></div>
-                    <div class="db-stat-num" data-count="{{ completed_count }}">0</div>
+                <article class="db-stat">
+                    <div class="db-stat-icon emerald"><i class="bi bi-check-circle-fill" aria-hidden="true"></i></div>
+                    <div class="db-stat-num" data-count="{{ completed_count|default:0 }}">0</div>
                     <div class="db-stat-label">Completed</div>
-                </div>
-            </div>
+                </article>
 
-            <div class="col-sm-4 col-4">
-                <div class="db-stat">
-                    <div class="db-stat-icon blue"><i class="bi bi-hourglass-split"></i></div>
-                    <div class="db-stat-num" data-count="{{ active_count }}">0</div>
+                <article class="db-stat">
+                    <div class="db-stat-icon amber"><i class="bi bi-hourglass-split" aria-hidden="true"></i></div>
+                    <div class="db-stat-num" data-count="{{ active_count|default:0 }}">0</div>
                     <div class="db-stat-label">Active</div>
-                </div>
+                </article>
             </div>
 
-            <div class="col-12">
-                <div class="db-quick">
-                    <a href="{% url 'wallet:fund' %}" class="db-quick-link">
-                        <i class="bi bi-wallet2"></i> Fund Wallet
-                    </a>
-                    <a href="{% url 'smsmarket:my_purchases' %}" class="db-quick-link">
-                        <i class="bi bi-bag-check"></i> My Purchases
-                    </a>
-                    <a href="{% url 'wallet:transactions' %}" class="db-quick-link">
-                        <i class="bi bi-receipt"></i> Transactions
-                    </a>
-                </div>
-            </div>
-
+            <nav class="db-quick" aria-label="Quick links">
+                <a href="{% url 'wallet:fund' %}" class="db-quick-link">
+                    <i class="bi bi-wallet2" aria-hidden="true"></i>
+                    <span>Fund Wallet</span>
+                </a>
+                <a href="{% url 'smsmarket:my_purchases' %}" class="db-quick-link">
+                    <i class="bi bi-bag-check" aria-hidden="true"></i>
+                    <span>My Purchases</span>
+                </a>
+                <a href="{% url 'wallet:transactions' %}" class="db-quick-link">
+                    <i class="bi bi-receipt" aria-hidden="true"></i>
+                    <span>Transactions</span>
+                </a>
+            </nav>
         </div>
-    </div>
+    </section>
 
-</div>
-
-<!-- ===== Recent lists ===== -->
-<div class="row g-4">
-
-    <!-- Orders -->
-    <div class="col-lg-6">
-        <div class="db-card h-100">
+    <!-- Recent account activity -->
+    <section class="db-list-grid" aria-label="Recent account activity">
+        <article class="db-card">
             <div class="db-card-head">
-                <span><i class="bi bi-broadcast"></i> Recent Orders</span>
-                <a href="{% url 'smsmarket:my_purchases' %}" class="db-view-all">View all →</a>
+                <h2 class="db-card-title"><i class="bi bi-broadcast" aria-hidden="true"></i> Recent Orders</h2>
+                <a href="{% url 'smsmarket:my_purchases' %}" class="db-view-all">
+                    View all <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </a>
             </div>
 
-            {% for o in orders %}
-            <a href="{% url 'smsmarket:order_detail' o.pk %}" class="db-row">
-                <div class="db-row-icon emerald"><i class="bi bi-chat-dots-fill"></i></div>
-                <div class="db-row-body">
-                    <div class="db-row-title">{{ o.service.name }}</div>
-                    <div class="db-row-sub mono">{{ o.phone_number|default:"Awaiting number" }}</div>
-                </div>
-                <div class="db-row-side">
-                    <span class="px-pill {{ o.status }}">{{ o.status }}</span>
-                    <div class="db-row-amount mono">₦{{ o.price }}</div>
-                </div>
-            </a>
-            {% empty %}
-            <div class="db-empty">
-                <i class="bi bi-inbox"></i>
-                <p>No orders yet — grab your first number.</p>
-                <a href="{% url 'buynumber' %}" class="btn db-btn-ghost btn-sm">Buy Number</a>
-                <a href="{% url 'marketplace' %}" class="btn db-btn-ghost btn-sm">Buy Logs</a>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- Transactions -->
-    <div class="col-lg-6">
-        <div class="db-card h-100">
-            <div class="db-card-head">
-                <span><i class="bi bi-journal-text"></i> Recent Transactions</span>
-                <a href="{% url 'wallet:transactions' %}" class="db-view-all">View all →</a>
-            </div>
-
-            {% for t in transactions %}
-            <div class="db-row">
-                <div class="db-row-icon {% if t.type == 'credit' %}emerald{% else %}gold{% endif %}">
-                    {% if t.type == 'credit' %}<i class="bi bi-arrow-down-left"></i>
-                    {% else %}<i class="bi bi-arrow-up-right"></i>{% endif %}
-                </div>
-                <div class="db-row-body">
-                    <div class="db-row-title">{{ t.description|default:t.get_type_display }}</div>
-                    <div class="db-row-sub">{{ t.created_at|date:"M d, Y · H:i" }}</div>
-                </div>
-                <div class="db-row-side">
-                    <span class="px-pill {{ t.status }}">{{ t.status }}</span>
-                    <div class="db-row-amount mono {% if t.type == 'credit' %}db-in{% endif %}">
-                        {% if t.type == 'credit' %}+{% else %}-{% endif %}₦{{ t.amount }}
+            <div class="db-card-body">
+                {% for o in orders %}
+                <a href="{% url 'smsmarket:order_detail' o.pk %}" class="db-row">
+                    <div class="db-row-icon emerald"><i class="bi bi-chat-dots-fill" aria-hidden="true"></i></div>
+                    <div class="db-row-body">
+                        <div class="db-row-title">{{ o.service.name }}</div>
+                        <div class="db-row-sub">{{ o.phone_number|default:"Awaiting number" }}</div>
+                    </div>
+                    <div class="db-row-side">
+                        <span class="px-pill {{ o.status }}">{{ o.status }}</span>
+                        <div class="db-row-amount">&#8358;{{ o.price }}</div>
+                    </div>
+                </a>
+                {% empty %}
+                <div class="db-empty">
+                    <i class="bi bi-inbox" aria-hidden="true"></i>
+                    <p>No orders yet — get your first number or log.</p>
+                    <div class="db-empty-actions">
+                        <a href="{% url 'buynumber' %}" class="db-btn-ghost">Buy Number</a>
+                        <a href="{% url 'marketplace' %}" class="db-btn-ghost">Buy Logs</a>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            {% empty %}
-            <div class="db-empty">
-                <i class="bi bi-receipt"></i>
-                <p>No transactions yet — fund your wallet to get started.</p>
-                <a href="{% url 'wallet:fund' %}" class="btn db-btn-ghost btn-sm">Fund Wallet</a>
+        </article>
+
+        <article class="db-card">
+            <div class="db-card-head">
+                <h2 class="db-card-title"><i class="bi bi-journal-text" aria-hidden="true"></i> Recent Transactions</h2>
+                <a href="{% url 'wallet:transactions' %}" class="db-view-all">
+                    View all <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </a>
             </div>
-            {% endfor %}
-        </div>
-    </div>
+
+            <div class="db-card-body">
+                {% for t in transactions %}
+                <div class="db-row">
+                    <div class="db-row-icon {% if t.type == 'credit' %}emerald{% else %}amber{% endif %}">
+                        {% if t.type == 'credit' %}<i class="bi bi-arrow-down-left" aria-hidden="true"></i>
+                        {% else %}<i class="bi bi-arrow-up-right" aria-hidden="true"></i>{% endif %}
+                    </div>
+                    <div class="db-row-body">
+                        <div class="db-row-title">{{ t.description|default:t.get_type_display }}</div>
+                        <div class="db-row-sub">{{ t.created_at|date:"M d, Y · H:i" }}</div>
+                    </div>
+                    <div class="db-row-side">
+                        <span class="px-pill {{ t.status }}">{{ t.status }}</span>
+                        <div class="db-row-amount {% if t.type == 'credit' %}db-in{% endif %}">
+                            {% if t.type == 'credit' %}+{% else %}−{% endif %}&#8358;{{ t.amount }}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="db-empty">
+                    <i class="bi bi-receipt" aria-hidden="true"></i>
+                    <p>No transactions yet — fund your wallet to get started.</p>
+                    <div class="db-empty-actions">
+                        <a href="{% url 'wallet:fund' %}" class="db-btn-ghost">Fund Wallet</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </article>
+    </section>
 
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
-/* Time-based greeting + stat count-up */
+/* Time-based greeting and lightweight stat count-up. */
 document.addEventListener('DOMContentLoaded', function () {
+    'use strict';
 
-    var h = new Date().getHours();
-    var greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-    var el = document.getElementById('dbHello');
-    if (el) el.textContent = greet + ', {{ user.username|escapejs }}';
+    var hour = new Date().getHours();
+    var greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    var heading = document.getElementById('dbHello');
 
-    document.querySelectorAll('[data-count]').forEach(function (node) {
+    if (heading) {
+        heading.textContent = greeting + ', {{ user.username|escapejs }}';
+    }
+
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    document.querySelectorAll('.db-dashboard [data-count]').forEach(function (node) {
         var target = parseInt(node.dataset.count, 10) || 0;
-        if (target === 0) { node.textContent = '0'; return; }
-        var start = null;
-        var dur = 700;
-        function step(ts) {
-            if (!start) start = ts;
-            var p = Math.min((ts - start) / dur, 1);
-            node.textContent = Math.round(target * p);
-            if (p < 1) requestAnimationFrame(step);
+
+        if (target === 0 || reduceMotion) {
+            node.textContent = String(target);
+            return;
         }
+
+        var start = null;
+        var duration = 700;
+
+        function step(timestamp) {
+            if (!start) start = timestamp;
+            var progress = Math.min((timestamp - start) / duration, 1);
+            node.textContent = String(Math.round(target * progress));
+            if (progress < 1) requestAnimationFrame(step);
+        }
+
         requestAnimationFrame(step);
     });
-
 });
 </script>
 {% endblock %}
