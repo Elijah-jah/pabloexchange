@@ -173,6 +173,7 @@ POCKETFI_SECRET_KEY = config('POCKETFI_SECRET_KEY', default='')
 POCKETFI_WEBHOOK_SECRET = config('POCKETFI_WEBHOOK_SECRET', default='')
 POCKETFI_BASE_URL = config('POCKETFI_BASE_URL', default='https://api.pocketfi.ng/api/v1')
 POCKETFI_CALLBACK_URL = config('POCKETFI_CALLBACK_URL', default='https://pabloexchange.com/wallet/verify/')
+POCKETFI_BANK = os.getenv('POCKETFI_BANK', 'kuda')
 
 SMS_PROVIDER = config('SMS_PROVIDER', default='dummy')
 
