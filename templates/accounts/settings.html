@@ -78,41 +78,7 @@
         </form>
     </div>
 
-    <!-- ============ NOTIFICATIONS ============ -->
-    <div class="settings-card">
-        <h2>Notifications</h2>
-        <p class="card-sub">Choose what you want to hear about, then save.</p>
-
-        <form method="post" class="settings-form" data-action="preferences">
-            {% csrf_token %}
-
-            <div class="check-row">
-                <label class="check-label">
-                    <input type="checkbox" name="notify_order_updates"
-                           {% if prefs.notify_order_updates %}checked{% endif %}>
-                    <span>
-                        <strong>Order updates</strong>
-                        <small>Get notified when your OTP arrives or an order expires.</small>
-                    </span>
-                </label>
-            </div>
-
-            <div class="check-row">
-                <label class="check-label">
-                    <input type="checkbox" name="notify_promos"
-                           {% if prefs.notify_promos %}checked{% endif %}>
-                    <span>
-                        <strong>Promotions &amp; tips</strong>
-                        <small>Occasional deals and new service announcements.</small>
-                    </span>
-                </label>
-            </div>
-
-            <div class="form-status" aria-live="polite"></div>
-
-            <button type="submit" class="btn-save">Save Preferences</button>
-        </form>
-    </div>
+   
 
 </div>
 {% endblock %}
