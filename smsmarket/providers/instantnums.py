@@ -132,17 +132,55 @@ class InstantNumsProvider(BaseProvider):
     def check_sms(self, order_id):
         data = self._make_request("GET", f"/sms/{order_id}")
 
-        # Normalize the API response to the shape views expect:
-        # {"status": "finished", "sms": "12345", "full_sms": "..."}
-        # or {"status": "waiting"} while no SMS has arrived.
-        code = data.get("code") or data.get("sms_code") or data.get("otp")
+        if not data.get("success"):
+            logger.error(
+                "InstantNums SMS check failed for order %s: %s",
+                order_id,
+                data,
+            )
+            raise Exception(
+                data.get("message")
+                or data.get("error")
+                or "Unable to check SMS from InstantNums."
+            )
+
+        # InstantNums returns the extracted verification code in "sms".
+        code = (
+            data.get("sms")
+            or data.get("code")
+            or data.get("sms_code")
+            or data.get("otp")
+        )
+
         if code:
             return {
                 "status": "finished",
-                "sms": str(code),
-                "full_sms": data.get("full_sms") or data.get("text") or data.get("sms") or "",
+                "sms": str(code).strip(),
+                "full_sms": (
+                    data.get("full_sms")
+                    or data.get("text")
+                    or ""
+                ),
             }
-        return {"status": "waiting", "sms": "", "full_sms": ""}
+
+        return {
+            "status": "waiting",
+            "sms": "",
+            "full_sms": "",
+        }
+            data = self._make_request("GET", f"/sms/{order_id}")
+
+            # Normalize the API response to the shape views expect:
+            # {"status": "finished", "sms": "12345", "full_sms": "..."}
+            # or {"status": "waiting"} while no SMS has arrived.
+            code = data.get("code") or data.get("sms_code") or data.get("otp")
+            if code:
+                return {
+                    "status": "finished",
+                    "sms": str(code),
+                    "full_sms": data.get("full_sms") or data.get("text") or data.get("sms") or "",
+                }
+            return {"status": "waiting", "sms": "", "full_sms": ""}
 
     def cancel(self, order_id):
         data = self._make_request("POST", f"/sms/{order_id}/cancel")
