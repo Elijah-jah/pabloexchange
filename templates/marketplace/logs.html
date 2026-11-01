@@ -6,7 +6,7 @@
 {% block page_title %}Buy Logs{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/services.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/services.css' %}?v=4">
 {% endblock %}
 
 {% block content %}
@@ -50,21 +50,16 @@
                 <span class="sec-logo sec-logo--generic"><i class="bi bi-collection"></i></span>
                 {% endif %}
                 <div class="sec-title-wrap">
-                    <span class="sec-kicker">Subcategory</span>
                     <h3 class="sec-title">{{ section.name }}</h3>
                 </div>
             </div>
-            {% if section.products|length > 4 %}
-            <button type="button" class="see-more-btn" data-see-more>
-                <span class="sm-label">See More</span>
-                <i class="bi bi-chevron-right sm-icon"></i>
-            </button>
-            {% endif %}
         </div>
 
         <div class="prod-grid">
             {% for product in section.products %}
-            <article class="prod-card" data-cat="{{ product.category_id|default:'' }}"
+            <article class="prod-card{% if product.stock == 0 %} is-sold-out{% endif %}"
+                     role="button" tabindex="0" aria-label="View {{ product.title }}"
+                     data-cat="{{ product.category_id|default:'' }}"
                      data-name="{{ product.title|lower }}"
                      data-id="{{ product.id }}" data-price="{{ product.price }}" data-stock="{{ product.stock }}"
                      data-desc="{{ product.description|default:''|lower }}"
@@ -83,23 +78,20 @@
 
                     <div class="prod-row-body">
                         <h4 class="prod-name">{{ product.title }}</h4>
-                        <p class="prod-desc">{{ product.description|default:"Verified account log with instant delivery after payment."|truncatewords:24 }}</p>
+                        <p class="prod-desc">{{ product.description|default:"Verified account log with instant delivery after payment."|linebreaksbr }}</p>
                     </div>
                 </div>
 
                 <div class="prod-row-meta">
                     <span class="prod-price">&#8358;{{ product.price|floatformat:2|intcomma }}</span>
-                    <span class="prod-availability">
-                        Available:
-                        <span class="prod-stock {% if product.stock == 0 %}out{% endif %}">
-                            {% if product.stock == 0 %}Sold out{% else %}{{ product.stock }} pcs.{% endif %}
-                        </span>
-                    </span>
                 </div>
 
-                <button type="button" class="prod-buy" {% if product.stock == 0 %}disabled{% endif %}>
-                    {% if product.stock == 0 %}Sold out{% else %}<i class="bi bi-bag-plus"></i><span>Buy Now</span><i class="bi bi-chevron-right buy-arrow"></i>{% endif %}
-                </button>
+                <div class="prod-availability">
+                    Available:
+                    <span class="prod-stock {% if product.stock == 0 %}out{% endif %}">
+                        {% if product.stock == 0 %}Sold out{% else %}{{ product.stock }} pcs.{% endif %}
+                    </span>
+                </div>
             </article>
             {% endfor %}
         </div>
@@ -249,26 +241,7 @@
         return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
     }
 
-    /* ---------- FILTER + SEE MORE ---------- */
-    var SEE_MORE_COUNT = 4;
-
-    function applySeeMore(sec) {
-        var expanded = sec.classList.contains("expanded");
-        var visibleIndex = 0;
-        sec.querySelectorAll(".prod-card").forEach(function (card) {
-            if (card.classList.contains("filtered-out")) return;
-            visibleIndex++;
-            card.classList.toggle("sm-hidden", !expanded && visibleIndex > SEE_MORE_COUNT);
-        });
-        var btn = sec.querySelector("[data-see-more]");
-        if (btn) {
-            var label = btn.querySelector(".sm-label");
-            var icon = btn.querySelector(".sm-icon");
-            if (label) label.textContent = expanded ? "See Less" : "See More";
-            if (icon) icon.className = "bi " + (expanded ? "bi-chevron-up" : "bi-chevron-right") + " sm-icon";
-        }
-    }
-
+    /* ---------- CATEGORY + SEARCH FILTERS ---------- */
     function applyFilter() {
         var term = searchInput.value.toLowerCase().trim();
         var activeCat = document.querySelector(".cat-pill.active");
@@ -289,8 +262,6 @@
                 if (!card.classList.contains("filtered-out")) vis++;
             });
             sec.classList.toggle("section-hidden", vis === 0);
-            if (term && vis > 0) sec.classList.add("expanded");
-            applySeeMore(sec);
             totalVisible += vis;
         });
 
@@ -307,15 +278,6 @@
 
     searchInput.addEventListener("input", applyFilter);
 
-    sections.forEach(function (sec) {
-        var btn = sec.querySelector("[data-see-more]");
-        if (btn) {
-            btn.addEventListener("click", function () {
-                sec.classList.toggle("expanded");
-                applySeeMore(sec);
-            });
-        }
-    });
 
     /* ---------- WALLET ---------- */
     function updateWallet(balance) {
@@ -329,6 +291,13 @@
     /* ---------- RESERVE -> DELIVER FLOW ---------- */
     /* ---------- CARD CLICK -> CONFIRM ---------- */
     allCards.forEach(function (card) {
+        card.addEventListener("keydown", function (event) {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                card.click();
+            }
+        });
+
         card.addEventListener("click", function () {
             currentCard = card;
 
@@ -407,8 +376,7 @@
                         stockEl.textContent = "Sold out";
                         stockEl.classList.add("out");
                         currentCard.setAttribute("data-stock", "0");
-                        var b = currentCard.querySelector(".prod-buy");
-                        if (b) { b.disabled = true; b.textContent = "Sold out"; }
+                        currentCard.classList.add("is-sold-out");
                     }
                 }
 

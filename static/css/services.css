@@ -1,6 +1,6 @@
 /* ============================================================
-   PabloExchange — Logs Marketplace v3
-   Subcategory groups · vertical log cards · light green/white UI
+   PabloExchange — Logs Marketplace v4
+   Compact log-group cards · full descriptions · light green/white UI
    All existing JavaScript hooks and modal classes retained
    ============================================================ */
 
@@ -186,7 +186,7 @@
     box-shadow: 0 0 0 4px rgba(16, 185, 129, .1);
 }
 
-/* ---------------- Subcategory sections ---------------- */
+/* ---------------- Log-group sections ---------------- */
 #sectionsWrap {
     min-width: 0;
 }
@@ -245,50 +245,15 @@
     min-width: 0;
 }
 
-.sec-kicker {
-    display: block;
-    margin-bottom: 2px;
-    color: var(--mk-primary-text);
-    font-size: .67rem;
-    font-weight: 600;
-    line-height: 1.3;
-}
-
 .sec-title {
     margin: 0;
-    overflow: hidden;
+    overflow-wrap: anywhere;
     color: var(--mk-charcoal);
     font-size: 1rem;
     font-style: normal;
     font-weight: 700;
     line-height: 1.35;
     letter-spacing: normal;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.see-more-btn {
-    display: inline-flex;
-    min-height: 36px;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 7px 12px;
-    border: 1px solid rgba(4, 120, 87, .25);
-    border-radius: 9px;
-    background: var(--mk-primary-soft);
-    color: var(--mk-primary-text);
-    cursor: pointer;
-    font-size: .76rem;
-    font-weight: 600;
-    white-space: nowrap;
-    transition: background .18s, border-color .18s;
-}
-
-.see-more-btn:hover {
-    border-color: rgba(4, 120, 87, .45);
-    background: #d1fae5;
 }
 
 /* ---------------- Log-group product cards ---------------- */
@@ -303,11 +268,11 @@
     display: flex;
     min-width: 0;
     flex-direction: column;
-    padding: 19px;
+    padding: 15px;
     border: 1px solid var(--mk-border);
-    border-radius: 14px;
+    border-radius: 12px;
     background: var(--mk-white);
-    box-shadow: 0 5px 16px rgba(15, 23, 42, .045);
+    box-shadow: 0 3px 10px rgba(15, 23, 42, .035);
     color: var(--mk-text);
     cursor: pointer;
     transition: border-color .18s, box-shadow .18s, background .18s;
@@ -319,28 +284,36 @@
     box-shadow: 0 9px 24px rgba(15, 23, 42, .08);
 }
 
-.prod-card.filtered-out,
-.prod-card.sm-hidden {
+.prod-card.filtered-out {
     display: none;
+}
+
+.prod-card:focus-visible {
+    outline: 3px solid rgba(16, 185, 129, .28);
+    outline-offset: 3px;
+}
+
+.prod-card.is-sold-out {
+    background: #fbfdff;
 }
 
 .prod-card-top {
     display: flex;
     min-width: 0;
     align-items: flex-start;
-    gap: 13px;
+    gap: 10px;
 }
 
 .prod-img-wrap {
     display: flex;
-    width: 52px;
-    height: 52px;
+    width: 40px;
+    height: 40px;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     border: 1px solid #d1fae5;
-    border-radius: 12px;
+    border-radius: 9px;
     background: var(--mk-primary-soft);
 }
 
@@ -352,7 +325,7 @@
 
 .prod-img-fallback {
     color: var(--mk-primary-text);
-    font-size: 1.3rem;
+    font-size: 1.05rem;
 }
 
 .prod-row-body {
@@ -361,47 +334,37 @@
 }
 
 .prod-name {
-    display: -webkit-box;
-    margin: 1px 0 6px;
-    overflow: hidden;
+    margin: 0 0 5px;
+    overflow-wrap: anywhere;
     color: var(--mk-charcoal);
-    font-size: .96rem;
+    font-size: .86rem;
     font-style: normal;
     font-weight: 700;
     line-height: 1.4;
-    letter-spacing: normal;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    letter-spacing: .015em;
+    text-transform: uppercase;
 }
 
 .prod-desc {
-    display: -webkit-box;
+    display: block;
     margin: 0;
-    overflow: hidden;
+    overflow: visible;
     overflow-wrap: anywhere;
     color: var(--mk-muted);
-    font-size: .77rem;
-    line-height: 1.5;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    font-size: .75rem;
+    line-height: 1.55;
+    white-space: normal;
 }
 
 .prod-row-meta {
-    display: flex;
     min-width: 0;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px 14px;
-    margin: 17px 0 15px;
-    padding-top: 14px;
-    border-top: 1px solid var(--mk-border);
+    margin-top: 13px;
 }
 
 .prod-price {
     color: var(--mk-charcoal);
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 1.02rem;
+    font-size: .98rem;
     font-style: normal;
     font-weight: 700;
     line-height: 1.3;
@@ -410,9 +373,11 @@
 }
 
 .prod-availability {
+    display: block;
+    margin-top: 8px;
     color: var(--mk-muted);
-    font-size: .8rem;
-    white-space: nowrap;
+    font-size: .75rem;
+    line-height: 1.45;
 }
 
 .prod-stock {
@@ -422,44 +387,6 @@
 
 .prod-stock.out {
     color: var(--mk-red);
-}
-
-.prod-buy {
-    display: inline-flex;
-    width: 100%;
-    min-height: 44px;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-top: auto;
-    padding: 11px 16px;
-    border: 1px solid var(--mk-primary);
-    border-radius: 10px;
-    background: var(--mk-primary);
-    color: var(--mk-charcoal);
-    cursor: pointer;
-    font-size: .88rem;
-    font-weight: 700;
-    line-height: 1.3;
-    transition: background .18s, border-color .18s, color .18s;
-}
-
-.prod-buy:hover:not(:disabled) {
-    border-color: var(--mk-primary-dark);
-    background: var(--mk-primary-dark);
-    color: var(--mk-white);
-}
-
-.prod-buy:disabled {
-    border-color: #e2e8f0;
-    background: #f1f5f9;
-    color: #94a3b8;
-    cursor: not-allowed;
-}
-
-.buy-arrow {
-    margin-left: auto;
-    font-size: .78rem;
 }
 
 .flow-empty {
@@ -851,18 +778,8 @@
         border-radius: 9px;
     }
 
-    .sec-kicker {
-        font-size: .62rem;
-    }
-
-    .sec-title {
+        .sec-title {
         font-size: .88rem;
-    }
-
-    .see-more-btn {
-        min-height: 34px;
-        padding: 6px 9px;
-        font-size: .7rem;
     }
 
     .prod-grid {
@@ -870,21 +787,21 @@
     }
 
     .prod-card {
-        padding: 16px;
+        padding: 13px;
     }
 
     .prod-img-wrap {
-        width: 46px;
-        height: 46px;
-        border-radius: 11px;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
     }
 
     .prod-card-top {
-        gap: 11px;
+        gap: 9px;
     }
 
     .prod-name {
-        font-size: .9rem;
+        font-size: .8rem;
     }
 
     .prod-desc {
@@ -892,7 +809,7 @@
     }
 
     .prod-row-meta {
-        margin-top: 15px;
+        margin-top: 11px;
     }
 
     .log-modal {
@@ -914,17 +831,8 @@
 }
 
 @media (max-width: 380px) {
-    .sec-kicker {
-        display: none;
-    }
-
-    .see-more-btn {
-        padding-right: 8px;
-        padding-left: 8px;
-    }
-
-    .prod-card {
-        padding: 15px 13px;
+        .prod-card {
+        padding: 13px 12px;
     }
 
     .prod-availability {
