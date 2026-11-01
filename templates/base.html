@@ -83,7 +83,7 @@
     <div class="sidebar-wallet">
         <p class="sidebar-label mb-2">Wallet balance</p>
         <div class="d-flex align-items-end justify-content-between">
-            <span class="wallet-amount mono">&#8358;₦{{ balance|default:"0.00"|floatformat:2|intcomma }}</span>
+            <span class="wallet-amount mono">&#8358;{{ balance|default:"0.00"|floatformat:2|intcomma }}</span>
             <a href="{% url 'wallet:fund' %}" class="wallet-plus"><i class="bi bi-plus-lg"></i></a>
         </div>
     </div>
