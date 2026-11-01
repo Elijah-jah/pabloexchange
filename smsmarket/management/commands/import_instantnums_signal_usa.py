@@ -4,28 +4,22 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from countries.models import Country
-from pricing.models import Pricing
+from pricing.models import Pricing, PricingConfiguration
 from smsmarket.models import Service
 from smsmarket.providers import get_provider
-from smsmarket.services import _margin
 
 
 class Command(BaseCommand):
-    help = 'Import or update the InstantNums Signal price for USA only.'
-
-    def add_arguments(self, parser):
-        parser.add_argument(
-            '--usd-ngn-rate',
-            type=Decimal,
-            required=True,
-            help='Exchange rate: how many NGN equal 1 USD.',
-        )
+    help = 'Import or update InstantNums Signal USA pricing only.'
 
     def handle(self, *args, **options):
-        usd_ngn_rate = options['usd_ngn_rate']
+        pricing_config = PricingConfiguration.objects.filter(pk=1).first()
 
-        if usd_ngn_rate <= 0:
-            raise CommandError('The USD-to-NGN rate must be greater than zero.')
+        if pricing_config is None:
+            raise CommandError(
+                'Pricing configuration not found. Set your exchange rate '
+                'and fixed profit in Django admin first.'
+            )
 
         country = Country.objects.filter(
             code='US',
@@ -37,12 +31,11 @@ class Command(BaseCommand):
                 'No active USA country with code US was found.'
             )
 
-        # Confirmed by the previous successful InstantNums catalog request.
         service_code = '829'
         provider = get_provider('instantnums')
 
         self.stdout.write(
-            f'Fetching InstantNums Signal USA price '
+            'Fetching InstantNums Signal USA price '
             f'(service: {service_code})...'
         )
 
@@ -53,8 +46,7 @@ class Command(BaseCommand):
 
         if not price_data.get('success'):
             raise CommandError(
-                'InstantNums price request failed: '
-                f'{price_data}'
+                f'InstantNums price request failed: {price_data}'
             )
 
         try:
@@ -69,8 +61,9 @@ class Command(BaseCommand):
                 f'InstantNums returned an invalid price: {cost_usd}'
             )
 
-        cost_ngn = cost_usd * usd_ngn_rate
-        sell_price = (cost_ngn * _margin()).quantize(Decimal('0.01'))
+        # Use your existing PricingConfiguration conversion:
+        # USD cost × exchange rate + fixed profit.
+        sell_price = pricing_config.price_for(cost_usd)
 
         with transaction.atomic():
             service, _ = Service.objects.update_or_create(
@@ -87,6 +80,7 @@ class Command(BaseCommand):
                 service=service,
                 country=country,
                 defaults={
+                    'cost_usd': cost_usd,
                     'sell_price': sell_price,
                     'is_available': True,
                 },
@@ -98,7 +92,8 @@ class Command(BaseCommand):
             self.style.SUCCESS(
                 f'{action}: Signal | United States | '
                 f'Provider cost: ${cost_usd} | '
-                f'Cost in NGN: ₦{cost_ngn.quantize(Decimal("0.01"))} | '
+                f'Exchange rate: ₦{pricing_config.exchange_rate}/$ | '
+                f'Fixed profit: ₦{pricing_config.fixed_profit} | '
                 f'Selling price: ₦{sell_price}'
             )
         )
