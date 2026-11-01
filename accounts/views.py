@@ -7,6 +7,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
+from django.contrib.auth import views as auth_views
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
+from django.urls import reverse_lazy
+
 
 
 
@@ -91,4 +95,52 @@ def logout_view(request):
     logout(request)
     return redirect('home')
 
+class PabloPasswordResetForm(PasswordResetForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].widget.attrs.update({
+            'class': 'auth-input',
+            'placeholder': 'you@example.com',
+            'autocomplete': 'email',
+            'inputmode': 'email',
+            'required': True,
+        })
 
+
+class PabloSetPasswordForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['new_password1'].widget.attrs.update({
+            'class': 'auth-input',
+            'placeholder': 'Enter a new password',
+            'autocomplete': 'new-password',
+            'required': True,
+        })
+        self.fields['new_password2'].widget.attrs.update({
+            'class': 'auth-input',
+            'placeholder': 'Repeat the new password',
+            'autocomplete': 'new-password',
+            'required': True,
+        })
+
+
+class PabloPasswordResetView(auth_views.PasswordResetView):
+    template_name = 'accounts/password_reset.html'
+    form_class = PabloPasswordResetForm
+    email_template_name = 'accounts/password_reset_email.txt'
+    subject_template_name = 'accounts/password_reset_subject.txt'
+    success_url = reverse_lazy('password_reset_done')
+
+
+class PabloPasswordResetDoneView(auth_views.PasswordResetDoneView):
+    template_name = 'accounts/password_reset_done.html'
+
+
+class PabloPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    template_name = 'accounts/password_reset_confirm.html'
+    form_class = PabloSetPasswordForm
+    success_url = reverse_lazy('password_reset_complete')
+
+
+class PabloPasswordResetCompleteView(auth_views.PasswordResetCompleteView):
+    template_name = 'accounts/password_reset_complete.html'
