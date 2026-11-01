@@ -1,91 +1,83 @@
-﻿from decimal import Decimal
+﻿from decimal import Decimal, InvalidOperation
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from django.db.models import Q
 
 from countries.models import Country
 from pricing.models import Pricing
 from smsmarket.models import Service
 from smsmarket.providers import get_provider
-from smsmarket.services import _extract_catalog, _extract_cost, _margin
+from smsmarket.services import _margin
 
 
 class Command(BaseCommand):
     help = 'Import or update the InstantNums Signal price for USA only.'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--usd-ngn-rate',
+            type=Decimal,
+            required=True,
+            help='Exchange rate: how many NGN equal 1 USD.',
+        )
+
     def handle(self, *args, **options):
-        country = Country.objects.filter(is_active=True).filter(
-            Q(code__iexact='US')
-            | Q(code__iexact='USA')
-            | Q(name__iexact='USA')
-            | Q(name__icontains='United States')
+        usd_ngn_rate = options['usd_ngn_rate']
+
+        if usd_ngn_rate <= 0:
+            raise CommandError('The USD-to-NGN rate must be greater than zero.')
+
+        country = Country.objects.filter(
+            code='US',
+            is_active=True,
         ).first()
 
         if country is None:
             raise CommandError(
-                'No active USA country was found in the Country table.'
+                'No active USA country with code US was found.'
             )
 
+        # Confirmed by the previous successful InstantNums catalog request.
+        service_code = '829'
         provider = get_provider('instantnums')
 
         self.stdout.write(
-            f'Fetching InstantNums services for {country.name} '
-            f'({country.code})...'
-        )
-
-        catalog = _extract_catalog(
-            provider.get_services(country.code)
-        )
-
-        matches = [
-            (code, name)
-            for code, name in catalog
-            if 'signal' in name.lower()
-        ]
-
-        exact_matches = [
-            (code, name)
-            for code, name in matches
-            if name.strip().lower() == 'signal'
-        ]
-
-        if exact_matches:
-            matches = exact_matches
-
-        if len(matches) != 1:
-            raise CommandError(
-                'Expected exactly one Signal service for USA, '
-                f'but found: {matches}'
-            )
-
-        service_code, service_name = matches[0]
-
-        self.stdout.write(
-            f'Fetching price for {service_name} '
-            f'(service code: {service_code})...'
+            f'Fetching InstantNums Signal USA price '
+            f'(service: {service_code})...'
         )
 
         price_data = provider.get_price(
             service_code,
             country.code,
         )
-        cost = _extract_cost(price_data)
 
-        if cost is None or cost <= 0:
+        if not price_data.get('success'):
             raise CommandError(
-                'InstantNums returned no valid Signal USA price: '
+                'InstantNums price request failed: '
                 f'{price_data}'
             )
 
-        sell_price = (cost * _margin()).quantize(Decimal('0.01'))
+        try:
+            cost_usd = Decimal(str(price_data.get('price_usd')))
+        except (InvalidOperation, TypeError):
+            raise CommandError(
+                f'Invalid or missing price_usd value: {price_data}'
+            )
+
+        if cost_usd <= 0:
+            raise CommandError(
+                f'InstantNums returned an invalid price: {cost_usd}'
+            )
+
+        cost_ngn = cost_usd * usd_ngn_rate
+        sell_price = (cost_ngn * _margin()).quantize(Decimal('0.01'))
 
         with transaction.atomic():
             service, _ = Service.objects.update_or_create(
                 provider='instantnums',
                 code=service_code,
                 defaults={
-                    'name': service_name or 'Signal',
+                    'name': 'Signal',
                     'is_active': True,
                 },
             )
@@ -104,8 +96,9 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f'{action}: {service.name} | {country.name} | '
-                f'Provider cost: {cost} | '
-                f'Selling price: {sell_price}'
+                f'{action}: Signal | United States | '
+                f'Provider cost: ${cost_usd} | '
+                f'Cost in NGN: ₦{cost_ngn.quantize(Decimal("0.01"))} | '
+                f'Selling price: ₦{sell_price}'
             )
         )
