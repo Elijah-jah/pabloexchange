@@ -47,6 +47,7 @@ def marketplace_logs(request):
             sections.append({
                 'key': f'sub-{sub.id}',
                 'name': sub.name,
+                'image': sub.image,
                 'products': products,
             })
 
