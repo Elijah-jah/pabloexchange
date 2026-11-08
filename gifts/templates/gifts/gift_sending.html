@@ -5,7 +5,95 @@
 {% block page_title %}Gift Sending{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'gifts/css/gift_sending.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'gifts/css/gift_sending.css' %}?v=2">
+<style>
+/* Compact mobile catalog: two substantial cards per row, never one tiny stretched column. */
+@media (max-width: 640px) {
+    .gift-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 12px !important;
+    }
+
+    .gift-card {
+        min-width: 0;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .gift-product-media {
+        aspect-ratio: 1 / .82;
+    }
+
+    .gift-category-badge {
+        top: 8px;
+        left: 8px;
+        max-width: calc(100% - 16px);
+        padding: 5px 8px;
+        overflow: hidden;
+        font-size: 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .gift-card-body {
+        min-width: 0;
+        padding: 12px;
+    }
+
+    .gift-card-body h3 {
+        font-size: 15px;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+    }
+
+    .gift-card-body > p {
+        display: -webkit-box;
+        margin: 6px 0 0;
+        overflow: hidden;
+        font-size: 12px;
+        line-height: 1.45;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .gift-card-footer {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 9px;
+        margin-top: 12px;
+        padding-top: 11px;
+    }
+
+    .gift-price span {
+        font-size: 10px;
+    }
+
+    .gift-price strong {
+        margin-top: 2px;
+        font-size: 16px;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    .gift-send {
+        justify-content: center;
+        width: 100%;
+        min-height: 40px;
+        padding: 9px 8px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 360px) {
+    .gift-grid { gap: 9px !important; }
+    .gift-card-body { padding: 10px; }
+    .gift-card-body h3 { font-size: 14px; }
+    .gift-price strong { font-size: 15px; }
+    .gift-send { font-size: 11px; }
+}
+</style>
+
 {% endblock %}
 
 {% block content %}
@@ -14,11 +102,11 @@
         <div class="gift-hero-copy">
             <span class="gift-eyebrow"><i class="bi bi-stars"></i> PabloExchange Gifts</span>
             <h1>Send something thoughtful.</h1>
-            <p>Choose a gift, provide the recipientâ€™s delivery details, and our support team will process your order.</p>
+            <p>Choose a gift, provide the recipient's delivery details, and our support team will process your order.</p>
         </div>
         <div class="gift-balance-card">
             <span><i class="bi bi-wallet2"></i> Available balance</span>
-            <strong id="giftWalletBalance">â‚¦{{ balance|floatformat:2|intcomma }}</strong>
+            <strong id="giftWalletBalance">&#8358;{{ balance|floatformat:2|intcomma }}</strong>
             <a href="{% url 'wallet:fund' %}">Fund wallet <i class="bi bi-arrow-right"></i></a>
         </div>
     </section>
@@ -68,7 +156,7 @@
                         <div class="gift-card-footer">
                             <div class="gift-price">
                                 <span>Price</span>
-                                <strong>â‚¦{{ product.price|floatformat:2|intcomma }}</strong>
+                                <strong>&#8358;{{ product.price|floatformat:2|intcomma }}</strong>
                             </div>
                             <button
                                 type="button"
@@ -137,7 +225,7 @@
 
             <div class="gift-form-grid">
                 <div class="gift-field gift-field-full">
-                    <label for="recipient_full_name">Recipientâ€™s full name</label>
+                    <label for="recipient_full_name">Recipient's full name</label>
                     <input class="gift-control" id="recipient_full_name" name="recipient_full_name" maxlength="150" autocomplete="name" placeholder="First and last name" required>
                     <span class="gift-field-error" data-field="recipient_full_name"></span>
                 </div>
@@ -161,7 +249,7 @@
                 </div>
 
                 <div class="gift-field gift-field-full">
-                    <label for="recipient_phone">Recipientâ€™s phone number</label>
+                    <label for="recipient_phone">Recipient's phone number</label>
                     <input class="gift-control" id="recipient_phone" name="recipient_phone" type="tel" maxlength="30" inputmode="tel" autocomplete="tel" placeholder="Include the country code" required>
                     <span class="gift-field-error" data-field="recipient_phone"></span>
                 </div>
