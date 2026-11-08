@@ -3,7 +3,8 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.core.validators import MinValueValidator
-from django.db import models
+from django.db import models, transaction
+from django.utils import timezone
 
 
 class GiftCategory(models.Model):
@@ -84,6 +85,15 @@ class GiftOrder(models.Model):
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     support_email_sent_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True, editable=False)
+    completed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="completed_gift_orders",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -94,6 +104,29 @@ class GiftOrder(models.Model):
         if not self.order_id:
             self.order_id = f"PGFT{uuid.uuid4().hex[:10].upper()}"
         super().save(*args, **kwargs)
+
+    def can_mark_completed(self):
+        return self.status in {"pending", "processing"}
+
+    @transaction.atomic
+    def mark_completed(self, admin_user):
+        """Complete once, after admin confirmation; concurrent clicks are safe."""
+        locked = GiftOrder.objects.select_for_update().get(pk=self.pk)
+        if not locked.can_mark_completed():
+            return False
+
+        locked.status = "completed"
+        locked.completed_at = timezone.now()
+        locked.completed_by = admin_user
+        locked.save(update_fields=[
+            "status", "completed_at", "completed_by", "updated_at",
+        ])
+
+        # Keep the object used by the admin view in sync with the database.
+        self.status = locked.status
+        self.completed_at = locked.completed_at
+        self.completed_by = locked.completed_by
+        return True
 
     def __str__(self):
         return f"{self.order_id} â€” {self.product_name} â€” {self.status}"

@@ -31,7 +31,7 @@ def send_gift_order_email(order_pk):
         logger.error("Gift order %s has no SUPPORT_EMAIL configured", order.order_id)
         return False
 
-    subject = f"New gift order {order.order_id} â€” {order.product_name}"
+    subject = f"New gift order {order.order_id} — {order.product_name}"
     message = f"""A new gift order has been placed on PabloExchange.
 
 ORDER
@@ -54,7 +54,7 @@ Country: {order.recipient_country}
 Phone: {order.recipient_phone}
 Delivery note: {order.customer_note or 'None'}
 
-Open Django admin â†’ Gifts â†’ Gift orders to process this order.
+Open Django admin → Gifts → Gift orders to process this order.
 """
     try:
         send_mail(
@@ -88,8 +88,8 @@ def create_gift_order(user, product_id, recipient_data):
     if not can_afford(user, product.price):
         balance = get_balance(user)
         raise GiftOrderError(
-            f"Insufficient balance. This gift costs â‚¦{product.price:,.2f}, "
-            f"but your wallet balance is â‚¦{balance:,.2f}."
+            f"Insufficient balance. This gift costs \u20A6{product.price:,.2f}, "
+            f"but your wallet balance is \u20A6{balance:,.2f}."
         )
 
     image_url = ""
@@ -114,7 +114,7 @@ def create_gift_order(user, product_id, recipient_data):
         debit(
             user,
             product.price,
-            description=f"Gift order {order.order_id} â€” {product.name}",
+            description=f"Gift order {order.order_id} — {product.name}",
             meta={"gift_order_id": order.id, "order_id": order.order_id},
         )
     except Exception as exc:

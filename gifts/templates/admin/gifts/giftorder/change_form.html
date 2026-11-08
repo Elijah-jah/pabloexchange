@@ -1,0 +1,12 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    {% if original and original.can_mark_completed %}
+    <li>
+        <a href="{% url 'admin:gifts_giftorder_mark_completed' original.pk %}" class="historylink">
+            Mark Completed
+        </a>
+    </li>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="module" style="max-width:820px;padding:24px;">
+    <h1 style="margin-top:0;">Confirm gift completion</h1>
+    <p>
+        Check that this is the exact order you received and that the gift has been
+        delivered before marking it completed.
+    </p>
+
+    <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+        <tbody>
+            <tr><th style="text-align:left;padding:9px;border-bottom:1px solid #ddd;">Order reference</th><td style="padding:9px;border-bottom:1px solid #ddd;"><strong>{{ order.order_id }}</strong></td></tr>
+            <tr><th style="text-align:left;padding:9px;border-bottom:1px solid #ddd;">Current status</th><td style="padding:9px;border-bottom:1px solid #ddd;">{{ order.get_status_display }}</td></tr>
+            <tr><th style="text-align:left;padding:9px;border-bottom:1px solid #ddd;">Gift</th><td style="padding:9px;border-bottom:1px solid #ddd;">{{ order.product_name }}</td></tr>
+            <tr><th style="text-align:left;padding:9px;border-bottom:1px solid #ddd;">Price</th><td style="padding:9px;border-bottom:1px solid #ddd;">&#8358;{{ order.price|floatformat:2 }}</td></tr>
+            <tr><th style="text-align:left;padding:9px;border-bottom:1px solid #ddd;">Customer</th><td style="padding:9px;border-bottom:1px solid #ddd;">{{ order.user.username }}{% if order.user.email %} â€” {{ order.user.email }}{% endif %}</td></tr>
+            <tr><th style="text-align:left;padding:9px;border-bottom:1px solid #ddd;">Recipient</th><td style="padding:9px;border-bottom:1px solid #ddd;">{{ order.recipient_full_name }}</td></tr>
+            <tr><th style="text-align:left;padding:9px;border-bottom:1px solid #ddd;">Recipient phone</th><td style="padding:9px;border-bottom:1px solid #ddd;">{{ order.recipient_phone }}</td></tr>
+            <tr><th style="text-align:left;padding:9px;border-bottom:1px solid #ddd;">Delivery address</th><td style="padding:9px;border-bottom:1px solid #ddd;">{{ order.recipient_address|linebreaksbr }}<br>Postal/ZIP: {{ order.recipient_postal_code }}<br>{{ order.recipient_country }}</td></tr>
+            {% if order.customer_note %}<tr><th style="text-align:left;padding:9px;border-bottom:1px solid #ddd;">Customer note</th><td style="padding:9px;border-bottom:1px solid #ddd;">{{ order.customer_note|linebreaksbr }}</td></tr>{% endif %}
+            <tr><th style="text-align:left;padding:9px;border-bottom:1px solid #ddd;">Order date</th><td style="padding:9px;border-bottom:1px solid #ddd;">{{ order.created_at }}</td></tr>
+        </tbody>
+    </table>
+
+    {% if can_complete %}
+    <form method="post">
+        {% csrf_token %}
+        <p><strong>Confirm that {{ order.product_name }} has been delivered to {{ order.recipient_full_name }}.</strong></p>
+        <button type="submit" class="default" style="padding:10px 16px;">Yes, Mark as Completed</button>
+        <a class="button" href="{% url 'admin:gifts_giftorder_change' order.pk %}" style="margin-left:8px;">Cancel</a>
+    </form>
+    {% else %}
+    <p><strong>This order cannot be marked completed because its status is {{ order.get_status_display }}.</strong></p>
+    <a class="button" href="{% url 'admin:gifts_giftorder_change' order.pk %}">Return to order</a>
+    {% endif %}
+</div>
+{% endblock %}
