@@ -344,4 +344,4 @@ EMAIL_TIMEOUT = 20
 PASSWORD_RESET_TIMEOUT = 3600
 
 # Gift-order support inbox
-SUPPORT_EMAIL = config("SUPPORT_EMAIL", default="support@pabloexchange.com")
+SUPPORT_EMAIL = config("SUPPORT_EMAIL", default="alamuelijah17@gmail.com")
