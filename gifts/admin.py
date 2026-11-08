@@ -117,7 +117,7 @@ class GiftOrderAdmin(admin.ModelAdmin):
 
         context = {
             **self.admin_site.each_context(request),
-            "title": f"Confirm completion — {order.order_id}",
+            "title": f"Confirm completion \u2014 {order.order_id}",
             "opts": self.model._meta,
             "order": order,
             "can_complete": order.can_mark_completed(),
