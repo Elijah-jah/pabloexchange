@@ -118,6 +118,7 @@ INSTALLED_APPS = [
     'django_apscheduler',
     'cloudinary_storage',
     'cloudinary',
+    "gifts",
 ]
 
 SMS_MARGIN_MULTIPLIER = 1.4   # 1.4 = 40% markup on live provider prices; adjust freely
@@ -341,3 +342,6 @@ EMAIL_TIMEOUT = 20
 
 # Reset links expire after one hour.
 PASSWORD_RESET_TIMEOUT = 3600
+
+# Gift-order support inbox
+SUPPORT_EMAIL = config("SUPPORT_EMAIL", default="support@pabloexchange.com")

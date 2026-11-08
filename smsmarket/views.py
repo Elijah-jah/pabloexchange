@@ -1,3 +1,4 @@
+from gifts.models import GiftOrder
 import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -301,6 +302,33 @@ def my_purchases(request):
 
     # newest purchase first across both types
     orders.sort(key=lambda x: x['created_at'], reverse=True)
+
+    # --- Gift orders (managed by the gifts app) ---
+    for gift in GiftOrder.objects.filter(user=request.user):
+        recipient_details = "\n".join([
+            gift.recipient_full_name,
+            gift.recipient_address,
+            f"Postal/ZIP: {gift.recipient_postal_code}",
+            gift.recipient_country,
+            f"Phone: {gift.recipient_phone}",
+        ])
+        orders.append({
+            "type": "gift",
+            "name": gift.product_name,
+            "detail": recipient_details,
+            "otp": "",
+            "price": gift.price,
+            "status": gift.status,
+            "created_at": gift.created_at,
+            "order_id": gift.order_id,
+            "format_labels": "",
+            "description": gift.customer_note,
+            "uid": "",
+            "password": "",
+            "image": gift.product_image_url,
+            "extra": gift.category_name,
+        })
+    orders.sort(key=lambda item: item["created_at"], reverse=True)
 
     return render(request, 'smsmarket/my_purchases.html', {
         'orders': orders,

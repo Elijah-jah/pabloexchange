@@ -829,3 +829,8 @@
         transition-duration: .01ms !important;
     }
 }
+
+/* Gift orders */
+.mp-icon.gift { background: #fdf3d8; color: #9a6700; }
+.mp-badge.pending, .mp-badge.processing { background: #fef3c7; color: #92400e; }
+.mp-badge.shipped { background: #dbeafe; color: #1d4ed8; }

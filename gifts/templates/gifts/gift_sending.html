@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block title %}Gift Sending{% endblock %}
+{% block page_title %}Gift Sending{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'gifts/css/gift_sending.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+<div class="gift-page">
+    <section class="gift-hero">
+        <div class="gift-hero-copy">
+            <span class="gift-eyebrow"><i class="bi bi-stars"></i> PabloExchange Gifts</span>
+            <h1>Send something thoughtful.</h1>
+            <p>Choose a gift, provide the recipientâ€™s delivery details, and our support team will process your order.</p>
+        </div>
+        <div class="gift-balance-card">
+            <span><i class="bi bi-wallet2"></i> Available balance</span>
+            <strong id="giftWalletBalance">â‚¦{{ balance|floatformat:2|intcomma }}</strong>
+            <a href="{% url 'wallet:fund' %}">Fund wallet <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </section>
+
+    {% if categories %}
+    <div class="gift-filters" aria-label="Filter gift categories">
+        <button type="button" class="gift-filter active" data-filter="all">
+            <i class="bi bi-grid"></i> All gifts
+        </button>
+        {% for category in categories %}
+        <button type="button" class="gift-filter" data-filter="category-{{ category.id }}">
+            {{ category.name }}
+        </button>
+        {% endfor %}
+    </div>
+
+    <div class="gift-sections">
+        {% for category in categories %}
+        <section class="gift-section" id="category-{{ category.id }}">
+            <div class="gift-section-head">
+                {% if category.image %}
+                <img src="{{ category.image.url }}" alt="" class="gift-category-image">
+                {% else %}
+                <span class="gift-category-icon"><i class="bi bi-gift"></i></span>
+                {% endif %}
+                <div>
+                    <h2>{{ category.name }}</h2>
+                    {% if category.description %}<p>{{ category.description }}</p>{% endif %}
+                </div>
+                <span class="gift-count">{{ category.products.all|length }} item{{ category.products.all|length|pluralize }}</span>
+            </div>
+
+            <div class="gift-grid">
+                {% for product in category.products.all %}
+                <article class="gift-card">
+                    <div class="gift-product-media">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                        {% else %}
+                        <div class="gift-image-fallback"><i class="bi bi-gift"></i></div>
+                        {% endif %}
+                        <span class="gift-category-badge">{{ category.name }}</span>
+                    </div>
+                    <div class="gift-card-body">
+                        <h3>{{ product.name }}</h3>
+                        {% if product.description %}<p>{{ product.description }}</p>{% endif %}
+                        <div class="gift-card-footer">
+                            <div class="gift-price">
+                                <span>Price</span>
+                                <strong>â‚¦{{ product.price|floatformat:2|intcomma }}</strong>
+                            </div>
+                            <button
+                                type="button"
+                                class="gift-send"
+                                data-order-url="{% url 'gift_order_create' product.id %}"
+                                data-product-name="{{ product.name }}"
+                                data-price="{{ product.price }}"
+                                data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
+                                aria-label="Send {{ product.name }} as a gift">
+                                <i class="bi bi-send"></i> Send Gift
+                            </button>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="gift-empty">
+        <span><i class="bi bi-gift"></i></span>
+        <h2>No gifts available yet</h2>
+        <p>Please check back soon or contact support if you need help.</p>
+    </div>
+    {% endif %}
+
+    <aside class="gift-support">
+        <span class="gift-support-icon"><i class="bi bi-telegram"></i></span>
+        <div>
+            <h2>Need help with a gift order?</h2>
+            <p>If you do not understand anything on this page, contact our support team before placing your order.</p>
+        </div>
+        <a href="https://t.me/Pabloexchange1" target="_blank" rel="noopener noreferrer">
+            <i class="bi bi-telegram"></i> Contact support
+        </a>
+    </aside>
+</div>
+
+<div class="gift-modal" id="giftOrderModal" hidden>
+    <div class="gift-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="giftModalTitle">
+        <button type="button" class="gift-modal-close" data-close-order aria-label="Close">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <div class="gift-modal-heading">
+            <span><i class="bi bi-box2-heart"></i></span>
+            <div>
+                <p>Recipient details</p>
+                <h2 id="giftModalTitle">Confirm your gift order</h2>
+            </div>
+        </div>
+
+        <div class="gift-order-summary">
+            <img id="giftSummaryImage" src="" alt="" hidden>
+            <span class="gift-summary-fallback" id="giftSummaryFallback"><i class="bi bi-gift"></i></span>
+            <div>
+                <strong id="giftSummaryName"></strong>
+                <span>Amount charged to your wallet</span>
+            </div>
+            <b id="giftSummaryPrice"></b>
+        </div>
+
+        <form id="giftOrderForm" method="post" novalidate>
+            {% csrf_token %}
+            <div class="gift-form-alert" id="giftFormAlert" role="alert" hidden></div>
+
+            <div class="gift-form-grid">
+                <div class="gift-field gift-field-full">
+                    <label for="recipient_full_name">Recipientâ€™s full name</label>
+                    <input class="gift-control" id="recipient_full_name" name="recipient_full_name" maxlength="150" autocomplete="name" placeholder="First and last name" required>
+                    <span class="gift-field-error" data-field="recipient_full_name"></span>
+                </div>
+
+                <div class="gift-field gift-field-full">
+                    <label for="recipient_address">Complete delivery address</label>
+                    <textarea class="gift-control" id="recipient_address" name="recipient_address" rows="3" placeholder="House number, street, city and state" required></textarea>
+                    <span class="gift-field-error" data-field="recipient_address"></span>
+                </div>
+
+                <div class="gift-field">
+                    <label for="recipient_postal_code">Postal / ZIP code</label>
+                    <input class="gift-control" id="recipient_postal_code" name="recipient_postal_code" maxlength="20" placeholder="e.g. 100001" required>
+                    <span class="gift-field-error" data-field="recipient_postal_code"></span>
+                </div>
+
+                <div class="gift-field">
+                    <label for="recipient_country">Country</label>
+                    <input class="gift-control" id="recipient_country" name="recipient_country" maxlength="100" autocomplete="country-name" placeholder="e.g. Nigeria" required>
+                    <span class="gift-field-error" data-field="recipient_country"></span>
+                </div>
+
+                <div class="gift-field gift-field-full">
+                    <label for="recipient_phone">Recipientâ€™s phone number</label>
+                    <input class="gift-control" id="recipient_phone" name="recipient_phone" type="tel" maxlength="30" inputmode="tel" autocomplete="tel" placeholder="Include the country code" required>
+                    <span class="gift-field-error" data-field="recipient_phone"></span>
+                </div>
+
+                <div class="gift-field gift-field-full">
+                    <label for="customer_note">Delivery note <em>Optional</em></label>
+                    <textarea class="gift-control" id="customer_note" name="customer_note" rows="2" placeholder="Anything support should know about this delivery"></textarea>
+                    <span class="gift-field-error" data-field="customer_note"></span>
+                </div>
+            </div>
+
+            <p class="gift-charge-note"><i class="bi bi-shield-check"></i> Your wallet will be charged only after these details pass validation.</p>
+
+            <div class="gift-modal-actions">
+                <button type="button" class="gift-btn-secondary" data-close-order>Cancel</button>
+                <button type="submit" class="gift-btn-primary" id="giftSubmitButton">
+                    <i class="bi bi-check2-circle"></i> <span>Confirm &amp; Pay</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="gift-modal" id="giftSuccessModal" hidden>
+    <div class="gift-success-dialog" role="dialog" aria-modal="true" aria-labelledby="giftSuccessTitle">
+        <span class="gift-success-icon"><i class="bi bi-check2"></i></span>
+        <p class="gift-success-kicker">Order received</p>
+        <h2 id="giftSuccessTitle">Your gift order is pending</h2>
+        <p>Support has received the order details and will process the delivery. You can follow its status in My Purchases.</p>
+        <div class="gift-success-details">
+            <div><span>Order reference</span><strong id="giftSuccessOrder"></strong></div>
+            <div><span>Gift</span><strong id="giftSuccessProduct"></strong></div>
+            <div><span>Status</span><strong class="gift-pending">Pending</strong></div>
+        </div>
+        <a href="{% url 'smsmarket:my_purchases' %}" class="gift-btn-primary gift-success-link">
+            <i class="bi bi-bag-check"></i> View My Purchases
+        </a>
+        <button type="button" class="gift-btn-secondary gift-success-close" id="giftSuccessClose">Continue shopping</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'gifts/js/gift_sending.js' %}?v=1"></script>
+{% endblock %}

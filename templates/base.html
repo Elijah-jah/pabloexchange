@@ -56,6 +56,11 @@
             <i class="bi bi-box-seam"></i><span>Buy Logs</span>
         </a>
 
+        <a href="{% url 'gift_sending' %}"
+           class="side-link {% if request.resolver_match.url_name == 'gift_sending' %}active{% endif %}">
+            <i class="bi bi-gift"></i><span>Gift Sending</span>
+        </a>
+
         <p class="sidebar-label mt-3">History</p>
 
         <a href="{% url 'smsmarket:my_purchases' %}"
@@ -134,6 +139,11 @@
             <a href="{% url 'marketplace' %}"
                class="side-link {% if request.resolver_match.url_name == 'marketplace' %}active{% endif %}">
                 <i class="bi bi-box-seam"></i><span>Buy Logs</span>
+            </a>
+
+            <a href="{% url 'gift_sending' %}"
+               class="side-link {% if request.resolver_match.url_name == 'gift_sending' %}active{% endif %}">
+                <i class="bi bi-gift"></i><span>Gift Sending</span>
             </a>
 
             <a href="{% url 'smsmarket:my_purchases' %}"
