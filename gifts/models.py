@@ -86,6 +86,7 @@ class GiftOrder(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     support_email_sent_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True, editable=False)
+    completion_email_sent_at = models.DateTimeField(null=True, blank=True, editable=False)
     completed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -121,6 +122,12 @@ class GiftOrder(models.Model):
         locked.save(update_fields=[
             "status", "completed_at", "completed_by", "updated_at",
         ])
+
+        # Notify after commit so a failed transaction never emails the customer.
+        from .services import send_gift_completion_email
+        transaction.on_commit(
+            lambda order_pk=locked.pk: send_gift_completion_email(order_pk)
+        )
 
         # Keep the object used by the admin view in sync with the database.
         self.status = locked.status

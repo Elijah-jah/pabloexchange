@@ -1,4 +1,5 @@
 import logging
+import time
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -31,7 +32,7 @@ def send_gift_order_email(order_pk):
         logger.error("Gift order %s has no SUPPORT_EMAIL configured", order.order_id)
         return False
 
-    subject = f"New gift order {order.order_id} — {order.product_name}"
+    subject = f"New gift order {order.order_id} â€” {order.product_name}"
     message = f"""A new gift order has been placed on PabloExchange.
 
 ORDER
@@ -54,7 +55,7 @@ Country: {order.recipient_country}
 Phone: {order.recipient_phone}
 Delivery note: {order.customer_note or 'None'}
 
-Open Django admin → Gifts → Gift orders to process this order.
+Open Django admin â†’ Gifts â†’ Gift orders to process this order.
 """
     try:
         send_mail(
@@ -72,6 +73,78 @@ Open Django admin → Gifts → Gift orders to process this order.
         support_email_sent_at=timezone.now()
     )
     return True
+
+
+def send_gift_completion_email(order_pk, max_attempts=3):
+    """Send the customer completion email, trying at most three times."""
+    try:
+        order = GiftOrder.objects.select_related("user").get(pk=order_pk)
+    except GiftOrder.DoesNotExist:
+        return False
+
+    if order.status != "completed":
+        logger.warning("Completion email skipped for non-completed order %s", order.order_id)
+        return False
+
+    customer_email = (order.user.email or "").strip()
+    if not customer_email:
+        logger.warning("Completion email skipped for %s: customer has no email", order.order_id)
+        return False
+
+    site_url = getattr(settings, "SITE_URL", "https://pabloexchange.com").rstrip("/")
+    subject = "Your gift order has been sent successfully"
+    message = f"""Hello {order.user.username},
+
+Your gift order has been sent successfully.
+
+ORDER DETAILS
+Order reference: {order.order_id}
+Gift: {order.product_name}
+Recipient: {order.recipient_full_name}
+Status: Completed
+Price: NGN {order.price:,.2f}
+
+You can view the order in My Purchases:
+{site_url}/purchases/
+
+Thank you for using PabloExchange.
+"""
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+                recipient_list=[customer_email],
+                fail_silently=False,
+            )
+            try:
+                GiftOrder.objects.filter(pk=order.pk).update(
+                    completion_email_sent_at=timezone.now()
+                )
+            except Exception:
+                logger.exception(
+                    "Completion email timestamp could not be saved for %s",
+                    order.order_id,
+                )
+            logger.info(
+                "Completion email sent for %s on attempt %s",
+                order.order_id,
+                attempt,
+            )
+            return True
+        except Exception:
+            logger.exception(
+                "Completion email attempt %s/%s failed for %s",
+                attempt,
+                max_attempts,
+                order.order_id,
+            )
+            if attempt < max_attempts:
+                time.sleep(attempt)
+
+    return False
 
 
 @transaction.atomic
@@ -114,7 +187,7 @@ def create_gift_order(user, product_id, recipient_data):
         debit(
             user,
             product.price,
-            description=f"Gift order {order.order_id} — {product.name}",
+            description=f"Gift order {order.order_id} â€” {product.name}",
             meta={"gift_order_id": order.id, "order_id": order.order_id},
         )
     except Exception as exc:

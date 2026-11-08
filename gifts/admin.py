@@ -4,7 +4,7 @@ from django.urls import path, reverse
 from django.utils.html import format_html
 
 from .models import GiftCategory, GiftOrder, GiftProduct
-from .services import send_gift_order_email
+from .services import send_gift_completion_email, send_gift_order_email
 
 
 @admin.register(GiftCategory)
@@ -20,7 +20,7 @@ class GiftCategoryAdmin(admin.ModelAdmin):
                 '<img src="{}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;">',
                 obj.image.url,
             )
-        return "—"
+        return "â€”"
 
 
 @admin.register(GiftProduct)
@@ -40,7 +40,7 @@ class GiftProductAdmin(admin.ModelAdmin):
                 '<img src="{}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;">',
                 obj.image.url,
             )
-        return "—"
+        return "â€”"
 
 
 @admin.register(GiftOrder)
@@ -48,7 +48,7 @@ class GiftOrderAdmin(admin.ModelAdmin):
     list_display = (
         "order_id", "product_name", "user", "price", "recipient_full_name",
         "recipient_country", "status", "completion_button",
-        "support_email_sent_at", "created_at",
+        "support_email_sent_at", "completion_email_sent_at", "created_at",
     )
     list_select_related = ("user", "completed_by")
     change_form_template = "admin/gifts/giftorder/change_form.html"
@@ -61,10 +61,11 @@ class GiftOrderAdmin(admin.ModelAdmin):
         "order_id", "user", "product", "product_name", "category_name",
         "product_image_url", "price", "recipient_full_name", "recipient_address",
         "recipient_postal_code", "recipient_country", "recipient_phone",
-        "customer_note", "support_email_sent_at", "completed_at", "completed_by",
+        "customer_note", "support_email_sent_at", "completed_at",
+        "completion_email_sent_at", "completed_by",
         "created_at", "updated_at",
     )
-    actions = ("resend_support_email",)
+    actions = ("resend_support_email", "resend_completion_email")
 
     @admin.action(description="Resend selected orders to support")
     def resend_support_email(self, request, queryset):
@@ -95,7 +96,7 @@ class GiftOrderAdmin(admin.ModelAdmin):
                 '<span style="color:#047857;font-weight:700;">{}</span>',
                 "Completed",
             )
-        return "—"
+        return "â€”"
 
     def mark_completed_view(self, request, order_id):
         order = get_object_or_404(GiftOrder, pk=order_id)
@@ -126,4 +127,21 @@ class GiftOrderAdmin(admin.ModelAdmin):
             request,
             "admin/gifts/giftorder/confirm_completed.html",
             context,
+        )
+
+
+    @admin.action(description="Resend completion email to customers")
+    def resend_completion_email(self, request, queryset):
+        completed = queryset.filter(status="completed").select_related("user")
+        attempted = completed.count()
+        sent = sum(
+            1 for order in completed
+            if send_gift_completion_email(order.pk)
+        )
+        skipped = queryset.exclude(status="completed").count()
+        self.message_user(
+            request,
+            f"Completion email sent for {sent} of {attempted} completed order(s). "
+            f"Skipped {skipped} order(s) that were not completed.",
+            messages.INFO,
         )
