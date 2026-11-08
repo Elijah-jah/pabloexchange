@@ -16,7 +16,7 @@
     <section class="db-welcome" aria-labelledby="dbHello">
         <div class="db-welcome-copy">
             <h2 class="db-hello" id="dbHello">Welcome back, {{ user.username }}</h2>
-            <p class="db-hello-sub">Here’s what’s happening with your numbers and logs.</p>
+            <p class="db-hello-sub">Here's what's happening with your numbers, logs and gift orders.</p>
         </div>
 
         <div class="db-actions" aria-label="Dashboard actions">
@@ -31,6 +31,10 @@
             <a href="{% url 'marketplace' %}" class="db-action db-action-secondary">
                 <i class="bi bi-box-seam" aria-hidden="true"></i>
                 <span>Buy Logs</span>
+            </a>
+            <a href="{% url 'gift_sending' %}" class="db-action db-action-secondary">
+                <i class="bi bi-gift" aria-hidden="true"></i>
+                <span>Send Gift</span>
             </a>
         </div>
     </section>
@@ -76,7 +80,7 @@
                 <article class="db-stat">
                     <div class="db-stat-icon amber"><i class="bi bi-hourglass-split" aria-hidden="true"></i></div>
                     <div class="db-stat-num" data-count="{{ active_count|default:0 }}">0</div>
-                    <div class="db-stat-label">Active</div>
+                    <div class="db-stat-label">Active / Pending</div>
                 </article>
             </div>
 
@@ -94,6 +98,64 @@
                     <span>Transactions</span>
                 </a>
             </nav>
+        </div>
+    </section>
+
+    <!-- Gift Sending overview: all values come from the customer's own orders -->
+    <section class="db-card" style="margin-top:18px;" aria-labelledby="dbGiftTitle">
+        <div class="db-card-head">
+            <h2 class="db-card-title" id="dbGiftTitle"><i class="bi bi-gift" aria-hidden="true"></i> Gift Sending</h2>
+            <a href="{% url 'smsmarket:my_purchases' %}" class="db-view-all">
+                Track gifts <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </a>
+        </div>
+
+        <div class="db-card-body">
+            <div class="db-stats">
+                <article class="db-stat">
+                    <div class="db-stat-icon slate"><i class="bi bi-gift" aria-hidden="true"></i></div>
+                    <div class="db-stat-num" data-count="{{ gift_order_count|default:0 }}">0</div>
+                    <div class="db-stat-label">Total Gift Orders</div>
+                </article>
+
+                <article class="db-stat">
+                    <div class="db-stat-icon amber"><i class="bi bi-hourglass-split" aria-hidden="true"></i></div>
+                    <div class="db-stat-num" data-count="{{ gift_active_count|default:0 }}">0</div>
+                    <div class="db-stat-label">Pending / Active Gifts</div>
+                </article>
+
+                <article class="db-stat">
+                    <div class="db-stat-icon emerald"><i class="bi bi-check-circle-fill" aria-hidden="true"></i></div>
+                    <div class="db-stat-num" data-count="{{ gift_completed_count|default:0 }}">0</div>
+                    <div class="db-stat-label">Completed Gifts</div>
+                </article>
+            </div>
+
+            {% for gift in gift_orders %}
+            <a href="{% url 'smsmarket:my_purchases' %}" class="db-row">
+                <div class="db-row-icon {% if gift.status == 'completed' %}emerald{% else %}amber{% endif %}">
+                    <i class="bi bi-gift" aria-hidden="true"></i>
+                </div>
+                <div class="db-row-body">
+                    <div class="db-row-title">{{ gift.product_name }}</div>
+                    <div class="db-row-sub">
+                        To {{ gift.recipient_full_name }} &middot; {{ gift.created_at|date:"M d, Y, H:i" }}
+                    </div>
+                </div>
+                <div class="db-row-side">
+                    <span class="px-pill {{ gift.status }}">{{ gift.get_status_display }}</span>
+                    <div class="db-row-amount">&#8358;{{ gift.price|floatformat:2|intcomma }}</div>
+                </div>
+            </a>
+            {% empty %}
+            <div class="db-empty">
+                <i class="bi bi-gift" aria-hidden="true"></i>
+                <p>You have not sent any gifts yet.</p>
+                <div class="db-empty-actions">
+                    <a href="{% url 'gift_sending' %}" class="db-btn-ghost">Send a Gift</a>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </section>
 
@@ -123,7 +185,7 @@
                 {% empty %}
                 <div class="db-empty">
                     <i class="bi bi-inbox" aria-hidden="true"></i>
-                    <p>No orders yet — get your first number or log.</p>
+                    <p>No orders yet &mdash; get your first number or log.</p>
                     <div class="db-empty-actions">
                         <a href="{% url 'buynumber' %}" class="db-btn-ghost">Buy Number</a>
                         <a href="{% url 'marketplace' %}" class="db-btn-ghost">Buy Logs</a>
@@ -150,19 +212,19 @@
                     </div>
                     <div class="db-row-body">
                         <div class="db-row-title">{{ t.description|default:t.get_type_display }}</div>
-                        <div class="db-row-sub">{{ t.created_at|date:"M d, Y · H:i" }}</div>
+                        <div class="db-row-sub">{{ t.created_at|date:"M d, Y, H:i" }}</div>
                     </div>
                     <div class="db-row-side">
                         <span class="px-pill {{ t.status }}">{{ t.status }}</span>
                         <div class="db-row-amount {% if t.type == 'credit' %}db-in{% endif %}">
-                            {% if t.type == 'credit' %}+{% else %}−{% endif %}&#8358;{{ t.amount|floatformat:2|intcomma }}
+                            {% if t.type == 'credit' %}+{% else %}&minus;{% endif %}&#8358;{{ t.amount|floatformat:2|intcomma }}
                         </div>
                     </div>
                 </div>
                 {% empty %}
                 <div class="db-empty">
                     <i class="bi bi-receipt" aria-hidden="true"></i>
-                    <p>No transactions yet — fund your wallet to get started.</p>
+                    <p>No transactions yet &mdash; fund your wallet to get started.</p>
                     <div class="db-empty-actions">
                         <a href="{% url 'wallet:fund' %}" class="db-btn-ghost">Fund Wallet</a>
                     </div>

@@ -1,3 +1,4 @@
+from gifts.models import GiftOrder
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
@@ -18,7 +19,25 @@ from marketplace.models import LogOrder
 def dashboard(request):
     all_orders = NumberOrder.objects.filter(user=request.user)
     all_logs = LogOrder.objects.filter(user=request.user)
+    # --- Dashboard gift-order tracking ---
+    gift_order_queryset = GiftOrder.objects.filter(user=request.user)
+    gift_order_count = gift_order_queryset.count()
+    gift_completed_count = gift_order_queryset.filter(status="completed").count()
+    gift_active_count = gift_order_queryset.filter(
+        status__in=["pending", "processing", "shipped"]
+    ).count()
+    gift_orders = gift_order_queryset[:5]
+
+    # Existing dashboard totals now include gifts as well as numbers/logs.
+    order_count = (order_count or 0) + gift_order_count
+    completed_count = (completed_count or 0) + gift_completed_count
+    active_count = (active_count or 0) + gift_active_count
+
     return render(request, 'pages/dashboard.html', {
+        "gift_order_count": gift_order_count,
+        "gift_active_count": gift_active_count,
+        "gift_completed_count": gift_completed_count,
+        "gift_orders": gift_orders,
         'balance': balance(request.user),
         'orders': all_orders[:5],
         'transactions': WalletTransaction.objects.filter(user=request.user)[:5],
