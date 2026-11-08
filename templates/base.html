@@ -258,9 +258,10 @@
     'use strict';
     var url = "{% url 'wallet:wallet_balance_json' %}";
 
-    function naira(n) {
-        return '\u20A6' + parseFloat(n).toLocaleString('en-NG', {
-            minimumFractionDigits: 2, maximumFractionDigits: 2
+    function naira(value) {
+        return "\u20A6" + parseFloat(value || "0").toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         });
     }
 
