@@ -10,7 +10,7 @@ from django.utils import timezone
 class GiftCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, default="")
-    image = models.ImageField(upload_to="gifts/categories/", blank=True, null=True)
+    image = models.ImageField(upload_to="gifts/categories/", blank=True, null=True, max_length=255)
     display_order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -31,7 +31,7 @@ class GiftProduct(models.Model):
     )
     name = models.CharField(max_length=160)
     description = models.TextField(blank=True, default="")
-    image = models.ImageField(upload_to="gifts/products/", blank=True, null=True)
+    image = models.ImageField(upload_to="gifts/products/", blank=True, null=True, max_length=255)
     price = models.DecimalField(
         max_digits=12,
         decimal_places=2,
@@ -46,7 +46,7 @@ class GiftProduct(models.Model):
         unique_together = ("category", "name")
 
     def __str__(self):
-        return f"{self.category.name} â€” {self.name}"
+        return f"{self.category.name} \u2014 {self.name}"
 
 
 class GiftOrder(models.Model):
@@ -129,4 +129,4 @@ class GiftOrder(models.Model):
         return True
 
     def __str__(self):
-        return f"{self.order_id} â€” {self.product_name} â€” {self.status}"
+        return f"{self.order_id} \u2014 {self.product_name} \u2014 {self.status}"
