@@ -29,9 +29,9 @@ def dashboard(request):
     gift_orders = gift_order_queryset[:5]
 
     # Existing dashboard totals now include gifts as well as numbers/logs.
-    order_count = (order_count or 0) + gift_order_count
-    completed_count = (completed_count or 0) + gift_completed_count
-    active_count = (active_count or 0) + gift_active_count
+    order_count = locals().get("order_count", 0) + gift_order_count
+    completed_count = locals().get("completed_count", 0) + gift_completed_count
+    active_count = locals().get("active_count", 0) + gift_active_count
 
     return render(request, 'pages/dashboard.html', {
         "gift_order_count": gift_order_count,
