@@ -12,7 +12,7 @@
     var lastFocused = null;
 
     function naira(value) {
-        return "â‚¦" + parseFloat(value || "0").toLocaleString("en-US", {
+        return "\u20A6" + parseFloat(value || "0").toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
@@ -123,7 +123,7 @@
         }
 
         submitButton.disabled = true;
-        submitButton.querySelector("span").textContent = "Placing orderâ€¦";
+        submitButton.querySelector("span").textContent = "Placing order\u2026";
 
         fetch(activeCard.getAttribute("data-order-url"), {
             method: "POST",
