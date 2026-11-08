@@ -20,7 +20,7 @@ class GiftCategoryAdmin(admin.ModelAdmin):
                 '<img src="{}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;">',
                 obj.image.url,
             )
-        return "â€”"
+        return "—"
 
 
 @admin.register(GiftProduct)
@@ -40,7 +40,7 @@ class GiftProductAdmin(admin.ModelAdmin):
                 '<img src="{}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;">',
                 obj.image.url,
             )
-        return "â€”"
+        return "—"
 
 
 @admin.register(GiftOrder)
@@ -91,8 +91,11 @@ class GiftOrderAdmin(admin.ModelAdmin):
                 url,
             )
         if obj.status == "completed":
-            return format_html('<span style="color:#047857;font-weight:700;">Completed</span>')
-        return "â€”"
+            return format_html(
+                '<span style="color:#047857;font-weight:700;">{}</span>',
+                "Completed",
+            )
+        return "—"
 
     def mark_completed_view(self, request, order_id):
         order = get_object_or_404(GiftOrder, pk=order_id)
@@ -114,7 +117,7 @@ class GiftOrderAdmin(admin.ModelAdmin):
 
         context = {
             **self.admin_site.each_context(request),
-            "title": f"Confirm completion â€” {order.order_id}",
+            "title": f"Confirm completion — {order.order_id}",
             "opts": self.model._meta,
             "order": order,
             "can_complete": order.can_mark_completed(),
