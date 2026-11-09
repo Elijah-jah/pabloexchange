@@ -238,7 +238,6 @@ Open Django admin → Gifts → Gift orders to process this order.
         photo_payloads.append((cid, filename, content))
 
     email.attach_alternative(_support_email_html(order, photo_cids), "text/html")
-    email.mixed_subtype = "related"  # keep cid images linked to the HTML part
 
     for cid, filename, content in photo_payloads:
         inline = MIMEImage(content)
