@@ -1,3 +1,4 @@
+
 (function () {
     "use strict";
 
@@ -11,8 +12,25 @@
     var activeCard = null;
     var lastFocused = null;
 
+    var MAX_IMAGES = 5;
+    var MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB per photo
+    var imageInput = document.getElementById("gift_images");
+    var uploadArea = document.getElementById("giftUploadArea");
+    var uploadButton = document.getElementById("giftUploadButton");
+    var uploadHint = document.getElementById("giftUploadHint");
+    var uploadPreviews = document.getElementById("giftUploadPreviews");
+    var selectedImages = null; // DataTransfer holding the pending photos
+
+    function newImageBucket() {
+        try {
+            return new DataTransfer();
+        } catch (error) {
+            return null; // very old browsers: fall back to the raw input files
+        }
+    }
+
     function naira(value) {
-        return "\u20A6" + parseFloat(value || "0").toLocaleString("en-US", {
+        return "₦" + parseFloat(value || "0").toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
@@ -27,6 +45,7 @@
         form.querySelectorAll(".gift-control").forEach(function (el) {
             el.classList.remove("has-error");
         });
+        if (uploadArea) uploadArea.classList.remove("has-error");
     }
 
     function showError(message) {
@@ -35,11 +54,135 @@
         alertBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
+    function currentImageFiles() {
+        if (selectedImages) return Array.prototype.slice.call(selectedImages.files);
+        return imageInput ? Array.prototype.slice.call(imageInput.files || []) : [];
+    }
+
+    function refreshUploadUI() {
+        if (!uploadPreviews) return;
+        var files = currentImageFiles();
+        uploadPreviews.innerHTML = "";
+        uploadPreviews.hidden = files.length === 0;
+
+        files.forEach(function (file, index) {
+            var thumb = document.createElement("div");
+            thumb.className = "gift-upload-thumb";
+
+            var img = document.createElement("img");
+            img.alt = file.name;
+            img.src = URL.createObjectURL(file);
+            img.onload = function () { URL.revokeObjectURL(img.src); };
+
+            var remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "gift-upload-remove";
+            remove.setAttribute("aria-label", "Remove " + file.name);
+            remove.innerHTML = '<i class="bi bi-x"></i>';
+            remove.addEventListener("click", function () { removeImage(index); });
+
+            thumb.appendChild(img);
+            thumb.appendChild(remove);
+            uploadPreviews.appendChild(thumb);
+        });
+
+        if (uploadHint) {
+            if (files.length === 0) {
+                uploadHint.textContent = "JPG, PNG, WEBP or GIF — up to " + MAX_IMAGES +
+                    " photos, 5 MB each. They are sent to support with your order.";
+            } else {
+                uploadHint.textContent = files.length + " of " + MAX_IMAGES + " photos selected.";
+            }
+        }
+    }
+
+    function syncInputFiles() {
+        if (selectedImages && imageInput) imageInput.files = selectedImages.files;
+        refreshUploadUI();
+    }
+
+    function removeImage(index) {
+        if (!selectedImages) return; // fallback mode cannot edit the selection
+        var next = newImageBucket();
+        currentImageFiles().forEach(function (file, i) {
+            if (i !== index) next.items.add(file);
+        });
+        selectedImages = next;
+        syncInputFiles();
+    }
+
+    function showImageError(message) {
+        var target = form.querySelector('[data-field="images"]');
+        if (target) target.textContent = message;
+        if (uploadArea) {
+            uploadArea.classList.add("has-error");
+            uploadArea.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+    }
+
+    function handleImageSelection(fileList) {
+        clearErrors();
+        var incoming = Array.prototype.slice.call(fileList || []);
+        if (incoming.length === 0) return;
+
+        var existing = currentImageFiles();
+        var accepted = [];
+        var rejected = [];
+
+        incoming.forEach(function (file) {
+            if (file.type && file.type.indexOf("image/") !== 0) {
+                rejected.push(file.name + " is not an image.");
+            } else if (file.size > MAX_IMAGE_SIZE) {
+                rejected.push(file.name + " is larger than 5 MB.");
+            } else {
+                accepted.push(file);
+            }
+        });
+
+        var combined = existing.concat(accepted);
+        if (combined.length > MAX_IMAGES) {
+            var room = Math.max(0, MAX_IMAGES - existing.length);
+            rejected.push("You can attach at most " + MAX_IMAGES + " photos.");
+            accepted = accepted.slice(0, room);
+            combined = existing.concat(accepted);
+        }
+
+        if (selectedImages) {
+            selectedImages = newImageBucket();
+            combined.forEach(function (file) { selectedImages.items.add(file); });
+            syncInputFiles();
+        } else {
+            refreshUploadUI(); // fallback: browser keeps whatever was picked
+        }
+
+        if (rejected.length > 0) showImageError(rejected.join(" "));
+    }
+
+    function resetImages() {
+        selectedImages = newImageBucket();
+        if (imageInput) imageInput.value = "";
+        refreshUploadUI();
+    }
+
+    if (imageInput && uploadButton) {
+        uploadButton.addEventListener("click", function () { imageInput.click(); });
+        if (uploadArea) {
+            uploadArea.addEventListener("click", function (event) {
+                if (event.target === uploadArea || event.target === uploadHint) imageInput.click();
+            });
+        }
+        imageInput.addEventListener("change", function () {
+            handleImageSelection(imageInput.files);
+        });
+        selectedImages = newImageBucket();
+    }
+
     function openOrderModal(button) {
         activeCard = button;
         lastFocused = document.activeElement;
         clearErrors();
         form.reset();
+        resetImages();
 
         var imageUrl = button.getAttribute("data-image") || "";
         var image = document.getElementById("giftSummaryImage");
@@ -123,7 +266,7 @@
         }
 
         submitButton.disabled = true;
-        submitButton.querySelector("span").textContent = "Placing order\u2026";
+        submitButton.querySelector("span").textContent = "Placing order…";
 
         fetch(activeCard.getAttribute("data-order-url"), {
             method: "POST",
@@ -145,7 +288,11 @@
                         var target = form.querySelector('[data-field="' + field + '"]');
                         var input = form.querySelector('[name="' + field + '"]');
                         if (target) target.textContent = data.errors[field].join(" ");
-                        if (input) input.classList.add("has-error");
+                        if (input && input.type === "file") {
+                            if (uploadArea) uploadArea.classList.add("has-error");
+                        } else if (input) {
+                            input.classList.add("has-error");
+                        }
                     });
                 }
                 return;

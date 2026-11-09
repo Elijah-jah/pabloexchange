@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 {% load static humanize %}
 
@@ -5,7 +6,7 @@
 {% block page_title %}Gift Sending{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'gifts/css/gift_sending.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'gifts/css/gift_sending.css' %}?v=4">
 
 {% endblock %}
 
@@ -174,6 +175,19 @@
                     <textarea class="gift-control" id="customer_note" name="customer_note" rows="2" placeholder="Anything support should know about this delivery"></textarea>
                     <span class="gift-field-error" data-field="customer_note"></span>
                 </div>
+
+                <div class="gift-field gift-field-full">
+                    <label for="gift_images">Add photos <em>Optional &mdash; up to 5 images</em></label>
+                    <input type="file" id="gift_images" name="images" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
+                    <div class="gift-upload" id="giftUploadArea">
+                        <button type="button" class="gift-upload-btn" id="giftUploadButton">
+                            <i class="bi bi-cloud-arrow-up"></i> <span>Choose photos</span>
+                        </button>
+                        <span class="gift-upload-hint" id="giftUploadHint">JPG, PNG, WEBP or GIF &mdash; up to 5 photos, 5&nbsp;MB each. They are sent to support with your order.</span>
+                    </div>
+                    <div class="gift-upload-previews" id="giftUploadPreviews" hidden></div>
+                    <span class="gift-field-error" data-field="images"></span>
+                </div>
             </div>
 
             <p class="gift-charge-note"><i class="bi bi-shield-check"></i> Your wallet will be charged only after these details pass validation.</p>
@@ -208,5 +222,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'gifts/js/gift_sending.js' %}?v=2"></script>
+<script src="{% static 'gifts/js/gift_sending.js' %}?v=3"></script>
 {% endblock %}

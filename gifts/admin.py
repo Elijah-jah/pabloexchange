@@ -1,9 +1,10 @@
+
 from django.contrib import admin, messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import path, reverse
 from django.utils.html import format_html
 
-from .models import GiftCategory, GiftOrder, GiftProduct
+from .models import GiftCategory, GiftOrder, GiftOrderImage, GiftProduct
 from .services import send_gift_completion_email, send_gift_order_email
 
 
@@ -20,7 +21,7 @@ class GiftCategoryAdmin(admin.ModelAdmin):
                 '<img src="{}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;">',
                 obj.image.url,
             )
-        return "â€”"
+        return "—"
 
 
 @admin.register(GiftProduct)
@@ -40,7 +41,32 @@ class GiftProductAdmin(admin.ModelAdmin):
                 '<img src="{}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;">',
                 obj.image.url,
             )
-        return "â€”"
+        return "—"
+
+
+class GiftOrderImageInline(admin.TabularInline):
+    model = GiftOrderImage
+    extra = 0
+    can_delete = False
+    fields = ("image_preview", "image", "uploaded_at")
+    readonly_fields = ("image_preview", "uploaded_at")
+
+    @admin.display(description="Preview")
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html(
+                '<a href="{0}" target="_blank" rel="noopener">'
+                '<img src="{0}" style="width:64px;height:64px;object-fit:cover;'
+                'border-radius:8px;border:1px solid #dce8e2;"></a>',
+                obj.image.url,
+            )
+        return "—"
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(GiftOrder)
@@ -52,6 +78,7 @@ class GiftOrderAdmin(admin.ModelAdmin):
     )
     list_select_related = ("user", "completed_by")
     change_form_template = "admin/gifts/giftorder/change_form.html"
+    inlines = (GiftOrderImageInline,)
     list_filter = ("status", "category_name", "recipient_country", "created_at")
     search_fields = (
         "order_id", "product_name", "user__username", "user__email",
@@ -96,7 +123,7 @@ class GiftOrderAdmin(admin.ModelAdmin):
                 '<span style="color:#047857;font-weight:700;">{}</span>',
                 "Completed",
             )
-        return "â€”"
+        return "—"
 
     def mark_completed_view(self, request, order_id):
         order = get_object_or_404(GiftOrder, pk=order_id)

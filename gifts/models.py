@@ -1,3 +1,4 @@
+
 import uuid
 from decimal import Decimal
 
@@ -137,3 +138,21 @@ class GiftOrder(models.Model):
 
     def __str__(self):
         return f"{self.order_id} \u2014 {self.product_name} \u2014 {self.status}"
+
+
+class GiftOrderImage(models.Model):
+    """A photo the customer attached to a gift order (e.g. for customized frames)."""
+
+    order = models.ForeignKey(
+        GiftOrder,
+        on_delete=models.CASCADE,
+        related_name="images",
+    )
+    image = models.ImageField(upload_to="gifts/orders/%Y/%m/", max_length=255)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["id"]
+
+    def __str__(self):
+        return f"Photo {self.pk} for order {self.order_id}"

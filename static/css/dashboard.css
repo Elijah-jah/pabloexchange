@@ -1,3 +1,4 @@
+
 /* ============================================================
    PabloExchange - Dashboard v6
    Light gray canvas - white cards - green accents - dark sidebar
@@ -1136,55 +1137,55 @@ a.db-row:focus-visible {
     }
 }
 
-/* Exact Fund Wallet green for the mobile wallet panel. */
+/* Mobile wallet panel: original dark green gradient (matches desktop card). */
 @media (max-width: 575.98px) {
     .db-balance {
-        border-color: #0b9f75;
-        background: #10b981;
-        color: #0b1220;
-        box-shadow: 0 16px 34px rgba(11, 159, 117, .22);
+        border-color: rgba(16, 185, 129, .28);
+        background: linear-gradient(135deg, #0b1220 0%, #123c35 100%);
+        color: var(--db-white);
+        box-shadow: 0 16px 34px rgba(11, 18, 32, .3);
     }
 
     .db-balance::before {
-        background: radial-gradient(circle, rgba(255, 255, 255, .24), rgba(255, 255, 255, .07) 58%, transparent 72%);
+        background: radial-gradient(circle, rgba(16, 185, 129, .2), transparent 70%);
     }
 
     .db-balance-label,
     .db-balance-amount {
-        color: #0b1220;
-        -webkit-text-fill-color: #0b1220;
+        color: var(--db-white);
+        -webkit-text-fill-color: var(--db-white);
     }
 
     .db-balance-toggle {
-        border-color: rgba(11, 18, 32, .18);
-        background: rgba(255, 255, 255, .18);
-        color: #0b1220;
+        border-color: rgba(255, 255, 255, .16);
+        background: rgba(255, 255, 255, .1);
+        color: var(--db-white);
     }
 
     .db-balance-toggle:hover {
-        border-color: rgba(11, 18, 32, .32);
-        background: rgba(255, 255, 255, .3);
+        border-color: rgba(255, 255, 255, .32);
+        background: rgba(255, 255, 255, .18);
     }
 
     .db-mobile-service {
-        border-color: rgba(11, 18, 32, .13);
-        background: rgba(255, 255, 255, .18);
-        color: #0b1220;
+        border-color: rgba(255, 255, 255, .18);
+        background: rgba(255, 255, 255, .08);
+        color: var(--db-white);
     }
 
     .db-mobile-service i {
-        color: #065f46;
+        color: #34d399;
     }
 
     .db-mobile-service:hover {
-        border-color: rgba(11, 18, 32, .25);
-        background: rgba(255, 255, 255, .3);
-        color: #0b1220;
+        border-color: rgba(255, 255, 255, .32);
+        background: rgba(255, 255, 255, .15);
+        color: var(--db-white);
     }
 
     .db-balance-toggle:focus-visible,
     .db-mobile-fund:focus-visible,
     .db-mobile-service:focus-visible {
-        outline-color: #0b1220;
+        outline-color: #a7f3d0;
     }
 }

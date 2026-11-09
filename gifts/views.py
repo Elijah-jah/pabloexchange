@@ -1,3 +1,4 @@
+
 from django.contrib.auth.decorators import login_required
 from django.db.models import Prefetch
 from django.http import JsonResponse
@@ -45,9 +46,13 @@ def gift_order_create(request, product_id):
             user=request.user,
             product_id=product_id,
             recipient_data=form.cleaned_data,
+            images=request.FILES.getlist("images"),
         )
     except GiftOrderError as exc:
-        return JsonResponse({"success": False, "error": str(exc)}, status=400)
+        payload = {"success": False, "error": str(exc)}
+        if getattr(exc, "field", None):
+            payload["errors"] = {exc.field: [str(exc)]}
+        return JsonResponse(payload, status=400)
 
     return JsonResponse({
         "success": True,

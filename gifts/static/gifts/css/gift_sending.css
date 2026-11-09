@@ -1,3 +1,4 @@
+
 /* PabloExchange Gift Sending - responsive catalog and checkout */
 .gift-page {
     --gift-green: #047857;
@@ -415,6 +416,88 @@ textarea.gift-control { resize: vertical; min-height: 70px; }
 .gift-control.has-error { border-color: #dc2626; }
 .gift-field-error { display: block; min-height: 0; margin-top: 4px; color: #b91c1c; font-size: .69rem; }
 .gift-field-error:empty { display: none; }
+
+/* Customer photo upload */
+.gift-upload {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 13px;
+    border: 1px dashed #b9d9cc;
+    border-radius: 12px;
+    background: #f7fbf9;
+    transition: border-color .15s, background .15s;
+}
+.gift-upload:hover { border-color: #059669; background: #f2faf6; }
+.gift-upload.has-error { border-color: #dc2626; background: #fef2f2; }
+.gift-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 9px 15px;
+    border: 1px solid #047857;
+    border-radius: 10px;
+    background: #fff;
+    color: #047857;
+    font-size: .78rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+}
+.gift-upload-btn:hover,
+.gift-upload-btn:focus-visible { background: #047857; color: #fff; }
+.gift-upload-hint {
+    flex: 1;
+    min-width: 180px;
+    color: #71867e;
+    font-size: .7rem;
+    line-height: 1.55;
+}
+.gift-upload-previews {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 10px;
+}
+.gift-upload-previews[hidden] { display: none !important; }
+.gift-upload-thumb {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    overflow: hidden;
+    border: 1px solid #dce8e2;
+    border-radius: 10px;
+    background: #f3f7f5;
+}
+.gift-upload-thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.gift-upload-remove {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(2, 44, 34, .78);
+    color: #fff;
+    font-size: .62rem;
+    line-height: 1;
+    cursor: pointer;
+}
+.gift-upload-remove:hover { background: #b91c1c; }
 .gift-charge-note { display: flex; align-items: flex-start; gap: 6px; margin: 15px 0 0; color: #71867e; font-size: .71rem; line-height: 1.5; }
 .gift-charge-note i { color: #047857; margin-top: 2px; }
 .gift-modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 20px; }

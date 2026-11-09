@@ -1,3 +1,4 @@
+
 /* ============================================================
    PabloExchange - Public home page
    Charcoal, green and white; responsive without zoom or shrinking.
@@ -1184,9 +1185,9 @@ div[id="logs"] {
 
 .hero-section {
     background:
-        radial-gradient(circle at 88% 12%, rgba(167, 243, 208, .16), transparent 30%),
-        radial-gradient(circle at 4% 90%, rgba(52, 211, 153, .13), transparent 27%),
-        linear-gradient(135deg, #047857 0%, #065f46 100%);
+        radial-gradient(circle at 88% 12%, rgba(16, 185, 129, .18), transparent 30%),
+        radial-gradient(circle at 4% 90%, rgba(16, 185, 129, .1), transparent 27%),
+        linear-gradient(135deg, #0b1220 0%, #123c35 100%);
     color: var(--px-white);
 }
 
@@ -1455,41 +1456,50 @@ div[id="logs"] {
     }
 
     .hero-section {
-        background: #10b981;
-        color: #0b1220;
+        background:
+            radial-gradient(circle at 88% 12%, rgba(16, 185, 129, .18), transparent 30%),
+            radial-gradient(circle at 4% 90%, rgba(16, 185, 129, .1), transparent 27%),
+            linear-gradient(135deg, #0b1220 0%, #123c35 100%);
+        color: var(--px-white);
     }
 
     .hero-section::before {
-        border-color: rgba(11, 18, 32, .12);
+        border-color: rgba(255, 255, 255, .13);
     }
 
     .hero-badge {
-        border-color: rgba(11, 18, 32, .2);
-        background: rgba(255, 255, 255, .18);
-        color: #0b1220;
+        border-color: rgba(255, 255, 255, .28);
+        background: rgba(255, 255, 255, .11);
+        color: var(--px-white);
     }
 
-    .hero-badge i,
+    .hero-badge i {
+        color: #a7f3d0;
+    }
+
     .hero-title,
     .hero-title span,
-    .hero-lead,
+    .hero-lead {
+        color: var(--px-white);
+    }
+
     .hero-description {
-        color: #0b1220;
+        color: #f0fdf9;
     }
 
     .hero-buttons .px-btn-outline {
-        border-color: rgba(11, 18, 32, .45);
-        color: #0b1220;
+        border-color: rgba(255, 255, 255, .6);
+        color: var(--px-white);
     }
 
     .hero-buttons .px-btn-outline:hover,
     .hero-buttons .px-btn-outline:focus {
-        border-color: #0b1220;
-        background: rgba(255, 255, 255, .18);
-        color: #0b1220;
+        border-color: var(--px-white);
+        background: rgba(255, 255, 255, .12);
+        color: var(--px-white);
     }
 
     .hero-buttons .btn:focus-visible {
-        outline-color: #0b1220;
+        outline-color: #a7f3d0;
     }
 }
