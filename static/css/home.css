@@ -1429,3 +1429,67 @@ div[id="logs"] {
         align-items: center;
     }
 }
+
+/* Exact Fund Wallet green for the mobile landing experience. */
+@media (max-width: 767px) {
+    .px-navbar .logo-badge {
+        border-color: #0b9f75;
+        background: #10b981;
+        color: #0b1220;
+    }
+
+    .px-mobile-dashboard,
+    .px-mobile-login {
+        border-color: #10b981;
+        background: #10b981;
+        color: #0b1220;
+    }
+
+    .px-mobile-dashboard:hover,
+    .px-mobile-dashboard:focus,
+    .px-mobile-login:hover,
+    .px-mobile-login:focus {
+        border-color: #0b9f75;
+        background: #0b9f75;
+        color: #ffffff;
+    }
+
+    .hero-section {
+        background: #10b981;
+        color: #0b1220;
+    }
+
+    .hero-section::before {
+        border-color: rgba(11, 18, 32, .12);
+    }
+
+    .hero-badge {
+        border-color: rgba(11, 18, 32, .2);
+        background: rgba(255, 255, 255, .18);
+        color: #0b1220;
+    }
+
+    .hero-badge i,
+    .hero-title,
+    .hero-title span,
+    .hero-lead,
+    .hero-description {
+        color: #0b1220;
+    }
+
+    .hero-buttons .px-btn-outline {
+        border-color: rgba(11, 18, 32, .45);
+        color: #0b1220;
+    }
+
+    .hero-buttons .px-btn-outline:hover,
+    .hero-buttons .px-btn-outline:focus {
+        border-color: #0b1220;
+        background: rgba(255, 255, 255, .18);
+        color: #0b1220;
+    }
+
+    .hero-buttons .btn:focus-visible {
+        outline-color: #0b1220;
+    }
+}

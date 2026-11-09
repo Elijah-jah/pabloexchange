@@ -1135,3 +1135,56 @@ a.db-row:focus-visible {
         font-size: 1.05rem;
     }
 }
+
+/* Exact Fund Wallet green for the mobile wallet panel. */
+@media (max-width: 575.98px) {
+    .db-balance {
+        border-color: #0b9f75;
+        background: #10b981;
+        color: #0b1220;
+        box-shadow: 0 16px 34px rgba(11, 159, 117, .22);
+    }
+
+    .db-balance::before {
+        background: radial-gradient(circle, rgba(255, 255, 255, .24), rgba(255, 255, 255, .07) 58%, transparent 72%);
+    }
+
+    .db-balance-label,
+    .db-balance-amount {
+        color: #0b1220;
+        -webkit-text-fill-color: #0b1220;
+    }
+
+    .db-balance-toggle {
+        border-color: rgba(11, 18, 32, .18);
+        background: rgba(255, 255, 255, .18);
+        color: #0b1220;
+    }
+
+    .db-balance-toggle:hover {
+        border-color: rgba(11, 18, 32, .32);
+        background: rgba(255, 255, 255, .3);
+    }
+
+    .db-mobile-service {
+        border-color: rgba(11, 18, 32, .13);
+        background: rgba(255, 255, 255, .18);
+        color: #0b1220;
+    }
+
+    .db-mobile-service i {
+        color: #065f46;
+    }
+
+    .db-mobile-service:hover {
+        border-color: rgba(11, 18, 32, .25);
+        background: rgba(255, 255, 255, .3);
+        color: #0b1220;
+    }
+
+    .db-balance-toggle:focus-visible,
+    .db-mobile-fund:focus-visible,
+    .db-mobile-service:focus-visible {
+        outline-color: #0b1220;
+    }
+}
