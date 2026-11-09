@@ -13,13 +13,21 @@
     var lastFocused = null;
 
     var MAX_IMAGES = 5;
-    var MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB per photo
+    var MAX_IMAGE_SIZE = 5 * 1024 * 1024;    // per-photo cap after compression
+    var MAX_SOURCE_SIZE = 25 * 1024 * 1024;  // reject absurdly large originals
+    var MAX_PHOTO_DIMENSION = 2000;          // longest side after compression
+    var JPEG_QUALITY = 0.85;
+
     var imageInput = document.getElementById("gift_images");
     var uploadArea = document.getElementById("giftUploadArea");
     var uploadButton = document.getElementById("giftUploadButton");
     var uploadHint = document.getElementById("giftUploadHint");
     var uploadPreviews = document.getElementById("giftUploadPreviews");
     var selectedImages = null; // DataTransfer holding the pending photos
+    var optimizing = false;
+
+    var DEFAULT_HINT = "JPG, PNG or WEBP — up to " + MAX_IMAGES +
+        " photos. They are compressed automatically for a fast upload.";
 
     function newImageBucket() {
         try {
@@ -59,6 +67,44 @@
         return imageInput ? Array.prototype.slice.call(imageInput.files || []) : [];
     }
 
+    // Compress one photo in the browser: max 2000px on the longest side,
+    // re-encoded as JPEG. Falls back to the original file if anything fails.
+    function compressImage(file) {
+        return new Promise(function (resolve) {
+            if (!file.type || file.type.indexOf("image/") !== 0 || file.size > MAX_SOURCE_SIZE) {
+                resolve(file); // validation below reports the problem
+                return;
+            }
+            if (file.type === "image/jpeg" && file.size <= 1024 * 1024) {
+                resolve(file); // already small enough — skip re-encoding
+                return;
+            }
+            var url = URL.createObjectURL(file);
+            var img = new Image();
+            img.onload = function () {
+                URL.revokeObjectURL(url);
+                var scale = Math.min(1, MAX_PHOTO_DIMENSION / Math.max(img.width, img.height));
+                var canvas = document.createElement("canvas");
+                canvas.width = Math.max(1, Math.round(img.width * scale));
+                canvas.height = Math.max(1, Math.round(img.height * scale));
+                var ctx = canvas.getContext("2d");
+                ctx.fillStyle = "#ffffff"; // flatten transparency onto white
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob(function (blob) {
+                    if (!blob) { resolve(file); return; }
+                    var name = (file.name || "photo").replace(/\.[^.]+$/, "") + ".jpg";
+                    resolve(new File([blob], name, { type: "image/jpeg" }));
+                }, "image/jpeg", JPEG_QUALITY);
+            };
+            img.onerror = function () {
+                URL.revokeObjectURL(url);
+                resolve(file);
+            };
+            img.src = url;
+        });
+    }
+
     function refreshUploadUI() {
         if (!uploadPreviews) return;
         var files = currentImageFiles();
@@ -86,12 +132,12 @@
             uploadPreviews.appendChild(thumb);
         });
 
-        if (uploadHint) {
+        if (uploadHint && !optimizing) {
             if (files.length === 0) {
-                uploadHint.textContent = "JPG, PNG, WEBP or GIF — up to " + MAX_IMAGES +
-                    " photos, 5 MB each. They are sent to support with your order.";
+                uploadHint.textContent = DEFAULT_HINT;
             } else {
-                uploadHint.textContent = files.length + " of " + MAX_IMAGES + " photos selected.";
+                uploadHint.textContent = files.length + " of " + MAX_IMAGES +
+                    " photos selected — compressed and ready.";
             }
         }
     }
@@ -125,42 +171,58 @@
         var incoming = Array.prototype.slice.call(fileList || []);
         if (incoming.length === 0) return;
 
-        var existing = currentImageFiles();
-        var accepted = [];
-        var rejected = [];
+        // Compress while the customer fills the rest of the form, so the
+        // actual order submission is fast.
+        optimizing = true;
+        submitButton.disabled = true;
+        if (uploadHint) uploadHint.textContent = "Optimizing photos for faster upload…";
 
-        incoming.forEach(function (file) {
-            if (file.type && file.type.indexOf("image/") !== 0) {
-                rejected.push(file.name + " is not an image.");
-            } else if (file.size > MAX_IMAGE_SIZE) {
-                rejected.push(file.name + " is larger than 5 MB.");
-            } else {
-                accepted.push(file);
+        Promise.all(incoming.map(compressImage)).then(function (processed) {
+            optimizing = false;
+            submitButton.disabled = false;
+
+            var existing = currentImageFiles();
+            var accepted = [];
+            var rejected = [];
+
+            processed.forEach(function (file, i) {
+                var original = incoming[i];
+                if (original.size > MAX_SOURCE_SIZE) {
+                    rejected.push(original.name + " is too large (over 25 MB).");
+                } else if (file.type && file.type.indexOf("image/") !== 0) {
+                    rejected.push(file.name + " is not an image.");
+                } else if (file.size > MAX_IMAGE_SIZE) {
+                    rejected.push(file.name + " could not be reduced below 5 MB.");
+                } else {
+                    accepted.push(file);
+                }
+            });
+
+            var combined = existing.concat(accepted);
+            if (combined.length > MAX_IMAGES) {
+                var room = Math.max(0, MAX_IMAGES - existing.length);
+                rejected.push("You can attach at most " + MAX_IMAGES + " photos.");
+                accepted = accepted.slice(0, room);
+                combined = existing.concat(accepted);
             }
+
+            if (selectedImages) {
+                selectedImages = newImageBucket();
+                combined.forEach(function (file) { selectedImages.items.add(file); });
+                syncInputFiles();
+            } else {
+                refreshUploadUI(); // fallback: browser keeps whatever was picked
+            }
+
+            if (rejected.length > 0) showImageError(rejected.join(" "));
         });
-
-        var combined = existing.concat(accepted);
-        if (combined.length > MAX_IMAGES) {
-            var room = Math.max(0, MAX_IMAGES - existing.length);
-            rejected.push("You can attach at most " + MAX_IMAGES + " photos.");
-            accepted = accepted.slice(0, room);
-            combined = existing.concat(accepted);
-        }
-
-        if (selectedImages) {
-            selectedImages = newImageBucket();
-            combined.forEach(function (file) { selectedImages.items.add(file); });
-            syncInputFiles();
-        } else {
-            refreshUploadUI(); // fallback: browser keeps whatever was picked
-        }
-
-        if (rejected.length > 0) showImageError(rejected.join(" "));
     }
 
     function resetImages() {
         selectedImages = newImageBucket();
         if (imageInput) imageInput.value = "";
+        optimizing = false;
+        submitButton.disabled = false;
         refreshUploadUI();
     }
 
@@ -258,6 +320,11 @@
         event.preventDefault();
         if (!activeCard || submitButton.disabled) return;
         clearErrors();
+
+        if (optimizing) {
+            showError("Please wait a moment — your photos are still being optimized.");
+            return;
+        }
 
         if (!form.checkValidity()) {
             form.reportValidity();

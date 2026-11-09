@@ -1,11 +1,13 @@
 
 import logging
 import time
+from email.mime.image import MIMEImage
 
 from django.conf import settings
-from django.core.mail import EmailMessage, send_mail
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.db import transaction
 from django.utils import timezone
+from django.utils.html import escape
 
 from wallet.services import balance as get_balance, can_afford, debit
 
@@ -49,6 +51,106 @@ def validate_gift_images(images):
     return images
 
 
+def _support_email_html(order, photo_cids):
+    """Branded HTML version of the support email, photos embedded inline."""
+    e = escape
+    rows = [
+        ("Order reference", order.order_id),
+        ("Status", order.get_status_display()),
+        ("Product", order.product_name),
+        ("Category", order.category_name),
+        ("Price", f"NGN {order.price:,.2f}"),
+        ("Placed", f"{order.created_at:%B %d, %Y at %H:%M}"),
+    ]
+    customer_rows = [
+        ("Username", order.user.username),
+        ("Email", order.user.email or "Not provided"),
+    ]
+    recipient_rows = [
+        ("Full name", order.recipient_full_name),
+        ("Address", order.recipient_address),
+        ("Postal / ZIP code", order.recipient_postal_code),
+        ("Country", order.recipient_country),
+        ("Phone", order.recipient_phone),
+        ("Delivery note", order.customer_note or "None"),
+    ]
+
+    def table(rows_data):
+        cells = "".join(
+            f'<tr>'
+            f'<td style="padding:8px 0;color:#71867e;font-size:13px;width:140px;'
+            f'vertical-align:top;">{e(label)}</td>'
+            f'<td style="padding:8px 0;color:#12211c;font-size:13px;font-weight:600;'
+            f'overflow-wrap:anywhere;">{e(str(value))}</td>'
+            f'</tr>'
+            for label, value in rows_data
+        )
+        return (
+            '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+            'style="border-collapse:collapse;">' + cells + "</table>"
+        )
+
+    def section(title, content):
+        return (
+            f'<p style="margin:22px 0 4px;color:#047857;font-size:11px;font-weight:800;'
+            f'letter-spacing:.09em;text-transform:uppercase;">{e(title)}</p>'
+            f"{content}"
+        )
+
+    if photo_cids:
+        photos_html = ""
+        total = len(photo_cids)
+        for index, cid in enumerate(photo_cids, start=1):
+            photos_html += (
+                f'<p style="margin:14px 0 6px;color:#71867e;font-size:12px;">'
+                f"Photo {index} of {total} — also attached to this email as a file.</p>"
+                f'<img src="cid:{cid}" alt="Customer photo {index}" width="520" '
+                f'style="display:block;width:100%;max-width:520px;height:auto;'
+                f'border-radius:12px;border:1px solid #e0ebe6;">'
+            )
+    else:
+        photos_html = (
+            '<p style="margin:14px 0 0;color:#71867e;font-size:13px;">'
+            "The customer did not attach any photos.</p>"
+        )
+
+    return f"""<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;">
+<tr><td align="center" style="padding:26px 12px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0"
+       style="width:100%;max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden;
+              border:1px solid #e5e7eb;">
+
+  <tr><td style="background:#0b1220;padding:22px 26px;">
+    <span style="color:#34d399;font-size:12px;font-weight:800;letter-spacing:.12em;
+                 text-transform:uppercase;">PabloExchange</span>
+    <p style="margin:6px 0 0;color:#ffffff;font-size:20px;font-weight:800;">
+      New gift order {e(order.order_id)}</p>
+    <p style="margin:4px 0 0;color:#a9b8c8;font-size:13px;">{e(order.product_name)}</p>
+  </td></tr>
+
+  <tr><td style="padding:22px 26px 6px;">
+    {section("Order", table(rows))}
+    {section("Customer", table(customer_rows))}
+    {section("Recipient", table(recipient_rows))}
+    {section("Customer photos", photos_html)}
+  </td></tr>
+
+  <tr><td style="padding:18px 26px 26px;">
+    <p style="margin:0;color:#8aa098;font-size:12px;line-height:1.6;">
+      Process this order in Django admin → Gifts → Gift orders.
+      The photos above are also stored on the order and attached to this email as files.</p>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
+
+
 def send_gift_order_email(order_pk):
     """Send a saved order to support. A mail failure never removes the order."""
     try:
@@ -70,7 +172,7 @@ def send_gift_order_email(order_pk):
 
     order_images = list(order.images.all())
     photo_line = (
-        f"{len(order_images)} photo(s) attached to this email"
+        f"{len(order_images)} photo(s) — shown inline and attached to this email"
         if order_images
         else "None"
     )
@@ -104,32 +206,52 @@ The photos are also stored on the order in Django admin.
 
 Open Django admin → Gifts → Gift orders to process this order.
 """
-    email = EmailMessage(
+
+    email = EmailMultiAlternatives(
         subject=subject,
         body=message,
         from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
         to=[support_email],
     )
 
-    attached = 0
-    for order_image in order_images:
+    # Read every photo once; each one is embedded in the HTML body AND
+    # attached as a regular downloadable file.
+    photo_cids = []
+    photo_payloads = []
+    for index, order_image in enumerate(order_images, start=1):
         try:
             with order_image.image.open("rb") as handle:
                 content = handle.read()
-            filename = order_image.image.name.rsplit("/", 1)[-1] or f"photo-{order_image.pk}.jpg"
-            email.attach(filename, content)  # MIME type is guessed from the filename
-            attached += 1
         except Exception:
             logger.exception(
-                "Could not attach photo %s to support email for gift order %s",
+                "Could not read photo %s for gift order %s",
                 order_image.pk,
                 order.order_id,
             )
+            continue
+        filename = (
+            order_image.image.name.rsplit("/", 1)[-1]
+            or f"photo-{index}.jpg"
+        )
+        cid = f"gift-photo-{order.pk}-{index}"
+        photo_cids.append(cid)
+        photo_payloads.append((cid, filename, content))
 
-    if order_images and attached < len(order_images):
+    email.attach_alternative(_support_email_html(order, photo_cids), "text/html")
+    email.mixed_subtype = "related"  # keep cid images linked to the HTML part
+
+    for cid, filename, content in photo_payloads:
+        inline = MIMEImage(content)
+        inline.add_header("Content-ID", f"<{cid}>")
+        inline.add_header("Content-Disposition", "inline", filename=filename)
+        email.attach(inline)
+    for cid, filename, content in photo_payloads:
+        email.attach(filename, content)  # downloadable copy, MIME type from filename
+
+    if order_images and len(photo_payloads) < len(order_images):
         logger.warning(
             "Only %s of %s photos were attached for gift order %s",
-            attached,
+            len(photo_payloads),
             len(order_images),
             order.order_id,
         )

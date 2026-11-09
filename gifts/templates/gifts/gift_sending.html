@@ -183,7 +183,7 @@
                         <button type="button" class="gift-upload-btn" id="giftUploadButton">
                             <i class="bi bi-cloud-arrow-up"></i> <span>Choose photos</span>
                         </button>
-                        <span class="gift-upload-hint" id="giftUploadHint">JPG, PNG, WEBP or GIF &mdash; up to 5 photos, 5&nbsp;MB each. They are sent to support with your order.</span>
+                        <span class="gift-upload-hint" id="giftUploadHint">JPG, PNG or WEBP &mdash; up to 5 photos. They are compressed automatically for a fast upload.</span>
                     </div>
                     <div class="gift-upload-previews" id="giftUploadPreviews" hidden></div>
                     <span class="gift-field-error" data-field="images"></span>
@@ -222,5 +222,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'gifts/js/gift_sending.js' %}?v=3"></script>
+<script src="{% static 'gifts/js/gift_sending.js' %}?v=4"></script>
 {% endblock %}
