@@ -1,5 +1,5 @@
 /* ============================================================
-   PabloExchange — Public home page
+   PabloExchange - Public home page
    Charcoal, green and white; responsive without zoom or shrinking.
    ============================================================ */
 
@@ -1103,5 +1103,329 @@ div[id="logs"] {
     .px-btn-gold,
     .px-btn-outline {
         transition: none;
+    }
+}
+
+/* ============================================================
+   Marketplace landing refresh: white navigation + brand hero
+   ============================================================ */
+.logo-badge {
+    border-color: var(--px-primary-dark);
+    background: var(--px-primary-dark);
+    color: var(--px-white);
+}
+
+.logo-badge::after {
+    border-color: var(--px-white);
+}
+
+.logo-text {
+    color: var(--px-charcoal);
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    letter-spacing: -.025em;
+}
+
+.px-navbar {
+    border-bottom-color: var(--px-border);
+    background: rgba(255, 255, 255, .98);
+    box-shadow: 0 5px 20px rgba(15, 23, 42, .07);
+}
+
+.px-navbar .nav-link {
+    color: var(--px-slate);
+}
+
+.px-navbar .nav-link:hover,
+.px-navbar .nav-link:focus,
+.px-navbar .nav-link.active {
+    background: var(--px-primary-soft);
+    color: var(--px-primary-deep);
+}
+
+.px-btn-outline {
+    border-color: #cbd5e1;
+    background: var(--px-white);
+    color: var(--px-charcoal);
+}
+
+.px-btn-outline:hover,
+.px-btn-outline:focus {
+    border-color: var(--px-primary);
+    background: var(--px-primary-soft);
+    color: var(--px-primary-deep);
+}
+
+.px-toggler {
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-color: #cbd5e1;
+    border-radius: 10px;
+    color: var(--px-charcoal);
+}
+
+.px-toggler .navbar-toggler-icon {
+    filter: none;
+}
+
+.px-mobile-actions {
+    display: none;
+}
+
+.px-navbar a:focus-visible,
+.px-toggler:focus-visible {
+    outline: 3px solid rgba(5, 150, 105, .28);
+    outline-offset: 3px;
+}
+
+.hero-section {
+    background:
+        radial-gradient(circle at 88% 12%, rgba(167, 243, 208, .16), transparent 30%),
+        radial-gradient(circle at 4% 90%, rgba(52, 211, 153, .13), transparent 27%),
+        linear-gradient(135deg, #047857 0%, #065f46 100%);
+    color: var(--px-white);
+}
+
+.hero-section::before {
+    border-color: rgba(255, 255, 255, .13);
+}
+
+.hero-badge {
+    border-color: rgba(255, 255, 255, .28);
+    background: rgba(255, 255, 255, .11);
+    color: var(--px-white);
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .09em;
+}
+
+.hero-badge i {
+    color: #a7f3d0;
+}
+
+.hero-title {
+    max-width: 680px;
+    color: var(--px-white);
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-size: clamp(3.6rem, 6.3vw, 5.4rem);
+    font-weight: 700;
+    letter-spacing: -.055em;
+    line-height: .98;
+    text-transform: uppercase;
+}
+
+.hero-title span {
+    color: var(--px-white);
+}
+
+.hero-lead {
+    max-width: 610px;
+    margin: 28px 0 0;
+    color: var(--px-white);
+    font-size: 1.27rem;
+    font-weight: 600;
+    letter-spacing: -.015em;
+    line-height: 1.55;
+}
+
+.hero-description {
+    margin: 20px 0 29px;
+    color: #f0fdf9;
+    font-size: 1rem;
+    line-height: 1.75;
+}
+
+.hero-buttons .px-btn-gold {
+    border-color: var(--px-white);
+    background: var(--px-white);
+    color: var(--px-primary-deep);
+    box-shadow: 0 7px 18px rgba(6, 95, 70, .16);
+}
+
+.hero-buttons .px-btn-gold:hover,
+.hero-buttons .px-btn-gold:focus {
+    border-color: #ecfdf5;
+    background: #ecfdf5;
+    color: #064e3b;
+}
+
+.hero-buttons .px-btn-outline {
+    border-color: rgba(255, 255, 255, .6);
+    background: transparent;
+    color: var(--px-white);
+}
+
+.hero-buttons .px-btn-outline:hover,
+.hero-buttons .px-btn-outline:focus {
+    border-color: var(--px-white);
+    background: rgba(255, 255, 255, .12);
+    color: var(--px-white);
+}
+
+.hero-buttons .btn:focus-visible {
+    outline: 3px solid #a7f3d0;
+    outline-offset: 3px;
+}
+
+.stat-box {
+    border-color: rgba(255, 255, 255, .5);
+    background: rgba(255, 255, 255, .96);
+}
+
+.demo-card {
+    border-color: rgba(255, 255, 255, .35);
+    box-shadow: 0 24px 60px rgba(6, 95, 70, .24);
+}
+
+@media (max-width: 991px) {
+    .px-navbar .container {
+        gap: 8px;
+    }
+
+    .px-navbar .navbar-brand {
+        margin-right: auto;
+    }
+
+    .px-mobile-actions {
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .px-mobile-purchases {
+        display: inline-flex;
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        color: var(--px-charcoal);
+        font-size: 1.3rem;
+        transition: background-color .18s ease, color .18s ease;
+    }
+
+    .px-mobile-purchases:hover {
+        background: var(--px-primary-soft);
+        color: var(--px-primary-deep);
+    }
+
+    .px-mobile-dashboard,
+    .px-mobile-login {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: .85rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .px-mobile-login {
+        border: 1px solid var(--px-primary-dark);
+        background: var(--px-primary-dark);
+        color: var(--px-white);
+    }
+
+    .px-desktop-actions {
+        display: none !important;
+    }
+
+    .px-navbar .navbar-collapse {
+        border-top-color: var(--px-border);
+    }
+
+    .px-navbar .nav-link {
+        display: flex;
+        min-height: 44px;
+        align-items: center;
+    }
+}
+
+@media (max-width: 767px) {
+    .hero-section {
+        padding-top: 116px;
+    }
+
+    .hero-title {
+        font-size: clamp(3rem, 15vw, 4.2rem);
+        line-height: 1;
+    }
+
+    .hero-lead {
+        margin-top: 24px;
+        font-size: 1.16rem;
+        line-height: 1.55;
+    }
+
+    .hero-description {
+        color: #f0fdf9;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 575px) {
+    .px-navbar {
+        padding: 10px 0;
+    }
+
+    .px-mobile-dashboard,
+    .px-mobile-login {
+        padding-right: 12px;
+        padding-left: 12px;
+        font-size: .82rem;
+    }
+
+    .hero-badge {
+        border-radius: 999px;
+        font-size: .69rem;
+        letter-spacing: .075em;
+    }
+
+    .hero-title {
+        font-size: clamp(3rem, 15vw, 4.2rem);
+        letter-spacing: -.05em;
+    }
+
+    .hero-buttons .btn {
+        min-height: 52px;
+    }
+
+    .back-top {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+@media (max-width: 360px) {
+    .px-mobile-purchases {
+        display: none;
+    }
+
+    .logo-text {
+        font-size: .95rem;
+    }
+}
+
+/* Comfortable tap targets for small screens. */
+@media (max-width: 991px) {
+    .px-navbar .navbar-brand,
+    .offer-link,
+    .otp-copy,
+    .footer-links a {
+        min-height: 44px;
+    }
+
+    .offer-link,
+    .footer-links a {
+        display: inline-flex;
+        align-items: center;
     }
 }

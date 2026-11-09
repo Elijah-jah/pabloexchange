@@ -5,8 +5,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PabloExchange | Fresh Logs & Instant SMS Verification Numbers</title>
-    <meta name="description" content="PabloExchange — buy premium logs and instant one-time SMS verification numbers. Pay only when your OTP arrives.">
+    <title>PabloExchange | SMS Numbers, Logs &amp; Gift Sending</title>
+    <meta name="description" content="PabloExchange - buy SMS verification numbers, browse logs and accounts, and send gifts from one wallet.">
 
     <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
     <!-- Bootstrap -->
@@ -14,9 +14,9 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
     <!-- Landing CSS -->
-    <link rel="stylesheet" href="{% static 'css/home.css' %}?v=6">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}?v=7">
 </head>
 
 <body>
@@ -26,9 +26,20 @@
     <div class="container">
 
         <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
-            <span class="logo-badge"><i class="bi bi-globe2"></i></span>
+            <span class="logo-badge"><i class="bi bi-globe2" aria-hidden="true"></i></span>
             <span class="logo-text">Pablo<span>Exchange</span></span>
         </a>
+
+        <div class="px-mobile-actions">
+            {% if user.is_authenticated %}
+                <a href="{% url 'smsmarket:my_purchases' %}" class="px-mobile-purchases" aria-label="My Purchases" title="My Purchases">
+                    <i class="bi bi-bag" aria-hidden="true"></i>
+                </a>
+                <a href="{% url 'dashboard' %}" class="btn px-btn-gold px-mobile-dashboard">Dashboard</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn px-mobile-login">Login</a>
+            {% endif %}
+        </div>
 
         <button class="navbar-toggler px-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -38,16 +49,16 @@
             <ul class="navbar-nav mx-auto">
                 <li class="nav-item"><a class="nav-link active" href="#top">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="#logs">Logs</a></li>
-                <li class="nav-item"><a class="nav-link" href="#how">How It Works</a></li>
                 <li class="nav-item"><a class="nav-link" href="#offer">SMS Numbers</a></li>
+                <li class="nav-item"><a class="nav-link" href="#offer">Gift Sending</a></li>
+                <li class="nav-item"><a class="nav-link" href="#how">How It Works</a></li>
                 <li class="nav-item"><a class="nav-link" href="#why">Why Us</a></li>
-                <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
             </ul>
 
-            <div class="d-flex align-items-center gap-2 px-nav-actions">
+            <div class="d-flex align-items-center gap-2 px-nav-actions px-desktop-actions">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'dashboard' %}" class="btn px-btn-outline">Dashboard</a>
-                    <a href="{% url 'dashboard' %}" class="btn px-btn-gold">Buy Now</a>
+                    <a href="{% url 'smsmarket:my_purchases' %}" class="btn px-btn-outline">My Purchases</a>
+                    <a href="{% url 'dashboard' %}" class="btn px-btn-gold">Dashboard</a>
                 {% else %}
                     <a href="{% url 'login' %}" class="btn px-btn-outline">Login</a>
                     <a href="{% url 'signup' %}" class="btn px-btn-gold">Get Started</a>
@@ -66,30 +77,30 @@
             <!-- Left -->
             <div class="col-lg-6">
                 <span class="hero-badge">
-                    <i class="bi bi-shield-check-fill"></i>
-                    Logs &amp; OTP numbers — pay only on delivery
+                    <i class="bi bi-lightning-charge-fill" aria-hidden="true"></i>
+                    SMS, LOGS &amp; GIFT SENDING
                 </span>
 
                 <h1 class="hero-title">
-                    Fresh logs &amp; OTP codes,<br>
-                    <span>delivered in</span><br>
-                    seconds — not minutes
+                    PABLO<br>
+                    <span>EXCHANGE</span>
                 </h1>
 
+                <p class="hero-lead">Your one-stop plug for SMS numbers, logs &amp; gift sending.</p>
+
                 <p class="hero-description">
-                    PabloExchange is your one-stop shop for premium logs and instant
-                    one-time virtual numbers for OTP verification. Fund your wallet
-                    with PocketFi, grab a log or pick a service, and get what you
-                    paid for instantly — you're only charged when it actually arrives.
+                    Buy virtual numbers for OTP verification, browse available logs and
+                    accounts, or send a gift from one wallet. Discover, pay and track
+                    every order in one place &mdash; simple, fast and reliable.
                 </p>
 
                 <div class="hero-buttons">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'dashboard' %}" class="btn px-btn-gold btn-lg px-4">Buy Logs or Numbers</a>
-                        <a href="#logs" class="btn px-btn-outline btn-lg px-4">Browse Logs</a>
+                        <a href="{% url 'dashboard' %}" class="btn px-btn-gold btn-lg px-4">Open Dashboard</a>
+                        <a href="{% url 'gift_sending' %}" class="btn px-btn-outline btn-lg px-4">Send a Gift</a>
                     {% else %}
                         <a href="{% url 'signup' %}" class="btn px-btn-gold btn-lg px-4">Create Free Account</a>
-                        <a href="#logs" class="btn px-btn-outline btn-lg px-4">See What's Offered</a>
+                        <a href="#offer" class="btn px-btn-outline btn-lg px-4">Explore Services</a>
                     {% endif %}
                 </div>
 
@@ -118,7 +129,7 @@
                 <div class="demo-card">
                     <div class="demo-header">
                         <span class="demo-dot"></span>
-                        <span class="demo-title"><i class="bi bi-broadcast"></i> Live demo — WhatsApp OTP</span>
+                        <span class="demo-title"><i class="bi bi-broadcast"></i> Live demo &mdash; WhatsApp OTP</span>
                         <span class="demo-live">LIVE</span>
                     </div>
 
@@ -137,7 +148,7 @@
                             <button class="otp-copy" id="copyBtn" type="button">
                                 <i class="bi bi-clipboard"></i> <span id="copyLabel">Copy code</span>
                             </button>
-                            <div class="chat-note">Delivered · charged ₦2000 only on delivery</div>
+                            <div class="chat-note">Delivered &middot; charged &#8358;2000 only on delivery</div>
                         </div>
                     </div>
 
@@ -162,7 +173,7 @@
         <div class="ticker-group">
             {% if logs %}
                 {% for log in logs %}
-                <span class="ticker-item"><i class="bi bi-box-seam-fill"></i> {{ log.name }} <span class="ticker-price mono">{% if log.price %}₦{{ log.price|floatformat:2|intcomma }}{% else %}in stock{% endif %}</span></span>
+                <span class="ticker-item"><i class="bi bi-box-seam-fill"></i> {{ log.name }} <span class="ticker-price mono">{% if log.price %}&#8358;{{ log.price|floatformat:2|intcomma }}{% else %}in stock{% endif %}</span></span>
                 {% endfor %}
             {% else %}
                 <span class="ticker-item"><i class="bi bi-box-seam-fill"></i> Old Facebook Acc</span>
@@ -182,7 +193,7 @@
         <div class="ticker-group" aria-hidden="true">
             {% if logs %}
                 {% for log in logs %}
-                <span class="ticker-item"><i class="bi bi-box-seam-fill"></i> {{ log.name }} <span class="ticker-price mono">{% if log.price %}₦{{ log.price|floatformat:2|intcomma }}{% else %}in stock{% endif %}</span></span>
+                <span class="ticker-item"><i class="bi bi-box-seam-fill"></i> {{ log.name }} <span class="ticker-price mono">{% if log.price %}&#8358;{{ log.price|floatformat:2|intcomma }}{% else %}in stock{% endif %}</span></span>
                 {% endfor %}
             {% else %}
                 <span class="ticker-item"><i class="bi bi-box-seam-fill"></i> Old Facebook Acc</span>
@@ -210,7 +221,7 @@
             <span class="section-badge">WHY CHOOSE US</span>
             <h2 class="section-title">Why People Choose PabloExchange</h2>
             <p class="section-subtitle">
-                Fair pricing, instant delivery, and a wallet you control.
+                SMS verification, quality logs and gift sending &mdash; one wallet, clear order history.
             </p>
         </div>
 
@@ -225,22 +236,22 @@
             <div class="col-lg-3 col-md-6">
                 <div class="feature-card h-100">
                     <div class="feature-icon"><i class="bi bi-wallet2"></i></div>
-                    <h4>PocketFi Funding</h4>
-                    <p>Top up your wallet in seconds with PocketFi — secure payments, instant confirmation.</p>
+                    <h4>One Wallet</h4>
+                    <p>Fund with PocketFi and pay for SMS numbers, logs and gift orders without entering payment details each time.</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="feature-card h-100">
                     <div class="feature-icon"><i class="bi bi-globe2"></i></div>
-                    <h4>Logs + Wide Coverage</h4>
-                    <p>Fresh logs restocked daily, plus numbers for 50+ countries and 500+ services, with live prices shown upfront.</p>
+                    <h4>SMS, Logs &amp; Gifts</h4>
+                    <p>Choose SMS numbers across a wide range of services, browse available logs, or submit a gift order for someone special.</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="feature-card h-100">
                     <div class="feature-icon"><i class="bi bi-journal-text"></i></div>
                     <h4>Full Order History</h4>
-                    <p>Every log, number, code, and naira movement is logged — your complete history, always visible.</p>
+                    <p>Every number, log, gift order and naira movement is recorded &mdash; your complete history, always visible.</p>
                 </div>
             </div>
         </div>
@@ -254,8 +265,8 @@
 
         <div class="text-center mb-5">
             <span class="section-badge">HOW IT WORKS</span>
-            <h2 class="section-title">From Signup to Delivery in Four Steps</h2>
-            <p class="section-subtitle">No delays, no manual steps — the whole flow is automated.</p>
+            <h2 class="section-title">From Funding to Order Tracking in Four Steps</h2>
+            <p class="section-subtitle">Fund once, then buy SMS numbers and logs or submit a gift order.</p>
         </div>
 
         <div class="row g-4 justify-content-center">
@@ -277,14 +288,14 @@
                 <div class="step-card">
                     <div class="step-number">3</div>
                     <i class="bi bi-grid"></i>
-                    <h6>Pick Logs or a Number</h6>
+                    <h6>Choose a Service</h6>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="step-card">
                     <div class="step-number">4</div>
                     <i class="bi bi-chat-dots-fill"></i>
-                    <h6>Receive Instantly</h6>
+                    <h6>Track Your Order</h6>
                 </div>
             </div>
         </div>
@@ -298,39 +309,53 @@
 
         <div class="text-center mb-5">
             <span class="section-badge">WHAT WE OFFER</span>
-            <h2 class="section-title">Logs &amp; Numbers, Zero Commitment</h2>
-            <p class="section-subtitle">Grab a log or rent a number, receive your code, move on. That's it.</p>
+            <h2 class="section-title">SMS, Logs &amp; Gift Sending</h2>
+            <p class="section-subtitle">Choose the service you need, pay from your wallet and follow every order from your account.</p>
         </div>
 
         <div class="row g-4 mb-4">
-            <div class="col-md-6">
+            <div class="col-lg-4 col-md-6">
                 <div class="offer-card h-100">
-                    <div class="feature-icon"><i class="bi bi-box-seam-fill"></i></div>
-                    <h3>Premium Logs Marketplace</h3>
+                    <div class="feature-icon"><i class="bi bi-123" aria-hidden="true"></i></div>
+                    <h3>One-Time SMS Numbers</h3>
                     <p>
-                        Fresh, quality-checked logs across platforms — gaming, shopping,
-                        social and more — restocked daily. Price shown upfront, delivered
-                        to your order history the moment you pay.
+                        Virtual numbers for WhatsApp, Telegram, Google, TikTok and more.
+                        See the price upfront and pay only when your verification code arrives.
                     </p>
                     {% if user.is_authenticated %}
-                        <a href="#logs" class="offer-link">Browse logs →</a>
+                        <a href="{% url 'buynumber' %}" class="offer-link">Get a number &rarr;</a>
                     {% else %}
-                        <a href="{% url 'signup' %}" class="offer-link">Get started →</a>
+                        <a href="{% url 'signup' %}" class="offer-link">Get started &rarr;</a>
                     {% endif %}
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-lg-4 col-md-6">
                 <div class="offer-card h-100">
-                    <div class="feature-icon"><i class="bi bi-123"></i></div>
-                    <h3>One-Time OTP Numbers</h3>
+                    <div class="feature-icon"><i class="bi bi-box-seam-fill" aria-hidden="true"></i></div>
+                    <h3>Logs &amp; Accounts</h3>
                     <p>
-                        Virtual numbers for WhatsApp, Telegram, Google, TikTok and more.
-                        Live price shown upfront — charged only if your code arrives.
+                        Browse available logs and accounts across social, gaming, shopping
+                        and other platforms. Prices are clear and purchases stay in your history.
                     </p>
                     {% if user.is_authenticated %}
-                        <a href="{% url 'dashboard' %}" class="offer-link">Get a number →</a>
+                        <a href="{% url 'marketplace' %}" class="offer-link">Browse logs &rarr;</a>
                     {% else %}
-                        <a href="{% url 'signup' %}" class="offer-link">Get started →</a>
+                        <a href="{% url 'signup' %}" class="offer-link">Get started &rarr;</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="offer-card h-100">
+                    <div class="feature-icon"><i class="bi bi-gift-fill" aria-hidden="true"></i></div>
+                    <h3>Gift Sending</h3>
+                    <p>
+                        Choose a gift, add the recipient's delivery details and pay from your
+                        wallet. Your order stays pending until the fulfilment team completes it.
+                    </p>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'gift_sending' %}" class="offer-link">Send a gift &rarr;</a>
+                    {% else %}
+                        <a href="{% url 'signup' %}" class="offer-link">Get started &rarr;</a>
                     {% endif %}
                 </div>
             </div>
@@ -342,11 +367,11 @@
             <div class="col-6 col-md-3">
                 <div class="service-chip">
                     <i class="bi bi-check-circle-fill"></i> {{ s.name }}
-                    <span class="chip-price mono">₦{{ s.price|floatformat:2|intcomma }}</span>
+                    <span class="chip-price mono">&#8358;{{ s.price|floatformat:2|intcomma }}</span>
                 </div>
             </div>
             {% empty %}
-            <div class="col-12 text-center text-muted">Services loading soon…</div>
+            <div class="col-12 text-center text-muted">Services loading soon...</div>
             {% endfor %}
         </div>
 
@@ -357,9 +382,9 @@
 <section class="cta-section" id="contact">
     <div class="container text-center">
         <span class="section-badge section-badge-light">GET STARTED</span>
-        <h2 class="display-5 fw-bold mt-3">Need a log or a code?<br>You're 60 seconds away.</h2>
+        <h2 class="display-5 fw-bold mt-3">Need a number, log or gift?<br>Start from your PabloExchange wallet.</h2>
         <p class="lead mt-3 mb-4">
-            Join PabloExchange — fund your wallet, pick a log or service, and get it instantly.
+            Fund your wallet, choose SMS numbers, logs or gift sending, and track every order in one place.
         </p>
         <div class="d-flex justify-content-center flex-wrap gap-3 px-cta-btns">
             {% if user.is_authenticated %}
@@ -384,7 +409,7 @@
                     <span class="logo-text">Pablo<span>Exchange</span></span>
                 </div>
                 <p class="footer-text mt-3">
-                    Fresh logs and instant one-time SMS verification numbers.
+                    SMS verification numbers, quality logs and gift sending.
                     Fund with PocketFi, pay only on delivery, and keep track of every order.
                 </p>
             </div>
@@ -396,6 +421,7 @@
                     <li><a href="#logs">Logs</a></li>
                     <li><a href="#how">How It Works</a></li>
                     <li><a href="#offer">SMS Numbers</a></li>
+                    <li><a href="#offer">Gift Sending</a></li>
                 </ul>
             </div>
 
@@ -412,7 +438,7 @@
         <hr class="my-4 footer-hr">
 
         <div class="footer-bottom">
-            <p class="mb-0">© 2026 PabloExchange. All rights reserved.</p>
+            <p class="mb-0">&copy; 2026 PabloExchange. All rights reserved.</p>
         </div>
     </div>
 </footer>
@@ -427,7 +453,19 @@ const btn = document.getElementById('backToTop');
 window.addEventListener('scroll', () => {
     btn.style.display = window.scrollY > 400 ? 'flex' : 'none';
 });
-btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' }));
+
+
+// ---------- Close the mobile menu after choosing a section ----------
+document.querySelectorAll('#navbarMenu .nav-link').forEach((link) => {
+    link.addEventListener('click', () => {
+        const menu = document.getElementById('navbarMenu');
+        if (menu.classList.contains('show')) {
+            bootstrap.Collapse.getOrCreateInstance(menu).hide();
+        }
+    });
+});
 
 // ---------- Demo countdown (15:00) ----------
 const TOTAL = 15 * 60;
