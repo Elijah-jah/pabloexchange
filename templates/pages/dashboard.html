@@ -6,7 +6,7 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=6">
 {% endblock %}
 
 {% block content %}
@@ -15,8 +15,8 @@
     <!-- Welcome and primary actions -->
     <section class="db-welcome" aria-labelledby="dbHello">
         <div class="db-welcome-copy">
-            <h2 class="db-hello" id="dbHello">Welcome back, {{ user.username }}</h2>
-            <p class="db-hello-sub">Here's what's happening with your numbers, logs and gift orders.</p>
+            <h2 class="db-hello" id="dbHello">Welcome back, {{ user.username }} &#128075;</h2>
+            <p class="db-hello-sub">Everything you need, in one place.</p>
         </div>
 
         <div class="db-actions" aria-label="Dashboard actions">
@@ -43,17 +43,47 @@
     <section class="db-overview" aria-label="Account overview">
         <article class="db-balance">
             <div class="db-balance-top">
-                <span class="db-balance-label">
-                    <i class="bi bi-wallet2" aria-hidden="true"></i>
-                    Wallet Balance
-                </span>
-                <a href="{% url 'wallet:fund' %}" class="db-balance-fund">
-                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                    Fund Wallet
-                </a>
+                <span class="db-balance-label">Wallet Balance</span>
+                <div class="db-balance-tools">
+                    <a href="{% url 'wallet:fund' %}" class="db-balance-fund">
+                        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                        Fund Wallet
+                    </a>
+                    <button type="button" class="db-balance-toggle" id="dbBalanceToggle" aria-label="Hide wallet balance" aria-pressed="false" title="Hide wallet balance">
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
             </div>
 
-            <div class="db-balance-amount">&#8358;{{ balance|default:"0.00"|floatformat:2|intcomma }}</div>
+            <div class="db-balance-amount" id="dbBalanceAmount">&#8358;{{ balance|default:"0.00"|floatformat:2|intcomma }}</div>
+
+            <a href="{% url 'wallet:fund' %}" class="db-mobile-fund">
+                <i class="bi bi-plus-circle" aria-hidden="true"></i>
+                <span>Add Funds</span>
+            </a>
+
+            <nav class="db-mobile-services" aria-label="Services and purchases">
+                <a href="{% url 'buynumber' %}" class="db-mobile-service">
+                    <i class="bi bi-phone" aria-hidden="true"></i>
+                    <span>Buy Numbers</span>
+                </a>
+                <a href="{% url 'marketplace' %}" class="db-mobile-service">
+                    <i class="bi bi-person-bounding-box" aria-hidden="true"></i>
+                    <span>Buy Accounts</span>
+                </a>
+                <a href="{% url 'gift_sending' %}" class="db-mobile-service">
+                    <i class="bi bi-gift" aria-hidden="true"></i>
+                    <span>Send Gifts</span>
+                </a>
+                <a href="{% url 'smsmarket:my_purchases' %}" class="db-mobile-service">
+                    <i class="bi bi-bag-check" aria-hidden="true"></i>
+                    <span>My Purchases</span>
+                </a>
+                <a href="{% url 'wallet:transactions' %}" class="db-mobile-service db-mobile-service-wide">
+                    <i class="bi bi-receipt" aria-hidden="true"></i>
+                    <span>Transactions</span>
+                </a>
+            </nav>
 
             <div class="db-balance-foot">
                 <span><i class="bi bi-shield-check" aria-hidden="true"></i> Pay only on OTP delivery</span>
@@ -102,7 +132,7 @@
     </section>
 
     <!-- Gift Sending overview: all values come from the customer's own orders -->
-    <section class="db-card" style="margin-top:18px;" aria-labelledby="dbGiftTitle">
+    <section class="db-card db-gift-card" aria-labelledby="dbGiftTitle">
         <div class="db-card-head">
             <h2 class="db-card-title" id="dbGiftTitle"><i class="bi bi-gift" aria-hidden="true"></i> Gift Sending</h2>
             <a href="{% url 'smsmarket:my_purchases' %}" class="db-view-all">
@@ -248,7 +278,34 @@ document.addEventListener('DOMContentLoaded', function () {
     var heading = document.getElementById('dbHello');
 
     if (heading) {
-        heading.textContent = greeting + ', {{ user.username|escapejs }}';
+        heading.textContent = greeting + ', {{ user.username|escapejs }}' + ' \uD83D\uDC4B';
+    }
+
+
+    var balanceAmount = document.getElementById('dbBalanceAmount');
+    var balanceToggle = document.getElementById('dbBalanceToggle');
+
+    if (balanceAmount && balanceToggle) {
+        var visibleBalance = balanceAmount.textContent;
+
+        balanceToggle.addEventListener('click', function () {
+            var isHidden = balanceToggle.getAttribute('aria-pressed') === 'true';
+            var icon = balanceToggle.querySelector('i');
+
+            if (isHidden) {
+                balanceAmount.textContent = visibleBalance;
+                balanceToggle.setAttribute('aria-pressed', 'false');
+                balanceToggle.setAttribute('aria-label', 'Hide wallet balance');
+                balanceToggle.setAttribute('title', 'Hide wallet balance');
+                if (icon) icon.className = 'bi bi-eye';
+            } else {
+                balanceAmount.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022';
+                balanceToggle.setAttribute('aria-pressed', 'true');
+                balanceToggle.setAttribute('aria-label', 'Show wallet balance');
+                balanceToggle.setAttribute('title', 'Show wallet balance');
+                if (icon) icon.className = 'bi bi-eye-slash';
+            }
+        });
     }
 
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

@@ -1,6 +1,6 @@
 /* ============================================================
-   PabloExchange — Dashboard v5
-   Light gray canvas · white cards · green accents · dark sidebar
+   PabloExchange - Dashboard v6
+   Light gray canvas - white cards - green accents - dark sidebar
    Responsive without zoom or artificial scaling
    ============================================================ */
 
@@ -105,7 +105,7 @@
 .db-actions {
     display: grid;
     flex-shrink: 0;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 10px;
 }
 
@@ -833,5 +833,305 @@ a.db-row:focus-visible {
     .db-dashboard *::after {
         scroll-behavior: auto !important;
         transition-duration: .01ms !important;
+    }
+}
+
+/* ---------------- Wallet controls and mobile service panel ---------------- */
+.db-balance-tools {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+}
+
+.db-balance-toggle {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, .24);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .1);
+    color: var(--db-white);
+    cursor: pointer;
+    font-size: 1.05rem;
+    line-height: 1;
+    transition: background .18s ease-out, border-color .18s ease-out, transform .18s ease-out;
+}
+
+.db-balance-toggle:hover {
+    border-color: rgba(255, 255, 255, .45);
+    background: rgba(255, 255, 255, .18);
+}
+
+.db-balance-toggle:active {
+    transform: scale(.96);
+}
+
+.db-balance-toggle:focus-visible,
+.db-mobile-fund:focus-visible,
+.db-mobile-service:focus-visible {
+    outline: 3px solid #a7f3d0;
+    outline-offset: 3px;
+}
+
+.db-mobile-fund,
+.db-mobile-services {
+    display: none;
+}
+
+.db-gift-card {
+    margin-top: 18px;
+}
+
+/* Phone layout: one wallet-first panel, real-size controls, no scaling. */
+@media (max-width: 575.98px) {
+    .app-body:has(.db-dashboard) .app-content {
+        padding-top: 18px;
+    }
+
+    .db-welcome {
+        gap: 0;
+        margin-bottom: 20px;
+    }
+
+    .app-content .db-dashboard .db-hello,
+    .db-dashboard .db-hello {
+        margin-bottom: 7px;
+        font-size: clamp(1.55rem, 7vw, 1.85rem);
+        font-weight: 800;
+        line-height: 1.18;
+        letter-spacing: -.035em;
+    }
+
+    .db-hello-sub {
+        color: #526174;
+        font-size: .95rem;
+        line-height: 1.5;
+    }
+
+    .db-actions {
+        display: none;
+    }
+
+    .db-overview {
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .db-balance {
+        min-height: 0;
+        height: auto;
+        padding: 22px 20px 20px;
+        border-color: rgba(4, 120, 87, .35);
+        border-radius: 24px;
+        background: linear-gradient(145deg, #047857 0%, #065f46 100%);
+        box-shadow: 0 16px 34px rgba(6, 95, 70, .2);
+    }
+
+    .db-balance::before {
+        top: -105px;
+        right: -65px;
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(circle, rgba(167, 243, 208, .2), rgba(167, 243, 208, .06) 58%, transparent 72%);
+    }
+
+    .db-balance-label {
+        color: var(--db-white);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .db-balance-fund {
+        display: none;
+    }
+
+    .db-balance-toggle {
+        width: 44px;
+        height: 44px;
+        border-radius: 13px;
+        background: rgba(255, 255, 255, .12);
+        font-size: 1.15rem;
+    }
+
+    .db-balance-amount {
+        margin: 18px 0 24px;
+        font-size: clamp(2.2rem, 11vw, 2.8rem);
+        font-weight: 800;
+        line-height: 1.08;
+        letter-spacing: -.035em;
+    }
+
+    .db-mobile-fund {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        width: 100%;
+        min-height: 52px;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        padding: 13px 18px;
+        border: 1px solid rgba(255, 255, 255, .82);
+        border-radius: 14px;
+        background: #f8fffc;
+        color: #065f46;
+        box-shadow: 0 5px 14px rgba(6, 95, 70, .12);
+        font-size: 1rem;
+        font-weight: 750;
+        line-height: 1.25;
+        transition: background .18s ease-out, transform .18s ease-out;
+    }
+
+    .db-mobile-fund i {
+        font-size: 1.15rem;
+    }
+
+    .db-mobile-fund:hover {
+        background: #ecfdf5;
+        color: #064e3b;
+    }
+
+    .db-mobile-fund:active {
+        transform: scale(.985);
+    }
+
+    .db-mobile-services {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .db-mobile-service {
+        display: flex;
+        min-width: 0;
+        min-height: 70px;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        padding: 13px 12px;
+        border: 1px solid rgba(255, 255, 255, .2);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, .11);
+        color: var(--db-white);
+        font-size: .88rem;
+        font-weight: 650;
+        line-height: 1.3;
+        text-align: left;
+        transition: background .18s ease-out, border-color .18s ease-out, transform .18s ease-out;
+    }
+
+    .db-mobile-service i {
+        flex-shrink: 0;
+        color: #d1fae5;
+        font-size: 1.15rem;
+        line-height: 1;
+    }
+
+    .db-mobile-service span {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .db-mobile-service:hover {
+        border-color: rgba(255, 255, 255, .38);
+        background: rgba(255, 255, 255, .18);
+        color: var(--db-white);
+    }
+
+    .db-mobile-service:active {
+        transform: scale(.98);
+    }
+
+    .db-mobile-service-wide {
+        grid-column: 1 / -1;
+        justify-content: center;
+        min-height: 58px;
+    }
+
+    .db-balance-foot,
+    .db-quick {
+        display: none;
+    }
+
+    .db-overview-side {
+        gap: 0;
+    }
+
+    .db-stats {
+        gap: 9px;
+    }
+
+    .db-stat {
+        padding: 15px 10px;
+        border-radius: 13px;
+        text-align: center;
+    }
+
+    .db-stat-icon {
+        width: 34px;
+        height: 34px;
+        margin: 0 auto 10px;
+    }
+
+    .db-stat-num {
+        font-size: 1.4rem;
+    }
+
+    .db-stat-label {
+        font-size: .72rem;
+        line-height: 1.35;
+    }
+
+    .db-gift-card {
+        margin-top: 0;
+        margin-bottom: 16px;
+    }
+
+    .db-card {
+        border-radius: 16px;
+    }
+
+    .db-card-head {
+        align-items: flex-start;
+    }
+
+    .db-card-title {
+        font-size: .95rem;
+    }
+
+    .db-view-all {
+        min-height: 44px;
+    }
+
+    .db-btn-ghost {
+        min-height: 44px;
+    }
+}
+
+@media (max-width: 350px) {
+    .db-balance {
+        padding-right: 16px;
+        padding-left: 16px;
+    }
+
+    .db-mobile-service {
+        gap: 8px;
+        padding-right: 10px;
+        padding-left: 10px;
+        font-size: .82rem;
+    }
+
+    .db-mobile-service i {
+        font-size: 1.05rem;
     }
 }
