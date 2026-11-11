@@ -45,7 +45,9 @@
         border: none;
         background: #eef5f0;
         color: #0b3d24;
-        font-size: 15px;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -64,9 +66,13 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #ffffff;
-        font-size: 26px;
         box-shadow: 0 12px 26px rgba(11, 61, 36, 0.35);
+    }
+
+    .plx-notice-icon svg {
+        width: 34px;
+        height: 34px;
+        display: block;
     }
 
     .plx-notice-pill {
@@ -121,6 +127,12 @@
         box-shadow: 0 14px 30px rgba(11, 61, 36, 0.4);
     }
 
+    .plx-notice-join svg {
+        width: 20px;
+        height: 20px;
+        display: block;
+    }
+
     .plx-notice-row {
         display: flex;
         gap: 12px;
@@ -139,6 +151,12 @@
         cursor: pointer;
         transition: background 0.2s;
         border: none;
+    }
+
+    .plx-notice-btn svg {
+        width: 16px;
+        height: 16px;
+        display: block;
     }
 
     .plx-notice-copy {
@@ -167,12 +185,13 @@
 <div class="plx-notice-overlay" id="plxNoticeOverlay">
     <div class="plx-notice-card">
 
-        <button type="button" class="plx-notice-close" onclick="plxCloseNotice()" aria-label="Close">
-            <i class="fas fa-times"></i>
-        </button>
+        <button type="button" class="plx-notice-close" onclick="plxCloseNotice()" aria-label="Close">&#10005;</button>
 
         <div class="plx-notice-icon">
-            <i class="fas fa-bell"></i>
+            <!-- Telegram plane - Telegram blue -->
+            <svg viewBox="0 0 448 512" fill="#229ED9" xmlns="http://www.w3.org/2000/svg">
+                <path d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 16.2 252.2c-22.1-6.9-22.5-22.1 4.6-32.7L418.2 66.4c18.4-6.9 34.5 4.1 28.5 32.2z"/>
+            </svg>
         </div>
 
         <span class="plx-notice-pill">Announcement</span>
@@ -186,12 +205,19 @@
         </p>
 
         <a href="https://t.me/exchangemarketplace1" target="_blank" class="plx-notice-join">
-            <i class="fab fa-telegram-plane"></i> Join New Channel
+            <svg viewBox="0 0 448 512" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+                <path d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 16.2 252.2c-22.1-6.9-22.5-22.1 4.6-32.7L418.2 66.4c18.4-6.9 34.5 4.1 28.5 32.2z"/>
+            </svg>
+            Join New Channel
         </a>
 
         <div class="plx-notice-row">
             <button type="button" class="plx-notice-btn plx-notice-copy" onclick="plxCopyNoticeLink(this)">
-                <i class="far fa-copy"></i> <span>Copy Link</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span>Copy Link</span>
             </button>
             <button type="button" class="plx-notice-btn plx-notice-gotit" onclick="plxCloseNotice()">
                 Got it
