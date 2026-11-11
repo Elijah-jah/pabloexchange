@@ -92,6 +92,7 @@ def login_view(request):
     return render(request, 'accounts/login.html', {'error': error})
 
 def logout_view(request):
+    request.session.pop('show_login_notice', False)
     logout(request)
     return redirect('home')
 
