@@ -17,6 +17,8 @@ from marketplace.models import LogOrder
 
 @login_required
 def dashboard(request):
+    show_login_notice = request.session.pop('show_login_notice', False)
+
     all_orders = NumberOrder.objects.filter(user=request.user)
     all_logs = LogOrder.objects.filter(user=request.user)
     # --- Dashboard gift-order tracking ---
@@ -34,6 +36,7 @@ def dashboard(request):
     active_count = locals().get("active_count", 0) + gift_active_count
 
     return render(request, 'pages/dashboard.html', {
+        "show_login_notice": show_login_notice,
         "gift_order_count": gift_order_count,
         "gift_active_count": gift_active_count,
         "gift_completed_count": gift_completed_count,

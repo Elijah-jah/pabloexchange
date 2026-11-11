@@ -86,10 +86,10 @@ def login_view(request):
         user = authenticate(request, email=email, password=password)
         if user is not None:
             login(request, user)
+            request.session['show_login_notice'] = True   # <-- ADD THIS LINE
             return redirect(request.GET.get('next') or 'dashboard')
         error = 'Invalid email or password.'
     return render(request, 'accounts/login.html', {'error': error})
-
 
 def logout_view(request):
     logout(request)
