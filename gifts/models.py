@@ -38,6 +38,12 @@ class GiftProduct(models.Model):
         decimal_places=2,
         validators=[MinValueValidator(Decimal("0.01"))],
     )
+    delivery_duration = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+        help_text='Shown to customers as "Will be delivered in …". Example: 3-5 business days. Leave blank to hide it.',
+    )
     display_order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

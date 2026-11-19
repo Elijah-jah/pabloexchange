@@ -6,7 +6,7 @@
 {% block page_title %}Gift Sending{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'gifts/css/gift_sending.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'gifts/css/gift_sending.css' %}?v=5">
 
 {% endblock %}
 
@@ -68,6 +68,9 @@
                         <div class="gift-product-info">
                             <h3>{{ product.name }}</h3>
                             <p{% if not product.description %} class="is-empty" aria-hidden="true"{% endif %}>{{ product.description }}</p>
+                            {% if product.delivery_duration %}
+                            <span class="gift-delivery"><i class="bi bi-truck"></i> Will be delivered in {{ product.delivery_duration }}</span>
+                            {% endif %}
                         </div>
                         <div class="gift-card-footer">
                             <div class="gift-price">
@@ -81,6 +84,7 @@
                                 data-product-name="{{ product.name }}"
                                 data-price="{{ product.price }}"
                                 data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
+                                data-duration="{{ product.delivery_duration }}"
                                 aria-label="Send {{ product.name }} as a gift">
                                 <i class="bi bi-send"></i> Send Gift
                             </button>
@@ -131,6 +135,7 @@
             <div>
                 <strong id="giftSummaryName"></strong>
                 <span>Amount charged to your wallet</span>
+                <span class="gift-summary-duration" id="giftSummaryDuration" hidden></span>
             </div>
             <b id="giftSummaryPrice"></b>
         </div>
@@ -222,5 +227,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'gifts/js/gift_sending.js' %}?v=4"></script>
+<script src="{% static 'gifts/js/gift_sending.js' %}?v=5"></script>
 {% endblock %}

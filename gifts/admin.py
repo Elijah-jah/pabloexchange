@@ -28,10 +28,10 @@ class GiftCategoryAdmin(admin.ModelAdmin):
 class GiftProductAdmin(admin.ModelAdmin):
     list_display = (
         "image_preview", "name", "category", "price",
-        "display_order", "is_active", "created_at",
+        "delivery_duration", "display_order", "is_active", "created_at",
     )
     list_filter = ("category", "is_active")
-    list_editable = ("price", "display_order", "is_active")
+    list_editable = ("price", "delivery_duration", "display_order", "is_active")
     search_fields = ("name", "description", "category__name")
 
     @admin.display(description="Image")

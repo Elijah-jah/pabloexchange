@@ -26,7 +26,7 @@
     var selectedImages = null; // DataTransfer holding the pending photos
     var optimizing = false;
 
-    var DEFAULT_HINT = "JPG, PNG or WEBP — up to " + MAX_IMAGES +
+    var DEFAULT_HINT = "JPG, PNG or WEBP \u2014 up to " + MAX_IMAGES +
         " photos. They are compressed automatically for a fast upload.";
 
     function newImageBucket() {
@@ -38,7 +38,7 @@
     }
 
     function naira(value) {
-        return "₦" + parseFloat(value || "0").toLocaleString("en-US", {
+        return "\u20A6" + parseFloat(value || "0").toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
@@ -137,7 +137,7 @@
                 uploadHint.textContent = DEFAULT_HINT;
             } else {
                 uploadHint.textContent = files.length + " of " + MAX_IMAGES +
-                    " photos selected — compressed and ready.";
+                    " photos selected \u2014 compressed and ready.";
             }
         }
     }
@@ -175,7 +175,7 @@
         // actual order submission is fast.
         optimizing = true;
         submitButton.disabled = true;
-        if (uploadHint) uploadHint.textContent = "Optimizing photos for faster upload…";
+        if (uploadHint) uploadHint.textContent = "Optimizing photos for faster upload\u2026";
 
         Promise.all(incoming.map(compressImage)).then(function (processed) {
             optimizing = false;
@@ -261,6 +261,14 @@
 
         document.getElementById("giftSummaryName").textContent = button.getAttribute("data-product-name");
         document.getElementById("giftSummaryPrice").textContent = naira(button.getAttribute("data-price"));
+
+        var duration = button.getAttribute("data-duration") || "";
+        var durationEl = document.getElementById("giftSummaryDuration");
+        if (durationEl) {
+            durationEl.textContent = duration ? "Will be delivered in " + duration : "";
+            durationEl.hidden = !duration;
+        }
+
         modal.hidden = false;
         document.body.style.overflow = "hidden";
         setTimeout(function () {
@@ -322,7 +330,7 @@
         clearErrors();
 
         if (optimizing) {
-            showError("Please wait a moment — your photos are still being optimized.");
+            showError("Please wait a moment \u2014 your photos are still being optimized.");
             return;
         }
 
@@ -333,7 +341,7 @@
         }
 
         submitButton.disabled = true;
-        submitButton.querySelector("span").textContent = "Placing order…";
+        submitButton.querySelector("span").textContent = "Placing order\u2026";
 
         fetch(activeCard.getAttribute("data-order-url"), {
             method: "POST",

@@ -603,3 +603,18 @@ textarea.gift-control { resize: vertical; min-height: 70px; }
 @media (prefers-reduced-motion: reduce) {
     .gift-card, .gift-card * { transition: none !important; }
 }
+.gift-delivery {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #047857;
+}
+
+.gift-summary-duration {
+    display: block;
+    font-size: 0.8rem;
+    color: #047857;
+}
