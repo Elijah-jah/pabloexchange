@@ -1,4 +1,5 @@
 from gifts.models import GiftOrder
+from giftcards.models import GiftCardOrder
 import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -256,7 +257,7 @@ def cancel_order(request):
 
 @login_required
 def my_purchases(request):
-    """All purchases — logs and numbers merged, newest first."""
+    """All purchases — logs, numbers, gifts and gift cards merged, newest first."""
     numbers = (NumberOrder.objects
                .filter(user=request.user)
                .select_related('service', 'country'))
@@ -300,9 +301,6 @@ def my_purchases(request):
             'extra': '',
         })
 
-    # newest purchase first across both types
-    orders.sort(key=lambda x: x['created_at'], reverse=True)
-
     # --- Gift orders (managed by the gifts app) ---
     for gift in GiftOrder.objects.filter(user=request.user):
         recipient_details = "\n".join([
@@ -328,6 +326,34 @@ def my_purchases(request):
             "image": gift.product_image_url,
             "extra": gift.category_name,
         })
+
+    # --- Gift card orders (managed by the giftcards app) ---
+    for card_order in GiftCardOrder.objects.filter(user=request.user).select_related('card'):
+        card_image = ""
+        if card_order.card and card_order.card.image:
+            try:
+                card_image = card_order.card.image.url
+            except (ValueError, AttributeError):
+                card_image = ""
+        orders.append({
+            "type": "giftcard",
+            "name": card_order.card_name,
+            "order_id": card_order.order_id,
+            "detail": (
+                f"${card_order.amount_usd:,.2f} x {card_order.quantity} card(s) "
+                f"\u00b7 Buyer: {card_order.buyer_name} "
+                f"\u00b7 {card_order.country_name}"
+            ),
+            "otp": "",
+            "format_labels": "",
+            "price": card_order.total_ngn,
+            "status": card_order.status,
+            "created_at": card_order.created_at,
+            "image": card_image,
+            "extra": card_order.category_name,
+        })
+
+    # newest purchase first across all types
     orders.sort(key=lambda item: item["created_at"], reverse=True)
 
     return render(request, 'smsmarket/my_purchases.html', {
