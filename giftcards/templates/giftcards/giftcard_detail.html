@@ -37,6 +37,10 @@
                     {% if card.country.flag_emoji %}{{ card.country.flag_emoji }} {% endif %}{{ card.country.name }}
                 </p>
                 {% if card.description %}<p class="gc-preview-desc">{{ card.description }}</p>{% endif %}
+                <div class="gc-rate-chip">
+                    <i class="bi bi-arrow-left-right"></i>
+                    Rate: <strong>&#8358;{{ exchange_rate|floatformat:2|intcomma }}</strong> / $1
+                </div>
             </div>
         </div>
 
@@ -109,7 +113,6 @@
             <div><span>Card value</span><strong id="gcSuccessAmount"></strong></div>
             <div><span>Quantity</span><strong id="gcSuccessQty"></strong></div>
             <div><span>Total charged</span><strong id="gcSuccessTotal"></strong></div>
-            <div><span>Status</span><strong class="gc-pending">Pending</strong></div>
         </div>
         <a href="#" target="_blank" rel="noopener noreferrer" class="gc-whatsapp-btn" id="gcWhatsappBtn">
             <i class="bi bi-whatsapp"></i> Get your card on WhatsApp

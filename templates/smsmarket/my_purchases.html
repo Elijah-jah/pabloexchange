@@ -6,7 +6,11 @@
 {% block page_title %}My Purchases{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/purchases.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/purchases.css' %}?v=4">
+<style>
+/* Gift card purchases icon */
+.mp-icon.giftcard { background: #d1fae5; color: #047857; }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -16,12 +20,13 @@
     <div class="mp-head-row">
         <div>
             <h1>My Purchases</h1>
-            <p>Every log, number and gift order &mdash; tap any order for full details.</p>
+            <p>Every log, number, gift and gift card order &mdash; tap any order for full details.</p>
         </div>
         <div class="mp-head-actions">
             <a href="{% url 'marketplace' %}" class="mp-btn mp-btn-solid"><i class="bi bi-shop"></i> Buy Logs</a>
             <a href="{% url 'buynumber' %}" class="mp-btn mp-btn-ghost"><i class="bi bi-phone"></i> Buy Number</a>
             <a href="{% url 'gift_sending' %}" class="mp-btn mp-btn-ghost"><i class="bi bi-gift"></i> Send Gift</a>
+            <a href="{% url 'gift_cards' %}" class="mp-btn mp-btn-ghost"><i class="bi bi-credit-card-2-front"></i> Gift Cards</a>
         </div>
     </div>
 
@@ -31,6 +36,7 @@
         <button class="mp-tab" data-type="log">Logs</button>
         <button class="mp-tab" data-type="number">Numbers</button>
         <button class="mp-tab" data-type="gift">Gifts</button>
+        <button class="mp-tab" data-type="giftcard">Gift Cards</button>
     </div>
 
     <!-- ===== Orders list (newest first, view-sorted) ===== -->
@@ -54,6 +60,7 @@
             <div class="mp-icon {{ o.type }}">
                 {% if o.type == 'log' %}<i class="bi bi-file-lock2"></i>
                 {% elif o.type == 'number' %}<i class="bi bi-phone"></i>
+                {% elif o.type == 'giftcard' %}<i class="bi bi-credit-card-2-front"></i>
                 {% else %}<i class="bi bi-gift"></i>{% endif %}
             </div>
             {% endif %}
@@ -83,7 +90,7 @@
                 </p>
                 {% endif %}
                 {% endif %}
-                {% if o.type == 'gift' %}
+                {% if o.type == 'gift' or o.type == 'giftcard' %}
                 <p class="mp-sub">{{ o.detail|truncatechars:70 }}</p>
                 {% endif %}
                 <p class="mp-date">{{ o.created_at|date:"M j, Y" }} &middot; {{ o.created_at|date:"H:i" }}</p>
@@ -272,7 +279,8 @@
             mpmIconWrap.hidden = false;
             document.getElementById("mpmIcon").className =
                 type === "log" ? "bi bi-file-lock2" :
-                (type === "number" ? "bi bi-phone" : "bi bi-gift");
+                (type === "number" ? "bi bi-phone" :
+                (type === "giftcard" ? "bi bi-credit-card-2-front" : "bi bi-gift"));
         }
 
         document.getElementById("mpmTitle").textContent = d("name");
@@ -292,7 +300,8 @@
 
         document.getElementById("mpmBoxLabel").textContent =
             type === "number" ? "Phone Number" :
-            (type === "gift" ? "Recipient & Delivery Details" : "Login Details");
+            (type === "gift" ? "Recipient & Delivery Details" :
+            (type === "giftcard" ? "Card Details" : "Login Details"));
         document.getElementById("mpmText").textContent = d("detail") || "\u2014";
 
         /* OTP: numbers only */
