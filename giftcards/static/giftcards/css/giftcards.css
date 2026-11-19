@@ -17,6 +17,11 @@
 .gc-page button, .gc-modal button { font: inherit; }
 .gc-modal[hidden], .gc-page [hidden] { display: none !important; }
 
+/* Stop double-tap-to-zoom when tapping buttons quickly on phones */
+.gc-page button, .gc-page a, .gc-modal button, .gc-modal a {
+    touch-action: manipulation;
+}
+
 /* ---------- Hero ---------- */
 .gc-hero {
     position: relative;
@@ -476,4 +481,12 @@
     .gc-balance-card { min-width: 0; }
     .gc-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
     .gc-filters-label { min-width: 0; width: 100%; padding-top: 0; }
+
+    /* iOS Safari auto-zooms when focusing inputs under 16px — keep them at 16px */
+    .gc-search input,
+    .gc-control,
+    .gc-amount-wrap input,
+    .gc-qty input {
+        font-size: 16px;
+    }
 }
