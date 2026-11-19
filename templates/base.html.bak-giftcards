@@ -1,0 +1,375 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} | PabloExchange</title>
+
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- App shell -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}?v=10">
+    <!-- Shared page components (pills, lists) -->
+    <link rel="stylesheet" href="{% static 'css/app.css' %}?v=5">
+
+    {% block extra_css %}{% endblock %}
+<base target="_blank">
+</head>
+
+<body class="app-body">
+
+<!-- ================= SIDEBAR (desktop) ================= -->
+<aside class="app-sidebar d-none d-lg-flex flex-column">
+
+    <div class="sidebar-header">
+        <a class="sidebar-brand" href="{% url 'dashboard' %}">
+            <span class="logo-badge"><i class="bi bi-globe2"></i></span>
+            <span class="logo-text">Pablo<span>Exchange</span></span>
+        </a>
+    </div>
+
+    <nav class="sidebar-nav flex-grow-1">
+        <p class="sidebar-label">Menu</p>
+
+        <a href="{% url 'dashboard' %}"
+           class="side-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+        </a>
+
+        <a href="{% url 'wallet:fund' %}"
+           class="side-link {% if request.resolver_match.url_name == 'fund' %}active{% endif %}">
+            <i class="bi bi-wallet2"></i><span>Fund Wallet</span>
+        </a>
+
+        <a href="{% url 'buynumber' %}"
+           class="side-link {% if request.resolver_match.url_name == 'buynumber' %}active{% endif %}">
+            <i class="bi bi-phone"></i><span>Buy Number</span>
+        </a>
+
+        <a href="{% url 'marketplace' %}"
+           class="side-link {% if request.resolver_match.url_name == 'marketplace' %}active{% endif %}">
+            <i class="bi bi-box-seam"></i><span>Buy Logs</span>
+        </a>
+
+        <a href="{% url 'gift_sending' %}"
+           class="side-link {% if request.resolver_match.url_name == 'gift_sending' %}active{% endif %}">
+            <i class="bi bi-gift"></i><span>Gift Sending</span>
+        </a>
+
+        <a href="{% url 'gift_cards' %}"
+           class="side-link {% if request.resolver_match.url_name == 'gift_cards' or request.resolver_match.url_name == 'giftcard_detail' %}active{% endif %}">
+            <i class="bi bi-credit-card-2-front"></i><span>Gift Cards</span>
+        </a>
+
+        <p class="sidebar-label mt-3">History</p>
+
+        <a href="{% url 'smsmarket:my_purchases' %}"
+           class="side-link {% if request.resolver_match.url_name == 'my_purchases' %}active{% endif %}">
+            <i class="bi bi-bag-check"></i><span>My Purchases</span>
+        </a>
+
+        <a href="{% url 'wallet:transactions' %}"
+           class="side-link {% if request.resolver_match.url_name == 'transactions' %}active{% endif %}">
+            <i class="bi bi-receipt"></i><span>Transactions</span>
+        </a>
+
+        <p class="sidebar-label mt-3">Account</p>
+
+        <a href="https://t.me/Pabloexchange1" class="side-link telegram-nav-link" aria-label="Contact Telegram support">
+            <i class="bi bi-telegram"></i><span>Telegram Support</span>
+        </a>
+
+        <a href="{% url 'settings' %}"
+           class="side-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+            <i class="bi bi-gear"></i><span>Settings</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-wallet">
+        <p class="sidebar-label mb-2">Wallet balance</p>
+        <div class="d-flex align-items-end justify-content-between">
+            <span class="wallet-amount mono">&#8358;{{ balance|default:"0.00"|floatformat:2|intcomma }}</span>
+            <a href="{% url 'wallet:fund' %}" class="wallet-plus"><i class="bi bi-plus-lg"></i></a>
+        </div>
+    </div>
+
+    <div class="sidebar-user">
+        <div class="user-avatar">{{ user.username|first|upper }}</div>
+        <div class="user-meta">
+            <p class="user-name">{{ user.username|truncatechars:14 }}</p>
+            <p class="user-role">{{ user.email|truncatechars:20 }}</p>
+        </div>
+        <form method="post" action="{% url 'logout' %}" class="ms-auto">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn" title="Log out">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+        </form>
+    </div>
+
+</aside>
+
+<!-- ================= SIDEBAR (mobile drawer) ================= -->
+<div class="offcanvas offcanvas-start app-offcanvas d-lg-none" tabindex="-1" id="mobileSidebar">
+    <div class="offcanvas-header">
+        <a class="sidebar-brand" href="{% url 'dashboard' %}">
+            <span class="logo-badge"><i class="bi bi-globe2"></i></span>
+            <span class="logo-text">Pablo<span>Exchange</span></span>
+        </a>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+
+    <div class="offcanvas-body d-flex flex-column p-0">
+        <nav class="sidebar-nav flex-grow-1" aria-label="Mobile navigation">
+            <a href="{% url 'dashboard' %}"
+               class="side-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+            </a>
+
+            <a href="{% url 'wallet:fund' %}"
+               class="side-link {% if request.resolver_match.url_name == 'fund' %}active{% endif %}">
+                <i class="bi bi-wallet2"></i><span>Fund Wallet</span>
+            </a>
+
+            <a href="{% url 'buynumber' %}"
+               class="side-link {% if request.resolver_match.url_name == 'buynumber' %}active{% endif %}">
+                <i class="bi bi-phone"></i><span>Buy Number</span>
+            </a>
+
+            <a href="{% url 'marketplace' %}"
+               class="side-link {% if request.resolver_match.url_name == 'marketplace' %}active{% endif %}">
+                <i class="bi bi-box-seam"></i><span>Buy Logs</span>
+            </a>
+
+            <a href="{% url 'gift_sending' %}"
+               class="side-link {% if request.resolver_match.url_name == 'gift_sending' %}active{% endif %}">
+                <i class="bi bi-gift"></i><span>Gift Sending</span>
+            </a>
+
+            <a href="{% url 'gift_cards' %}"
+               class="side-link {% if request.resolver_match.url_name == 'gift_cards' or request.resolver_match.url_name == 'giftcard_detail' %}active{% endif %}">
+                <i class="bi bi-credit-card-2-front"></i><span>Gift Cards</span>
+            </a>
+
+            <a href="{% url 'smsmarket:my_purchases' %}"
+               class="side-link {% if request.resolver_match.url_name == 'my_purchases' %}active{% endif %}">
+                <i class="bi bi-bag-check"></i><span>My Purchases</span>
+            </a>
+
+            <a href="{% url 'wallet:transactions' %}"
+               class="side-link {% if request.resolver_match.url_name == 'transactions' %}active{% endif %}">
+                <i class="bi bi-receipt"></i><span>Transactions</span>
+            </a>
+
+            <a href="https://t.me/Pabloexchange1" class="side-link telegram-nav-link" aria-label="Contact Telegram support">
+                <i class="bi bi-telegram"></i><span>Telegram Support</span>
+            </a>
+
+            <a href="{% url 'settings' %}"
+               class="side-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+                <i class="bi bi-gear"></i><span>Settings</span>
+            </a>
+
+            <form method="post" action="{% url 'logout' %}" class="mobile-logout-form">
+                {% csrf_token %}
+                <button type="submit" class="side-link side-link-button">
+                    <i class="bi bi-box-arrow-right"></i><span>Log out</span>
+                </button>
+            </form>
+        </nav>
+    </div>
+</div>
+
+<!-- ================= MAIN ================= -->
+<div class="app-main">
+
+    <header class="app-topbar">
+        <button type="button" class="topbar-burger d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar"
+                aria-label="Open menu" aria-controls="mobileSidebar">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>
+
+        <div class="topbar-actions ms-auto">
+
+            <a href="{% url 'wallet:fund' %}" class="wallet-chip wallet-chip-sm d-inline-flex d-sm-none">
+                <span class="mono">&#8358;{{ balance|default:"0.00"|floatformat:2|intcomma }}</span>
+            </a>
+
+            <a href="{% url 'wallet:fund' %}" class="wallet-chip d-none d-sm-inline-flex">
+                <i class="bi bi-wallet2"></i>
+                <span class="mono">&#8358;{{ balance|default:"0.00"|floatformat:2|intcomma }}</span>
+                <span class="wallet-chip-plus"><i class="bi bi-plus-lg"></i></span>
+            </a>
+
+            <div class="dropdown">
+                <button type="button" class="avatar-btn" data-bs-toggle="dropdown" aria-label="Account menu" aria-expanded="false">
+                    <span class="user-avatar user-avatar-sm">{{ user.username|first|upper }}</span>
+                    <i class="bi bi-chevron-down d-none d-sm-inline-block"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end app-dropdown">
+                    <li><span class="dropdown-item-text dropdown-user">{{ user.username }}</span></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+                    <li><a class="dropdown-item" href="{% url 'settings' %}"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="bi bi-box-arrow-right me-2"></i>Log out
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="app-content">
+
+        <!-- Django flash messages — picked up by toast.js and shown as toasts -->
+        {% if messages %}
+        <div id="django-messages" hidden>
+            {% for message in messages %}
+            <div class="dj-msg" data-level="{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="app-footer">
+        <p class="mb-0">&copy; 2026 PabloExchange &middot; Pay only when your code arrives.</p>
+    </footer>
+
+</div>
+
+<!-- Telegram support: replace # with the official support link when ready. -->
+<a href="https://t.me/Pabloexchange1" class="telegram-support" aria-label="Contact PabloExchange support on Telegram"
+   title="Telegram support">
+    <i class="bi bi-telegram" aria-hidden="true"></i>
+</a>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+{% if user.is_authenticated %}
+<script>
+/* Global live balance — keeps sidebar/topbar wallet fresh on every page */
+(function () {
+    'use strict';
+    var url = "{% url 'wallet:wallet_balance_json' %}";
+
+    function naira(value) {
+        return "\u20A6" + parseFloat(value || "0").toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function refresh() {
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (d.balance == null) return;
+                var txt = naira(d.balance);
+                document.querySelectorAll('.wallet-amount, .wallet-chip .mono')
+                    .forEach(function (el) { el.textContent = txt; });
+            })
+            .catch(function () { /* offline — keep last known balance */ });
+    }
+
+    refresh();
+    setInterval(refresh, 15000);
+})();
+</script>
+{% endif %}
+
+<script>
+/* Mobile drawer: close it when a nav link is tapped, WITHOUT blocking
+   navigation (data-bs-dismiss on <a> was killing the tap on phones). */
+document.addEventListener('DOMContentLoaded', function () {
+    'use strict';
+    var drawerEl = document.getElementById('mobileSidebar');
+    if (!drawerEl || typeof bootstrap === 'undefined') return;
+
+    drawerEl.querySelectorAll('.side-link').forEach(function (link) {
+        link.addEventListener('click', function () {
+            var instance = bootstrap.Offcanvas.getInstance(drawerEl);
+            if (instance) instance.hide();
+            /* no preventDefault — the browser navigates normally */
+        });
+    });
+});
+</script>
+
+<script>
+/* Page-exit veil: a branded overlay appears when the user navigates or
+   submits a form — but ONLY if the submit actually proceeds. Modals in
+   page JS (like the cancel-confirmation) cancel their submit with
+   preventDefault, and the veil must not appear for those. */
+(function () {
+    'use strict';
+
+    function ready(fn) {
+        if (document.readyState !== 'loading') { fn(); }
+        else { document.addEventListener('DOMContentLoaded', fn); }
+    }
+
+    ready(function () {
+        var veil = document.createElement('div');
+        veil.className = 'px-exit';
+        veil.setAttribute('aria-hidden', 'true');
+        veil.innerHTML =
+            '<div class="px-exit-spinner"></div>' +
+            '<p>Loading&hellip;</p>' +
+            '<span class="px-exit-brand">PabloExchange</span>';
+        document.body.appendChild(veil);
+
+        function show() { veil.classList.add('show'); }
+        function hide() { veil.classList.remove('show'); }
+
+        // Back/forward button (bfcache): remove the veil when returning.
+        window.addEventListener('pageshow', hide);
+
+        // Internal link clicks — skip new-tab shortcuts, downloads,
+        // pure hash links, and external sites.
+        document.addEventListener('click', function (e) {
+            if (e.defaultPrevented) return;
+            if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+            var a = e.target.closest ? e.target.closest('a[href]') : null;
+            if (!a) return;
+            if (a.target === '_blank' || a.hasAttribute('download')) return;
+            var href = a.getAttribute('href');
+            if (!href || href.charAt(0) === '#') return;
+            if (/^https?:\/\//i.test(href) && a.host !== window.location.host) return;
+            show();
+        });
+
+        // Form submits — wait until the event finishes dispatching; if any
+        // handler (e.g. the cancel modal) called preventDefault, stay hidden.
+        document.addEventListener('submit', function (e) {
+            setTimeout(function () {
+                if (!e.defaultPrevented) { show(); }
+            }, 0);
+        }, true);
+    });
+})();
+</script>
+
+<!-- Toast notifications (reads #django-messages; exposes showToast()) -->
+<script src="{% static 'js/toast.js' %}"></script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

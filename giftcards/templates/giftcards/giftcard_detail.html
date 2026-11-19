@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block title %}{{ card.name }} — Gift Cards{% endblock %}
+{% block page_title %}Gift Cards{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'giftcards/css/giftcards.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+<div class="gc-page">
+    <a href="{% url 'gift_cards' %}" class="gc-back">
+        <i class="bi bi-arrow-left"></i> Back to gift cards
+    </a>
+
+    <div class="gc-detail" id="gcDetail"
+         data-purchase-url="{% url 'giftcard_purchase' card.pk %}"
+         data-rate="{{ exchange_rate }}"
+         data-min="{{ card.min_amount_usd }}"
+         data-max="{{ card.max_amount_usd }}"
+         data-balance="{{ balance }}">
+
+        <div class="gc-preview">
+            <div class="gc-preview-media">
+                {% if card.image %}
+                <img src="{{ card.image.url }}" alt="{{ card.name }}">
+                {% else %}
+                <div class="gc-image-fallback gc-image-fallback-lg"><i class="bi bi-credit-card-2-front"></i></div>
+                {% endif %}
+            </div>
+            <div class="gc-preview-meta">
+                <span class="gc-card-category">{{ card.category.name }}</span>
+                <h1>{{ card.name }}</h1>
+                <p class="gc-preview-country">
+                    <i class="bi bi-globe2"></i>
+                    {% if card.country.flag_emoji %}{{ card.country.flag_emoji }} {% endif %}{{ card.country.name }}
+                </p>
+                {% if card.description %}<p class="gc-preview-desc">{{ card.description }}</p>{% endif %}
+                <div class="gc-rate-chip">
+                    <i class="bi bi-arrow-left-right"></i>
+                    Rate: <strong>&#8358;{{ exchange_rate|floatformat:2|intcomma }}</strong> / $1
+                </div>
+            </div>
+        </div>
+
+        <form class="gc-buy-panel" id="gcBuyForm" method="post" novalidate>
+            {% csrf_token %}
+            <h2><i class="bi bi-bag"></i> Buy this card</h2>
+
+            <div class="gc-form-alert" id="gcFormAlert" role="alert" hidden></div>
+
+            <div class="gc-field">
+                <label for="gcAmount">Amount ($)</label>
+                <div class="gc-amount-wrap">
+                    <span>$</span>
+                    <input type="number" id="gcAmount" name="amount_usd"
+                           min="{{ card.min_amount_usd }}" max="{{ card.max_amount_usd }}"
+                           step="0.01" inputmode="decimal" placeholder="0.00" required>
+                </div>
+                <small>Min ${{ card.min_amount_usd|floatformat:2 }} &middot; Max ${{ card.max_amount_usd|floatformat:2 }} per card</small>
+                <span class="gc-field-error" data-field="amount_usd"></span>
+            </div>
+
+            <div class="gc-field">
+                <label for="gcBuyerName">Your name</label>
+                <input class="gc-control" type="text" id="gcBuyerName" name="buyer_name"
+                       maxlength="150" autocomplete="name" placeholder="First and last name" required>
+                <span class="gc-field-error" data-field="buyer_name"></span>
+            </div>
+
+            <div class="gc-field">
+                <label for="gcQty">Quantity</label>
+                <div class="gc-qty">
+                    <button type="button" class="gc-qty-btn" id="gcQtyMinus" aria-label="Decrease quantity"><i class="bi bi-dash-lg"></i></button>
+                    <input type="number" id="gcQty" name="quantity" value="1" min="1" max="99" step="1" inputmode="numeric" required>
+                    <button type="button" class="gc-qty-btn" id="gcQtyPlus" aria-label="Increase quantity"><i class="bi bi-plus-lg"></i></button>
+                </div>
+                <span class="gc-field-error" data-field="quantity"></span>
+            </div>
+
+            <div class="gc-total-box">
+                <div><span>Card value</span><strong id="gcCardValue">$0.00</strong></div>
+                <div><span>Quantity</span><strong id="gcQtyEcho">1</strong></div>
+                <div class="gc-total-line"><span>Total charge</span><strong id="gcTotal">&#8358;0.00</strong></div>
+                <div class="gc-balance-line">
+                    <span>Wallet balance</span>
+                    <strong id="gcBalance">&#8358;{{ balance|floatformat:2|intcomma }}</strong>
+                </div>
+                <p class="gc-insufficient" id="gcInsufficient" hidden>
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Insufficient balance &mdash; <a href="{% url 'wallet:fund' %}">fund your wallet</a> to continue.
+                </p>
+            </div>
+
+            <button type="submit" class="gc-buy-btn" id="gcBuyButton" disabled>
+                <i class="bi bi-lightning-charge"></i> <span>Purchase card now</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="gc-modal" id="gcSuccessModal" hidden>
+    <div class="gc-success-dialog" role="dialog" aria-modal="true" aria-labelledby="gcSuccessTitle">
+        <span class="gc-success-icon"><i class="bi bi-check2"></i></span>
+        <p class="gc-success-kicker">Payment successful</p>
+        <h2 id="gcSuccessTitle">Your gift card order is in</h2>
+        <p class="gc-success-sub">Tap the button below to receive your card details on WhatsApp.</p>
+        <div class="gc-success-details">
+            <div><span>Order reference</span><strong id="gcSuccessOrder"></strong></div>
+            <div><span>Gift card</span><strong id="gcSuccessCard"></strong></div>
+            <div><span>Buyer</span><strong id="gcSuccessBuyer"></strong></div>
+            <div><span>Card value</span><strong id="gcSuccessAmount"></strong></div>
+            <div><span>Quantity</span><strong id="gcSuccessQty"></strong></div>
+            <div><span>Total charged</span><strong id="gcSuccessTotal"></strong></div>
+            <div><span>Status</span><strong class="gc-pending">Pending</strong></div>
+        </div>
+        <a href="#" target="_blank" rel="noopener noreferrer" class="gc-whatsapp-btn" id="gcWhatsappBtn">
+            <i class="bi bi-whatsapp"></i> Get your card on WhatsApp
+        </a>
+        <a href="{% url 'gift_cards' %}" class="gc-secondary-link">
+            <i class="bi bi-arrow-left"></i> Buy another card
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'giftcards/js/giftcards.js' %}?v=1"></script>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block title %}Gift Cards{% endblock %}
+{% block page_title %}Gift Cards{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'giftcards/css/giftcards.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+<div class="gc-page">
+    <section class="gc-hero">
+        <div class="gc-hero-copy">
+            <span class="gc-eyebrow"><i class="bi bi-credit-card-2-front"></i> PabloExchange Gift Cards</span>
+            <h1>Buy gift cards instantly.</h1>
+            <p>Pick a card, enter any amount in dollars, and pay with your wallet. Rate: &#8358;{{ exchange_rate|floatformat:2|intcomma }} / $1.</p>
+        </div>
+        <div class="gc-balance-card">
+            <span><i class="bi bi-wallet2"></i> Available balance</span>
+            <strong id="gcWalletBalance">&#8358;{{ balance|floatformat:2|intcomma }}</strong>
+            <a href="{% url 'wallet:fund' %}">Fund wallet <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </section>
+
+    {% if cards %}
+    <div class="gc-toolbar">
+        <div class="gc-search">
+            <i class="bi bi-search"></i>
+            <input type="search" id="gcSearch" placeholder="Search gift cards&hellip;" autocomplete="off" aria-label="Search gift cards">
+        </div>
+    </div>
+
+    <div class="gc-filters" aria-label="Filter by country">
+        <span class="gc-filters-label"><i class="bi bi-globe2"></i> Country</span>
+        <div class="gc-filters-row" id="gcCountryFilters">
+            <button type="button" class="gc-filter active" data-country="all">All countries</button>
+            {% for country in countries %}
+            <button type="button" class="gc-filter" data-country="{{ country.id }}">
+                {% if country.flag_emoji %}{{ country.flag_emoji }} {% endif %}{{ country.name }}
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="gc-filters" aria-label="Filter by category">
+        <span class="gc-filters-label"><i class="bi bi-grid"></i> Category</span>
+        <div class="gc-filters-row" id="gcCategoryFilters">
+            <button type="button" class="gc-filter active" data-category="all">All</button>
+            {% for category in categories %}
+            <button type="button" class="gc-filter" data-category="{{ category.id }}">{{ category.name }}</button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="gc-grid" id="gcGrid">
+        {% for card in cards %}
+        <article class="gc-card"
+                 data-country="{{ card.country_id }}"
+                 data-category="{{ card.category_id }}"
+                 data-name="{{ card.name|lower }} {{ card.category.name|lower }} {{ card.country.name|lower }}">
+            <a class="gc-card-link" href="{% url 'giftcard_detail' card.pk %}" aria-label="Buy {{ card.name }}">
+                <div class="gc-card-media">
+                    {% if card.image %}
+                    <img src="{{ card.image.url }}" alt="{{ card.name }}" loading="lazy" decoding="async">
+                    {% else %}
+                    <div class="gc-image-fallback"><i class="bi bi-credit-card-2-front"></i></div>
+                    {% endif %}
+                    <span class="gc-country-badge">
+                        {% if card.country.flag_emoji %}{{ card.country.flag_emoji }} {% endif %}{{ card.country.name }}
+                    </span>
+                </div>
+                <div class="gc-card-body">
+                    <span class="gc-card-category">{{ card.category.name }}</span>
+                    <h3>{{ card.name }}</h3>
+                    <p class="gc-card-range">${{ card.min_amount_usd|floatformat:2 }} &ndash; ${{ card.max_amount_usd|floatformat:2 }} <span>per card</span></p>
+                    <span class="gc-buy-cta"><i class="bi bi-bag-plus"></i> Buy card</span>
+                </div>
+            </a>
+        </article>
+        {% endfor %}
+    </div>
+
+    <div class="gc-no-match" id="gcNoMatch" hidden>
+        <span><i class="bi bi-search-heart"></i></span>
+        <h2>No cards match those filters</h2>
+        <p>Try a different search, country or category.</p>
+    </div>
+    {% else %}
+    <div class="gc-empty">
+        <span><i class="bi bi-credit-card-2-front"></i></span>
+        <h2>No gift cards available yet</h2>
+        <p>Please check back soon or contact support if you need help.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'giftcards/js/giftcards.js' %}?v=1"></script>
+{% endblock %}

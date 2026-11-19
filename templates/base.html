@@ -61,6 +61,11 @@
             <i class="bi bi-gift"></i><span>Gift Sending</span>
         </a>
 
+        <a href="{% url 'gift_cards' %}"
+           class="side-link {% if request.resolver_match.url_name == 'gift_cards' or request.resolver_match.url_name == 'giftcard_detail' %}active{% endif %}">
+            <i class="bi bi-credit-card-2-front"></i><span>Gift Cards</span>
+        </a>
+
         <p class="sidebar-label mt-3">History</p>
 
         <a href="{% url 'smsmarket:my_purchases' %}"
@@ -144,6 +149,11 @@
             <a href="{% url 'gift_sending' %}"
                class="side-link {% if request.resolver_match.url_name == 'gift_sending' %}active{% endif %}">
                 <i class="bi bi-gift"></i><span>Gift Sending</span>
+            </a>
+
+            <a href="{% url 'gift_cards' %}"
+               class="side-link {% if request.resolver_match.url_name == 'gift_cards' or request.resolver_match.url_name == 'giftcard_detail' %}active{% endif %}">
+                <i class="bi bi-credit-card-2-front"></i><span>Gift Cards</span>
             </a>
 
             <a href="{% url 'smsmarket:my_purchases' %}"

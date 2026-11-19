@@ -12,6 +12,7 @@ urlpatterns = [
     path('', include('smsmarket.urls')),
     path('', include('marketplace.urls')),
     path('pricing/', include('pricing.urls')),
+    path("", include("giftcards.urls")),
 ]
 
 # Serve uploaded product images locally in development only.

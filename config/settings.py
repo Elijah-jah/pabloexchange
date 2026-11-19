@@ -119,6 +119,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     "gifts",
+    'giftcards',
 ]
 
 SMS_MARGIN_MULTIPLIER = 1.4   # 1.4 = 40% markup on live provider prices; adjust freely
