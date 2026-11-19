@@ -37,10 +37,6 @@
                     {% if card.country.flag_emoji %}{{ card.country.flag_emoji }} {% endif %}{{ card.country.name }}
                 </p>
                 {% if card.description %}<p class="gc-preview-desc">{{ card.description }}</p>{% endif %}
-                <div class="gc-rate-chip">
-                    <i class="bi bi-arrow-left-right"></i>
-                    Rate: <strong>&#8358;{{ exchange_rate|floatformat:2|intcomma }}</strong> / $1
-                </div>
             </div>
         </div>
 
