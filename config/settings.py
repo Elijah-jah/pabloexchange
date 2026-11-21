@@ -1,4 +1,4 @@
-﻿import os
+import os
 
 """
 Django settings for config project.
@@ -150,6 +150,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'wallet.context_processors.global_balance',
+                'pages.context_processors.site_settings',
             ],
         },
     },

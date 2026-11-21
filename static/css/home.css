@@ -1503,3 +1503,21 @@ div[id="logs"] {
         outline-color: #a7f3d0;
     }
 }
+
+
+/* ============================================================
+   UPLOADED SITE LOGO  (Admin -> Pages -> Site settings)
+   ============================================================ */
+.logo-badge.logo-badge-img {
+    padding: 3px;
+    overflow: hidden;
+    background: var(--px-white, #ffffff);
+}
+.logo-badge.logo-badge-img::after { display: none; }
+.logo-badge.logo-badge-img img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    object-fit: contain;
+}

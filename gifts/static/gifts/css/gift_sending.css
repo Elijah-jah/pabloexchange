@@ -618,3 +618,22 @@ textarea.gift-control { resize: vertical; min-height: 70px; }
     font-size: 0.8rem;
     color: #047857;
 }
+
+
+/* ============================================================
+   GIFT DELIVERY DURATION - plain grey description style
+   ============================================================ */
+p.gift-duration-plain {
+    display: -webkit-box;
+    min-height: 3.1em;
+    margin: 7px 0 0;
+    overflow: hidden;
+    color: var(--gift-muted, #6b7280);
+    font-size: .8rem;
+    font-weight: 400;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+p.gift-duration-plain.is-empty { visibility: hidden; }

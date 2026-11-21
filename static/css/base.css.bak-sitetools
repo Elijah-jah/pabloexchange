@@ -1,0 +1,1049 @@
+/* ============================================================
+   PabloExchange — App shell v10
+   Dark charcoal shell · primary green accents · normal typography
+   Responsive navigation · half-width mobile drawer · Telegram support
+   ============================================================ */
+
+:root {
+    --px-primary:       #10b981;
+    --px-primary-dark:  #0b9f75;
+    --px-primary-soft:  rgba(16, 185, 129, .12);
+    --px-charcoal:      #0b1220;
+    --px-sidebar:       #0f1725;
+    --px-panel:         #111c2e;
+    --px-panel-light:   #162235;
+    --px-slate:         #334155;
+    --px-text:          #f8fafc;
+    --px-muted:         #94a3b8;
+    --px-border:        rgba(148, 163, 184, .14);
+    --px-white:         #ffffff;
+    --px-radius:        14px;
+    --px-sidebar-width: 264px;
+
+    /* Compatibility aliases for the other PabloExchange stylesheets. */
+    --sb-green-950: var(--px-charcoal);
+    --sb-green-900: var(--px-sidebar);
+    --sb-green-800: var(--px-primary-dark);
+    --sb-green-700: var(--px-primary-dark);
+    --sb-green-600: var(--px-primary);
+    --sb-green-100: #d1fae5;
+    --sb-green-50:  var(--px-primary-soft);
+    --sb-gold:      var(--px-primary);
+    --sb-gold-dark: var(--px-primary-dark);
+    --sb-ink:       var(--px-text);
+    --sb-muted:     var(--px-muted);
+    --sb-white:     var(--px-white);
+    --sb-paper:     var(--px-charcoal);
+    --sb-border:    var(--px-border);
+    --sb-radius:    var(--px-radius);
+    --sb-shadow:    0 8px 24px rgba(0, 0, 0, .18);
+    --sb-width:     var(--px-sidebar-width);
+    --grad-brand:   var(--px-sidebar);
+    --grad-active:  var(--px-primary-soft);
+    --grad-gold:    var(--px-primary);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    overflow-x: clip;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(16, 185, 129, .38) transparent;
+}
+
+body.app-body {
+    display: block !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    background: var(--px-charcoal);
+    color: var(--px-text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: normal;
+    -webkit-font-smoothing: antialiased;
+}
+
+.app-body button,
+.app-body input,
+.app-body select,
+.app-body textarea {
+    font-family: inherit;
+    font-style: normal;
+    letter-spacing: normal;
+}
+
+.mono {
+    font-family: inherit;
+    font-style: normal;
+    font-weight: inherit;
+    letter-spacing: normal;
+}
+
+.app-content img {
+    max-width: 100%;
+}
+
+:focus-visible {
+    outline: 2px solid var(--px-primary);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 100px;
+    background: rgba(16, 185, 129, .3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(16, 185, 129, .52);
+}
+
+.app-sidebar a,
+.app-offcanvas a,
+.app-topbar a,
+.app-dropdown a,
+.app-sidebar a:hover,
+.app-offcanvas a:hover,
+.app-topbar a:hover,
+.app-dropdown a:hover {
+    text-decoration: none !important;
+}
+
+/* ---------------- Bootstrap globe logo ---------------- */
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+.logo-badge {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin-right: 10px;
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 11px;
+    background: var(--px-primary);
+    color: var(--px-charcoal);
+    font-size: 1.08rem;
+}
+
+.logo-badge::after {
+    content: "";
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 9px;
+    height: 9px;
+    border: 2px solid var(--px-sidebar);
+    border-radius: 50%;
+    background: var(--px-white);
+}
+
+.logo-text {
+    color: var(--px-white);
+    font-size: 1.16rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: normal;
+    white-space: nowrap;
+}
+
+.logo-text span {
+    color: var(--px-primary);
+    background: none;
+    -webkit-text-fill-color: currentColor;
+}
+
+/* ---------------- Desktop sidebar ---------------- */
+.app-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1045;
+    width: var(--px-sidebar-width);
+    min-width: var(--px-sidebar-width);
+    max-width: var(--px-sidebar-width);
+    overflow: hidden;
+    border-right: 1px solid var(--px-border);
+    background: var(--px-sidebar);
+    color: var(--px-text);
+}
+
+.sidebar-header {
+    padding: 20px 18px 17px;
+    border-bottom: 1px solid var(--px-border);
+}
+
+.sidebar-nav {
+    padding: 12px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(16, 185, 129, .24) transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-label {
+    margin: 15px 12px 7px;
+    color: var(--px-muted);
+    font-size: .72rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: normal;
+}
+
+.sidebar-nav .sidebar-label:first-child {
+    margin-top: 7px;
+}
+
+.side-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    margin-bottom: 5px;
+    padding: 11px 12px;
+    border-radius: 9px;
+    color: #c3ceda;
+    font-size: .92rem;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: normal;
+    transition: background .18s, color .18s;
+}
+
+.side-link i {
+    flex-shrink: 0;
+    width: 20px;
+    color: var(--px-muted);
+    font-size: 1.02rem;
+    text-align: center;
+    transition: color .18s;
+}
+
+.side-link:hover {
+    background: rgba(255, 255, 255, .045);
+    color: var(--px-white);
+}
+
+.side-link:hover i {
+    color: var(--px-primary);
+}
+
+.side-link.active {
+    background: var(--px-primary-soft);
+    color: var(--px-primary);
+    box-shadow: inset 3px 0 0 var(--px-primary);
+    font-weight: 500;
+}
+
+.side-link.active i,
+.telegram-nav-link i {
+    color: var(--px-primary);
+    background: none;
+    -webkit-text-fill-color: currentColor;
+}
+
+/* ---------------- Desktop wallet and user ---------------- */
+.sidebar-wallet {
+    flex-shrink: 0;
+    margin: 12px;
+    padding: 14px 15px;
+    border: 1px solid var(--px-border);
+    border-radius: 12px;
+    background: var(--px-panel);
+}
+
+.sidebar-wallet .sidebar-label {
+    margin: 0 0 6px;
+    color: var(--px-muted);
+}
+
+.wallet-amount {
+    color: var(--px-white);
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    font-family: inherit;
+    font-size: 1.14rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: normal;
+}
+
+.wallet-plus {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: var(--px-primary);
+    color: var(--px-charcoal);
+    font-size: 1rem;
+    transition: background .18s, transform .18s;
+}
+
+.wallet-plus:hover {
+    transform: translateY(-1px);
+    background: var(--px-primary-dark);
+    color: var(--px-white);
+}
+
+.sidebar-user {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 11px;
+    padding: 14px 16px;
+    border-top: 1px solid var(--px-border);
+    background: var(--px-sidebar);
+}
+
+.user-avatar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(16, 185, 129, .2);
+    border-radius: 50%;
+    background: var(--px-primary-soft);
+    color: var(--px-primary);
+    font-size: .94rem;
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: normal;
+}
+
+.user-avatar-sm {
+    width: 34px;
+    height: 34px;
+    font-size: .88rem;
+}
+
+.user-meta {
+    min-width: 0;
+}
+
+.user-name {
+    margin: 0;
+    overflow: hidden;
+    color: var(--px-text);
+    font-size: .87rem;
+    font-style: normal;
+    font-weight: 500;
+    letter-spacing: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-role {
+    margin: 2px 0 0;
+    overflow: hidden;
+    color: var(--px-muted);
+    font-size: .71rem;
+    letter-spacing: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.logout-btn {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--px-border);
+    border-radius: 9px;
+    background: var(--px-panel);
+    color: var(--px-muted);
+    transition: background .18s, color .18s, border-color .18s;
+}
+
+.logout-btn:hover {
+    border-color: rgba(16, 185, 129, .3);
+    background: var(--px-primary-soft);
+    color: var(--px-primary);
+}
+
+/* ---------------- Mobile drawer: exactly half the screen ---------------- */
+.app-offcanvas {
+    width: 50vw !important;
+    min-width: 0 !important;
+    max-width: 50vw !important;
+    border-right: 1px solid var(--px-border);
+    background: var(--px-sidebar);
+    color: var(--px-text);
+    box-shadow: 12px 0 32px rgba(0, 0, 0, .3);
+}
+
+.app-offcanvas .offcanvas-header {
+    gap: 6px;
+    min-height: 64px;
+    padding: 14px 10px;
+    border-bottom: 1px solid var(--px-border);
+    background: var(--px-sidebar);
+}
+
+.app-offcanvas .sidebar-brand {
+    flex: 1;
+    gap: 0;
+}
+
+.app-offcanvas .logo-badge {
+    width: 28px;
+    height: 28px;
+    margin-right: 6px;
+    border-radius: 8px;
+    font-size: .82rem;
+}
+
+.app-offcanvas .logo-badge::after {
+    width: 7px;
+    height: 7px;
+    border-width: 1px;
+}
+
+.app-offcanvas .logo-text {
+    overflow: hidden;
+    font-size: .76rem;
+    text-overflow: ellipsis;
+}
+
+.app-offcanvas .offcanvas-header .btn-close {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    margin: 0 !important;
+    padding: 0;
+    opacity: .68;
+}
+
+.app-offcanvas .offcanvas-header .btn-close:hover {
+    opacity: 1;
+}
+
+.app-offcanvas .sidebar-nav {
+    padding: 16px 8px;
+}
+
+.app-offcanvas .sidebar-label {
+    display: none;
+}
+
+.app-offcanvas .side-link {
+    gap: 8px;
+    min-height: 45px;
+    margin-bottom: 6px;
+    padding: 11px 8px;
+    border-radius: 8px;
+    font-size: .84rem;
+}
+
+.app-offcanvas .side-link i {
+    width: 18px;
+    font-size: .96rem;
+}
+
+.mobile-logout-form {
+    margin: 8px 0 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--px-border);
+}
+
+.side-link-button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.side-link-button:hover,
+.side-link-button:focus-visible {
+    background: rgba(255, 255, 255, .045);
+    color: var(--px-white);
+}
+
+/* ---------------- Main shell and topbar ---------------- */
+.app-body .app-main {
+    display: flex;
+    flex-direction: column;
+    width: auto;
+    max-width: none;
+    min-height: 100vh;
+    margin-left: var(--px-sidebar-width);
+    padding: 0 !important;
+}
+
+.app-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 66px;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--px-border);
+    background: rgba(11, 18, 32, .97);
+    backdrop-filter: blur(10px);
+}
+
+.topbar-burger {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--px-border);
+    border-radius: 9px;
+    background: var(--px-panel);
+    color: var(--px-text);
+    font-size: 1.24rem;
+    transition: background .18s, border-color .18s;
+}
+
+.topbar-burger:hover {
+    border-color: rgba(16, 185, 129, .35);
+    background: var(--px-primary-soft);
+}
+
+.topbar-title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    color: var(--px-text);
+    font-size: 1.1rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.topbar-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Wallet values use normal inherited typography. */
+.wallet-chip {
+    align-items: center;
+    gap: 8px;
+    padding: 8px 8px 8px 14px;
+    border: 1px solid var(--px-border);
+    border-radius: 100px;
+    background: var(--px-panel);
+    color: var(--px-white);
+    font-family: inherit;
+    font-size: .85rem;
+    font-style: normal;
+    font-weight: 500;
+    letter-spacing: normal;
+    white-space: nowrap;
+    transition: background .18s, border-color .18s;
+}
+
+.wallet-chip:hover {
+    border-color: rgba(16, 185, 129, .32);
+    background: var(--px-panel-light);
+    color: var(--px-white);
+}
+
+.wallet-chip-plus {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: var(--px-primary);
+    color: var(--px-charcoal);
+    font-size: .83rem;
+}
+
+.wallet-chip-sm {
+    padding: 8px 12px;
+}
+
+.avatar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 9px 4px 4px;
+    border: 1px solid var(--px-border);
+    border-radius: 100px;
+    background: var(--px-panel);
+    color: var(--px-muted);
+    transition: background .18s, border-color .18s;
+}
+
+.avatar-btn:hover {
+    border-color: rgba(16, 185, 129, .32);
+    background: var(--px-panel-light);
+}
+
+.app-dropdown {
+    min-width: 210px;
+    padding: 8px;
+    border: 1px solid var(--px-border);
+    border-radius: 12px;
+    background: var(--px-panel);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .28);
+}
+
+.app-dropdown .dropdown-item {
+    padding: 9px 12px;
+    border-radius: 8px;
+    color: var(--px-text);
+    font-size: .9rem;
+    font-style: normal;
+    font-weight: 400;
+    letter-spacing: normal;
+}
+
+.app-dropdown .dropdown-item:hover {
+    background: var(--px-primary-soft);
+    color: var(--px-primary);
+}
+
+.app-dropdown .dropdown-item-text,
+.dropdown-user {
+    padding: 7px 12px;
+    color: var(--px-text);
+    font-size: .9rem;
+    font-style: normal;
+    font-weight: 500;
+    letter-spacing: normal;
+}
+
+.app-dropdown .dropdown-divider {
+    border-color: var(--px-border);
+}
+
+/* ---------------- Content and footer ---------------- */
+.app-body .app-content {
+    flex: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 24px;
+}
+
+.app-body .app-footer {
+    padding: 19px 18px;
+    border-top: 1px solid var(--px-border);
+    border-bottom: none;
+    background: var(--px-charcoal);
+    color: var(--px-muted);
+    font-size: .82rem;
+    font-style: normal;
+    letter-spacing: normal;
+    text-align: center;
+}
+
+/* ---------------- Floating Telegram support ---------------- */
+.telegram-support {
+    position: fixed;
+    right: 24px;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    z-index: 1020;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    padding: 0;
+    border: 3px solid var(--px-white);
+    border-radius: 50%;
+    background: var(--px-primary);
+    color: var(--px-white);
+    box-shadow: 0 10px 26px rgba(16, 185, 129, .28);
+    font-size: 1.8rem;
+    line-height: 1;
+    text-decoration: none;
+    transition: background .18s, transform .18s;
+}
+
+.telegram-support:hover {
+    transform: translateY(-2px);
+    background: var(--px-primary-dark);
+    color: var(--px-white);
+}
+
+/* ---------------- Page-exit veil ---------------- */
+.px-exit {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    visibility: hidden;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    background: var(--px-charcoal);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease;
+}
+
+.px-exit.show {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: all;
+}
+
+.px-exit-spinner {
+    width: 44px;
+    height: 44px;
+    border: 4px solid rgba(255, 255, 255, .12);
+    border-top-color: var(--px-primary);
+    border-radius: 50%;
+    animation: pxSpin .8s linear infinite;
+}
+
+.px-exit p {
+    margin: 0;
+    color: var(--px-text);
+    font-size: .95rem;
+    font-style: normal;
+    font-weight: 500;
+    letter-spacing: normal;
+}
+
+.px-exit-brand {
+    color: var(--px-primary);
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    font-size: 1.05rem;
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: normal;
+}
+
+@keyframes pxSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* ---------------- Toast notifications ---------------- */
+#toast-container {
+    position: fixed;
+    top: 14px;
+    left: 50%;
+    z-index: 10050;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: min(430px, calc(100vw - 24px));
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.px-toast {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 42px 14px 15px;
+    overflow: hidden;
+    border: 1px solid var(--px-border);
+    border-radius: 12px;
+    background: var(--px-panel);
+    color: var(--px-text);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .28);
+    opacity: 0;
+    transform: translateY(-140%);
+    font-size: .9rem;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.45;
+    letter-spacing: normal;
+    pointer-events: all;
+    transition: transform .25s ease, opacity .25s ease;
+}
+
+.px-toast--in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.px-toast--out {
+    opacity: 0;
+    transform: translateY(-140%);
+}
+
+.px-toast-icon {
+    flex-shrink: 0;
+    font-size: 1.05rem;
+}
+
+.px-toast--success .px-toast-icon,
+.px-toast--info .px-toast-icon,
+.px-toast--warning .px-toast-icon {
+    color: var(--px-primary);
+}
+
+.px-toast--error {
+    background: #451a24;
+}
+
+.px-toast--error .px-toast-icon {
+    color: #ef4444;
+}
+
+.px-toast-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.px-toast-close {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 27px;
+    height: 27px;
+    padding: 0;
+    border: none;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, .07);
+    color: var(--px-muted);
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+.px-toast-close:hover {
+    background: rgba(255, 255, 255, .13);
+    color: var(--px-white);
+}
+
+.px-toast-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--px-primary);
+    animation: pxToastBar 4s linear forwards;
+}
+
+.px-toast--paused .px-toast-bar {
+    animation-play-state: paused;
+}
+
+@keyframes pxToastBar {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+/* ---------------- Responsive layout ---------------- */
+@media (max-width: 991.98px) {
+    .app-sidebar {
+        display: none !important;
+    }
+
+    .app-body .app-main {
+        margin-left: 0;
+    }
+
+    .app-body .app-content {
+        padding: 24px 18px;
+    }
+
+    .app-topbar {
+        min-height: 62px;
+        padding: 10px 16px;
+    }
+
+    .topbar-title {
+        font-size: 1.03rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .app-body .app-content {
+        padding: 20px 14px;
+    }
+
+    .app-topbar {
+        gap: 8px;
+        min-height: 60px;
+        padding: 9px 10px;
+    }
+
+    .topbar-burger {
+        width: 38px;
+        height: 38px;
+    }
+
+    .topbar-title {
+        font-size: .94rem;
+    }
+
+    .topbar-actions {
+        gap: 7px;
+    }
+
+    .wallet-chip {
+        padding: 7px 11px;
+        font-size: .78rem;
+        font-weight: 500;
+    }
+
+    .wallet-chip-plus {
+        width: 22px;
+        height: 22px;
+    }
+
+    .avatar-btn {
+        padding: 3px;
+    }
+
+    .avatar-btn .bi-chevron-down {
+        display: none;
+    }
+
+    .app-body .app-footer {
+        padding: 17px 14px;
+        font-size: .78rem;
+    }
+
+    .telegram-support {
+        right: 16px;
+        bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+        width: 52px;
+        height: 52px;
+        font-size: 1.62rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .app-offcanvas .offcanvas-header {
+        padding-right: 8px;
+        padding-left: 8px;
+    }
+
+    .app-offcanvas .logo-badge {
+        width: 24px;
+        height: 24px;
+        margin-right: 4px;
+    }
+
+    .app-offcanvas .logo-text {
+        font-size: .69rem;
+    }
+
+    .app-offcanvas .offcanvas-header .btn-close {
+        width: 20px;
+        height: 20px;
+    }
+
+    .app-offcanvas .sidebar-nav {
+        padding-right: 7px;
+        padding-left: 7px;
+    }
+
+    .app-offcanvas .side-link {
+        gap: 6px;
+        padding-right: 6px;
+        padding-left: 6px;
+        font-size: .78rem;
+    }
+
+    .topbar-title {
+        font-size: .88rem;
+    }
+
+    .wallet-chip {
+        font-size: .74rem;
+    }
+}
+
+.app-main,
+.app-content {
+    overflow-x: clip;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}
+/* Bold white wallet balances */
+.wallet-amount,
+.wallet-chip,
+.wallet-chip .mono {
+    font-family: Arial, Helvetica, sans-serif;
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: normal;
+    color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
+}
+
+/* Desktop sidebar balance */
+.wallet-amount {
+    font-size: 1.2rem;
+}
+
+/* Topbar balance */
+.wallet-chip {
+    font-size: .92rem;
+}
+
+/* Keep it compact on smaller phones */
+@media (max-width: 575.98px) {
+    .wallet-chip {
+        font-size: .8rem;
+    }
+}
