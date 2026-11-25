@@ -767,3 +767,8 @@ p.gift-duration-plain.is-empty { visibility: hidden; }
     .gift-product-media { aspect-ratio: 4 / 3.2; }
     .gift-overview-actions { grid-template-columns: 1fr; }
 }
+/* ---- keep the overview popup centered on phones (not a bottom sheet) ---- */
+@media (max-width: 560px) {
+    #giftOverviewModal { align-items: center; }
+    #giftOverviewModal .gift-overview-dialog { max-height: calc(100dvh - 32px); }
+}
