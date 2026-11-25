@@ -392,3 +392,104 @@
         });
     });
 })();
+
+
+/* =========================================================
+   Product overview modal - tapping a card previews the gift
+   (picture, name, description, price) with Back and
+   Send Gift buttons. Send Gift hands over to the card's own
+   button, which opens the recipient-details form.
+   ========================================================= */
+(function () {
+    "use strict";
+
+    var overview = document.getElementById("giftOverviewModal");
+    if (!overview) return;
+
+    var activeCard = null;
+
+    function naira(value) {
+        return "\u20A6" + parseFloat(value || "0").toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function openOverview(card) {
+        activeCard = card;
+        var btn = card.querySelector(".gift-send");
+
+        var image = document.getElementById("giftOverviewImage");
+        var fallback = document.getElementById("giftOverviewFallback");
+        var imageUrl = btn ? (btn.getAttribute("data-image") || "") : "";
+        if (imageUrl) {
+            image.src = imageUrl;
+            image.hidden = false;
+            fallback.hidden = true;
+        } else {
+            image.src = "";
+            image.hidden = true;
+            fallback.hidden = false;
+        }
+
+        document.getElementById("giftOverviewCategory").textContent =
+            card.getAttribute("data-category") || "";
+        document.getElementById("giftOverviewTitle").textContent =
+            btn ? (btn.getAttribute("data-product-name") || "Gift") : "Gift";
+
+        var desc = (card.getAttribute("data-desc") || "").trim();
+        document.getElementById("giftOverviewDesc").textContent =
+            desc || "No description for this gift yet.";
+
+        document.getElementById("giftOverviewPrice").textContent =
+            naira(btn ? btn.getAttribute("data-price") : "0");
+
+        var duration = btn ? (btn.getAttribute("data-duration") || "").trim() : "";
+        var durationBadge = document.getElementById("giftOverviewDuration");
+        document.getElementById("giftOverviewDurationText").textContent = duration;
+        durationBadge.hidden = !duration;
+
+        overview.hidden = false;
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeOverview() {
+        overview.hidden = true;
+        document.body.style.overflow = "";
+        activeCard = null;
+    }
+
+    document.querySelectorAll(".js-gift-overview").forEach(function (card) {
+        card.addEventListener("click", function (event) {
+            // The Send Gift button on the card keeps opening the order form directly.
+            if (event.target.closest(".gift-send")) return;
+            openOverview(card);
+        });
+        card.addEventListener("keydown", function (event) {
+            if (event.target !== card) return;
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                openOverview(card);
+            }
+        });
+    });
+
+    document.querySelectorAll("[data-close-overview]").forEach(function (btn) {
+        btn.addEventListener("click", closeOverview);
+    });
+
+    overview.addEventListener("click", function (event) {
+        if (event.target === overview) closeOverview();
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && !overview.hidden) closeOverview();
+    });
+
+    document.getElementById("giftOverviewSend").addEventListener("click", function () {
+        if (!activeCard) return;
+        var realButton = activeCard.querySelector(".gift-send");
+        closeOverview();
+        if (realButton) realButton.click();
+    });
+})();

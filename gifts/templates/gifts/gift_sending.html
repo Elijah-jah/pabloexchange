@@ -6,7 +6,7 @@
 {% block page_title %}Gift Sending{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'gifts/css/gift_sending.css' %}?v=6">
+<link rel="stylesheet" href="{% static 'gifts/css/gift_sending.css' %}?v=7">
 
 {% endblock %}
 
@@ -55,7 +55,7 @@
 
             <div class="gift-grid">
                 {% for product in category.products.all %}
-                <article class="gift-card">
+                <article class="gift-card js-gift-overview" tabindex="0" role="button" data-desc="{{ product.description }}" data-category="{{ category.name }}">
                     <div class="gift-product-media">
                         {% if product.image %}
                         <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" decoding="async">
@@ -63,14 +63,14 @@
                         <div class="gift-image-fallback"><i class="bi bi-gift"></i></div>
                         {% endif %}
                         <span class="gift-category-badge">{{ category.name }}</span>
+                        {% if product.delivery_duration %}
+                        <span class="gift-duration-badge"><i class="bi bi-truck"></i> {{ product.delivery_duration }}</span>
+                        {% endif %}
                     </div>
                     <div class="gift-card-body">
                         <div class="gift-product-info">
                             <h3>{{ product.name }}</h3>
                             <p{% if not product.description %} class="is-empty" aria-hidden="true"{% endif %}>{{ product.description }}</p>
-                            {% if product.delivery_duration %}
-                            <p class="gift-duration-plain{% if not product.delivery_duration %} is-empty{% endif %}"{% if not product.delivery_duration %} aria-hidden="true"{% endif %}>Will be delivered in {{ product.delivery_duration }}</p>
-                            {% endif %}
                         </div>
                         <div class="gift-card-footer">
                             <div class="gift-price">
@@ -207,6 +207,37 @@
     </div>
 </div>
 
+<!-- ==================== PRODUCT OVERVIEW MODAL ==================== -->
+<div class="gift-modal" id="giftOverviewModal" hidden>
+    <div class="gift-modal-dialog gift-overview-dialog" role="dialog" aria-modal="true" aria-labelledby="giftOverviewTitle">
+        <button type="button" class="gift-modal-close" data-close-overview aria-label="Close">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <div class="gift-overview-media">
+            <img id="giftOverviewImage" src="" alt="" hidden>
+            <span class="gift-image-fallback" id="giftOverviewFallback"><i class="bi bi-gift"></i></span>
+            <span class="gift-duration-badge" id="giftOverviewDuration" hidden><i class="bi bi-truck"></i> <span id="giftOverviewDurationText"></span></span>
+        </div>
+        <div class="gift-overview-body">
+            <span class="gift-overview-category" id="giftOverviewCategory"></span>
+            <h2 id="giftOverviewTitle">Gift</h2>
+            <p class="gift-overview-desc" id="giftOverviewDesc"></p>
+            <div class="gift-overview-price">
+                <span>Price</span>
+                <strong id="giftOverviewPrice"></strong>
+            </div>
+            <div class="gift-overview-actions">
+                <button type="button" class="gift-btn-secondary" data-close-overview>
+                    <i class="bi bi-arrow-left"></i> Back
+                </button>
+                <button type="button" class="gift-btn-primary" id="giftOverviewSend">
+                    <i class="bi bi-send"></i> Send Gift
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="gift-modal" id="giftSuccessModal" hidden>
     <div class="gift-success-dialog" role="dialog" aria-modal="true" aria-labelledby="giftSuccessTitle">
         <span class="gift-success-icon"><i class="bi bi-check2"></i></span>
@@ -227,5 +258,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'gifts/js/gift_sending.js' %}?v=5"></script>
+<script src="{% static 'gifts/js/gift_sending.js' %}?v=6"></script>
 {% endblock %}
